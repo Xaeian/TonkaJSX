@@ -79,6 +79,8 @@ document.body.appendChild(<App />);
 
 See the [**demo**](demo/) project included in this repo for a full working example.
 
+![demo](demo/preview.png)
+
 ## 🆚 Comparison
 
 Subjective comparison with other technologies commonly used for similar small-site / tool use cases.
