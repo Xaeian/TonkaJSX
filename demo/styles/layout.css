@@ -1,0 +1,24 @@
+.hero {
+  text-align: center;
+  padding-bottom: 40px;
+  margin-bottom: 48px;
+  border-bottom: 1px solid var(--brd);
+}
+.hero h1 { font-size: 2.6rem; letter-spacing: -0.02em; }
+.tagline { color: var(--acc); font-size: 1.1rem; margin: 12px 0; }
+.desc { font-size: 0.9rem; max-width: 540px; margin: 0 auto 8px; }
+.desc s { color: var(--dim); }
+
+.footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  padding-top: 24px;
+  border-top: 1px solid var(--brd);
+  font-size: 0.8rem;
+}
+.footer .sep { color: var(--brd); font-weight: 400; }
+.footer-sub { color: var(--dim); font-weight: 400; font-size: 0.75rem; }
+.footer-link { color: var(--acc); text-decoration: none; font-weight: 400; font-size: 0.8rem; }
+.footer-link:hover { text-decoration: underline; }
