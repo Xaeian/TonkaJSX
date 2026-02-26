@@ -65,14 +65,12 @@ const Greeting = ({ name }) => (
     <p>This is a component.</p>
   </div>
 );
-
 const App = () => (
   <div>
     <Greeting name="World" />
     <Greeting name="TonkaJSX" />
   </div>
 );
-
 document.body.appendChild(<App />);
 ```
 

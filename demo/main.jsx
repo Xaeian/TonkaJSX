@@ -5,6 +5,7 @@ const App = () => (
     <Structure />
     <Install />
     <Usage />
+    <Example />
     <Comparison />
     <Footer />
   </div>
