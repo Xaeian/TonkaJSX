@@ -1,10 +1,17 @@
+const Card = ({ icon, title, children }) => (
+  <div class="card">
+    <b>{icon} {title}</b>
+    <p>{children}</p>
+  </div>
+);
+
 const Features = () => (
   <Section title="Why?">
     <div class="cards">
-      <div class="card"><b>⚡ Zero Config</b><p>No webpack, no vite, no bundler. Just run and go.</p></div>
-      <div class="card"><b>⚛️ JSX Support</b><p>Write components without module imports. Global scope, browser-first.</p></div>
-      <div class="card"><b>🔍 Browser Debug</b><p>What you write is what runs. No source maps, no bundler magic.</p></div>
-      <div class="card"><b>📦 Single Build</b><p>One command packs everything into a single production HTML.</p></div>
+      <Card icon="⚡" title="Zero Config">No webpack, no vite, no bundler. Just run and go.</Card>
+      <Card icon="🧩" title="JSX Support">Write components without module imports. Global scope, browser-first.</Card>
+      <Card icon="🔍" title="Browser Debug">What you write is what runs. No source maps, no bundler magic.</Card>
+      <Card icon="📦" title="Single Build">One command packs everything into a single production HTML.</Card>
     </div>
   </Section>
 );

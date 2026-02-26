@@ -1,6 +1,6 @@
 const Hero = () => (
   <section class="hero">
-    <h1>🌰 TonkaJSX</h1>
+    <h1>🌰TonkaJSX</h1>
     <p class="tagline">Like Vanilla JS but with a hint of JSX.</p>
     <p class="desc">
       Lightweight <i>(and probably a bit unfinished)</i> <b>frontend framework</b>.

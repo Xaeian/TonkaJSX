@@ -18,7 +18,7 @@
   border-top: 1px solid var(--brd);
   font-size: 0.8rem;
 }
-.footer .sep { color: var(--brd); font-weight: 400; }
-.footer-sub { color: var(--dim); font-weight: 400; font-size: 0.75rem; }
-.footer-link { color: var(--acc); text-decoration: none; font-weight: 400; font-size: 0.8rem; }
+.footer .sep { color: var(--brd); }
+.footer-item { display: contents; }
+.footer-link { color: var(--acc); text-decoration: none; }
 .footer-link:hover { text-decoration: underline; }

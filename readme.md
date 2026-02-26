@@ -26,8 +26,7 @@ ROOT/                  (your workspace folder; name doesn't matter)
    │  ├─ **/*.js
    │  └─ **/*.jsx
    ├─ styles/          (all CSS/SCSS styles)
-   │  ├─ **/*.css
-   │  └─ **/*.scss     (planned)
+   │  └─ **/*.css
    ├─ images/          (static assets, custom)
    ├─ fonts/           (static assets, custom)
    ├─ assets/          (static assets, custom)
@@ -85,12 +84,13 @@ See the [**demo**](demo/) project included in this repo for a full working examp
 
 Subjective comparison with other technologies commonly used for similar small-site / tool use cases.
 
-|Metric _(small sites & tools)_|TonkaJSX|Bootstrap|Tailwind + Alpine|Preact|Astro|
-|:----|:---:|:---:|:---:|:---:|:---:|
-|Fast start _(from zero to working)_|⭐⭐⭐|⭐⭐⭐|⭐⭐|⭐⭐|⭐⭐|
-|Low dependency _(low mental overhead)_|⭐⭐⭐|⭐⭐|⭐⭐|⭐|⭐⭐|
-|Custom look _(no template vibe)_|⭐⭐⭐|⭐|⭐⭐⭐|⭐⭐⭐|⭐⭐⭐|
-|Ready-made components _(nav / modal etc.)_|⭐|⭐⭐⭐|⭐|⭐⭐|⭐⭐|
-|Browser-level debugging _(no bundler magic)_|⭐⭐⭐|⭐⭐⭐|⭐⭐|⭐|⭐|
-|Scaling & maintenance as project grows|⭐|⭐|⭐⭐|⭐⭐⭐|⭐⭐⭐|
-|Handover & onboarding|⭐|⭐⭐⭐|⭐⭐|⭐⭐|⭐⭐|
+|Metric _(small sites & tools)_|TonkaJSX|Vanilla JS|Bootstrap|Tw+Alpine|Preact|Astro|
+|:----|:---:|:---:|:---:|:---:|:---:|:---:|
+|Fast start _(from zero to working)_|⭐⭐⭐|⭐⭐⭐|⭐⭐⭐|⭐|⭐⭐|⭐⭐|
+|Low dependency _(low mental overhead)_|⭐⭐|⭐⭐⭐|⭐⭐|⭐⭐|⭐|⭐⭐|
+|Custom look _(no template vibe)_|⭐⭐⭐|⭐⭐⭐|⭐|⭐⭐⭐|⭐⭐⭐|⭐⭐⭐|
+|Ready-made components _(nav / modal etc.)_|⭐|⭐|⭐⭐⭐|⭐|⭐⭐|⭐⭐|
+|Browser-level debugging _(no bundler magic)_|⭐⭐⭐|⭐⭐⭐|⭐⭐⭐|⭐⭐|⭐⭐|⭐|
+|Code structure _(components / reuse)_|⭐⭐⭐|⭐|⭐|⭐⭐|⭐⭐⭐|⭐⭐⭐|
+|Scaling & maintenance as project grows|⭐|⭐|⭐|⭐⭐|⭐⭐⭐|⭐⭐⭐|
+|Handover & onboarding|⭐⭐|⭐⭐|⭐⭐⭐|⭐⭐|⭐⭐|⭐⭐|

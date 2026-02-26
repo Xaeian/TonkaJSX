@@ -123,6 +123,8 @@ export function fileList(dir, exts=[]) {
       if(!normExts.length || normExts.some(ext => e.name.toLowerCase().endsWith(ext))) files.push(e.name)
     }
   }
+  dirs.sort()
+  files.sort()
   for(const d of dirs) {
     const sub = fileList(path.join(dir,d),exts)
     for(const p of sub) out.push(path.posix.join(d,p))

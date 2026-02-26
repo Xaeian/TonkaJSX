@@ -19,10 +19,15 @@
   overflow-x: auto;
 }
 .tree-line { display: flex; white-space: nowrap; }
-.tree-line.dim { opacity: 0.4; }
-.tree-pre { color: var(--brd); white-space: pre; user-select: none; }
+.tree-line.dim .tree-name,
+.tree-line.dim .tree-note { opacity: 0.4; }
+.tree-pre { color: var(--muted); white-space: pre; user-select: none; }
 .tree-name { color: var(--fg); }
 .tree-line.accent .tree-name { color: var(--acc); }
+.tree-line.folder { cursor: pointer; }
+.tree-line.folder:hover .tree-name { color: var(--acc); }
+.tree-arrow { color: var(--muted); width: 1.2em; display: inline-block; }
+.tree-folder, .tree-kids { display: contents; }
 .tree-note { color: var(--dim); font-size: 0.75rem; margin-left: auto; padding-left: 24px; }
 
 .code-block {
@@ -50,5 +55,9 @@ table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
 th, td { padding: 6px 10px; border-bottom: 1px solid var(--brd); text-align: center; }
 th { color: var(--dim); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.04em; }
 .metric { text-align: left; color: var(--fg); font-weight: 500; white-space: nowrap; }
-.star { color: var(--acc); font-size: 1.0rem; letter-spacing: 1px; }
+.star { color: var(--acc); font-size: 0.9rem; letter-spacing: 1px; }
 .star.off { color: var(--brd); }
+
+@media (max-width: 500px) {
+  .cards { grid-template-columns: 1fr; }
+}
