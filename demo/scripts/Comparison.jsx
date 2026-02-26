@@ -24,7 +24,7 @@ const Comparison = () => (
           <Row label="Browser debug" scores={[3,3,3,2,2,1]} />
           <Row label="Code structure" scores={[3,1,1,2,3,3]} />
           <Row label="Scaling" scores={[1,1,1,2,3,3]} />
-          <Row label="Handover" scores={[2,2,3,2,2,2]} />
+          <Row label="Handover" scores={[1,2,3,2,2,2]} />
         </tbody>
       </table>
     </div>

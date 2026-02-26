@@ -93,4 +93,4 @@ Subjective comparison with other technologies commonly used for similar small-si
 |Browser-level debugging _(no bundler magic)_|⭐⭐⭐|⭐⭐⭐|⭐⭐⭐|⭐⭐|⭐⭐|⭐|
 |Code structure _(components / reuse)_|⭐⭐⭐|⭐|⭐|⭐⭐|⭐⭐⭐|⭐⭐⭐|
 |Scaling & maintenance as project grows|⭐|⭐|⭐|⭐⭐|⭐⭐⭐|⭐⭐⭐|
-|Handover & onboarding|⭐⭐|⭐⭐|⭐⭐⭐|⭐⭐|⭐⭐|⭐⭐|
+|Handover & onboarding|⭐⭐|⭐|⭐⭐⭐|⭐⭐|⭐⭐|⭐⭐|
