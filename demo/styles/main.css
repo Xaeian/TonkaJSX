@@ -5,7 +5,7 @@
   --fg: #ccc;
   --dim: #666;
   --muted: #444;
-  --acc: #c49362;
+  --acc: #d8a57f;
   --srf: #141414;
   --brd: #222;
 }
@@ -23,9 +23,13 @@ body {
   padding: 60px 20px 40px;
 }
 
+.hero h1 code {
+  padding-right: 0.3em;
+}
+
 code {
   font-family: monospace;
-  font-size: 0.84em;
+  font-size: 0.85em;
   background: var(--srf);
   border: 1px solid var(--brd);
   border-radius: 4px;

@@ -1,7 +1,7 @@
 const Hero = () => (
   <section class="hero">
-    <h1>🌰TonkaJSX</h1>
-    <p class="tagline">Like Vanilla JS but with a hint of JSX.</p>
+    <h1><img src="tonka.svg" alt="" width="50" height="50" />onka<code>JSX</code></h1>
+    <p class="tagline">Like Vanilla<code>JS</code> but with a hint of <code>JSX</code></p>
     <p class="desc">
       Lightweight <i>(and probably a bit unfinished)</i> <b>frontend framework</b>.
       It doesn't use <s>modules</s> because they make browser debugging harder,
