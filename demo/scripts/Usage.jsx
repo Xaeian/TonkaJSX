@@ -1,5 +1,6 @@
 const Usage = () => (
   <Section title="Usage">
+    <p class="subdesc">Start demo/project with <code>tonka serve</code> and build deploy version with <code>tonka build</code></p>
     <div class="code-block">
       <code>$ tonka serve [&lt;project&gt;] [--port|-p &lt;port&gt;]</code>
       <code>$ tonka build [&lt;project&gt;] [--inline-remote|-i]</code>

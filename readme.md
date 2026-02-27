@@ -44,7 +44,7 @@ The framework consists of two scripts: a development **server** and a **build** 
 
 ```bash
 tonka serve [<project-name>] [--port|-p <port>]  # start the development server
-tonka build [<project-name>] [--inline-remote|-i] # build the production version of the project
+tonka build [<project-name>] [--inline-remote|-i] # build the deploy version of the project
 ```
 
 Server and build work on the chosen project. If you don't pass a project name, it picks the first one _(useful when you only have one)_.
