@@ -61,3 +61,9 @@ th { color: var(--dim); font-size: 0.7rem; text-transform: uppercase; letter-spa
 @media (max-width: 500px) {
   .cards { grid-template-columns: 1fr; }
 }
+
+.code-block,
+.code-block code[class*="language-"],
+.code-block[class*="language-"] {
+  background: var(--srf);
+}

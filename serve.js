@@ -1,7 +1,9 @@
 import http from "http"
 import fs from "fs"
 import path from "path"
-import { PATH, readFile, fileList, getPort, COLOR } from "./utils.js"
+import { PATH, readFile, fileList, getPort, loadVars, replaceVars, COLOR } from "./utils.js"
+
+const vars = loadVars("serve")
 
 const mimeTypes = {
   ".html": "text/html; charset=utf-8",
@@ -87,10 +89,11 @@ const injectLinks = (html) => {
 const getIndex = (res) => {
   let html = readFile("index.html");
   if(!html) {
-    html = readFile("main.html");
+    html = readFile("app.html");
     if(!html) return false;
     html = injectLinks(html)
   }
+  html = replaceVars(html, vars)
   res.writeHead(200, {
     "Content-Type": mimeTypes[".html"],
     "Cache-Control": "no-store"
@@ -98,6 +101,8 @@ const getIndex = (res) => {
   res.end(html)
   return true
 }
+
+const TEXT_EXTS = new Set([".html", ".htm", ".css", ".js", ".jsx"])
 
 const server = http.createServer((req, res) => {
   const start = Date.now()
@@ -126,12 +131,15 @@ const server = http.createServer((req, res) => {
       logRequest(req,res,start)
       return
     }
-    const ext=path.extname(filePath).toLowerCase()
+    const ext = path.extname(filePath).toLowerCase()
     let mime = mimeTypes[ext] || "application/octet-stream"
     let body = data
-    if(ext === ".jsx") {
-      const src = data.toString("utf8")
-      body = Buffer.from(`/** @jsx JSX.createElement */\n/** @jsxFrag JSX.createFragment */\n\n${src}`)
+    if(TEXT_EXTS.has(ext)) {
+      let src = data.toString("utf8")
+      src = replaceVars(src, vars)
+      if(ext === ".jsx")
+        src = `/** @jsx JSX.createElement */\n/** @jsxFrag JSX.createFragment */\n\n${src}`
+      body = Buffer.from(src)
     }
     res.writeHead(200,{
       "Content-Type": mime,

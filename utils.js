@@ -132,3 +132,50 @@ export function fileList(dir, exts=[]) {
   for(const f of files) out.push(f)
   return out
 }
+
+const VARS_FILE = "app.ini"
+
+/**
+ * Parse app.ini — top-level vars merged with [section] overrides.
+ * Returns flat {key: string} map. Missing file → empty {}.
+ * @param {string} section "serve" | "build"
+ * @returns {Record<string, string>}
+ */
+export function loadVars(section) {
+  const raw = readFile(VARS_FILE)
+  if(!raw) return {}
+  const vars = {}
+  let current = null
+  for(const line of raw.split(/\r?\n/)) {
+    const t = line.trim()
+    if(!t || t[0] === ";" || t[0] === "#") continue
+    const sm = t.match(/^\[(.+?)\]$/)
+    if(sm) { current = sm[1].trim().toLowerCase(); continue }
+    const eq = t.indexOf("=")
+    if(eq < 0) continue
+    const k = t.slice(0, eq).trim()
+    let v = t.slice(eq + 1).trim()
+    if((v[0] === '"' && v.at(-1) === '"') || (v[0] === "'" && v.at(-1) === "'"))
+      v = v.slice(1, -1)
+    if(!k) continue
+    if(current === null || current === section?.toLowerCase())
+      vars[k] = v
+  }
+  return vars
+}
+
+/**
+ * Replace `{{key}}` placeholders in content.
+ * Undefined keys → warning + empty string.
+ * @param {string} content
+ * @param {Record<string, string>} vars
+ * @returns {string}
+ */
+export function replaceVars(content, vars) {
+  if(!content) return content
+  return content.replace(/\{\{(\w+)\}\}/g, (m, k) => {
+    if(k in vars) return vars[k]
+    console.warn(`[vars] undefined: {{${k}}}`)
+    return ""
+  })
+}

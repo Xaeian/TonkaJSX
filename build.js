@@ -2,7 +2,7 @@ import fs from "fs"
 import path from "path"
 import http from "http"
 import https from "https"
-import { PATH, readFile, fileList, COLOR } from "./utils.js"
+import { PATH, readFile, fileList, loadVars, replaceVars, COLOR } from "./utils.js"
 
 const ARGS = new Set(process.argv.slice(2))
 const INLINE_REMOTE = ARGS.has("--inline-remote") || ARGS.has("-i")
@@ -257,11 +257,14 @@ async function fetchMany(urls, label) {
 async function build()
 {
   Log.head(`Build ${COLOR.gray}${PATH}${COLOR.reset}`)
+  const vars = loadVars("build")
+  if(Object.keys(vars).length)
+    Log.ok(`Vars:${Object.keys(vars).length} (${Object.keys(vars).join(", ")})`)
   if(INLINE_REMOTE) Log.warn("--inline-remote enabled")
-  const indexPath = path.join(PATH, "main.html")
-  if(!fs.existsSync(indexPath)) throw new Error("main.html not found in PATH")
+  const indexPath = path.join(PATH, "app.html")
+  if(!fs.existsSync(indexPath)) throw new Error("app.html not found in PATH")
   let html = readFile(indexPath)
-  if(html == null) throw new Error("main.html read failed")
+  if(html == null) throw new Error("app.html read failed")
   const r = removeBabelTags(html)
   html = r.html
   if(r.removed.length) {
@@ -293,6 +296,7 @@ async function build()
   }).join("\n") : ""
   let cssBundle = [remoteCss, cssBundleLocal].filter(Boolean).join("\n")
   if(cssBundle) {
+    cssBundle = replaceVars(cssBundle, vars)
     const b0 = bytes(cssBundle)
     cssBundle = await minifyCssSmart(cssBundle)
     Log.ok(`CSS min: ${b0} → ${bytes(cssBundle)}`)
@@ -344,10 +348,11 @@ async function build()
   }).join("\n;\n") : ""
   const rawJS = [String(remoteJs || "").trimEnd(), localJS].filter(Boolean).join("\n;\n")
   let jsBundle = ""
-  if(rawJS){
+  if(rawJS) {
+    const src = replaceVars(rawJS, vars)
     const { transformSync, jsxPlugin } = await loadBabel()
     Log.ok("Babel: JSX → JS")
-    const out = transformSync(rawJS, { babelrc: false, configFile: false, sourceType: "unambiguous", comments: false, plugins: [[jsxPlugin, { pragma: "JSX.createElement", pragmaFrag: "JSX.createFragment", throwIfNamespace: false }]] })
+    const out = transformSync(src, { babelrc: false, configFile: false, sourceType: "unambiguous", comments: false, plugins: [[jsxPlugin, { pragma: "JSX.createElement", pragmaFrag: "JSX.createFragment", throwIfNamespace: false }]] })
     jsBundle = out?.code || ""
     if(jsBundle){
       const b0 = bytes(jsBundle)
@@ -373,6 +378,7 @@ async function build()
     html = next
     Log.ok("Injected <script> JS")
   }
+  html = replaceVars(html, vars)
   const outPath = path.join(PATH, "index.html")
   fs.writeFileSync(outPath, html, "utf8")
   Log.ok(`Wrote ${COLOR.gray}${outPath}${COLOR.reset}`)

@@ -19,6 +19,6 @@ const Example = () => {
       <pre class="code-block"><code class="language-jsx">{EXAMPLE_CODE}</code></pre>
     </Section>
   );
-  setTimeout(() => Prism.highlightAll(), 0);
+  JSX.onMount(el, () => Prism.highlightAll());
   return el;
 };

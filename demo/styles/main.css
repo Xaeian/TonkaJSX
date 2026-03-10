@@ -1,13 +1,14 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 :root {
+  font-size: 20px;
   --bg: #0a0a0a;
   --fg: #ccc;
-  --dim: #666;
+  --dim: #888;
   --muted: #444;
-  --acc: #d8a57f;
   --srf: #141414;
   --brd: #222;
+  --acc: {{accent}};
 }
 
 body {
@@ -18,7 +19,7 @@ body {
 }
 
 .app {
-  max-width: 700px;
+  max-width: 900px;
   margin: 0 auto;
   padding: 60px 20px 40px;
 }
@@ -48,5 +49,5 @@ code {
 .subdesc { color: var(--dim); font-size: 0.82rem; }
 
 ul { margin-top: 14px; padding-left: 20px; list-style: disc; }
-li { font-size: 0.82rem; padding: 3px 0; color: var(--fg); }
+li { font-size: 0.82rem; padding: 3px 0; color: var(--dim); }
 li::marker { color: var(--acc); }
