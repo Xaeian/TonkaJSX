@@ -52,11 +52,12 @@ Server and build work on the chosen project. If you don't pass a project name, i
 If the project contains `app.ini`, variables defined there are replaced in all JS/JSX/CSS/HTML files using `{{key}}` syntax. Top-level values are shared; `[serve]` and `[build]` sections override per mode.
 
 ```ini
-ver = 1.0.0
+title = TonkaJSX
+accent = #d8a57f
 [serve]
-mode = http
+foot = Serve
 [build]
-mode = webview
+foot = Build
 ```
 
 If the project is built, `index.html` exists and the server serves it.
