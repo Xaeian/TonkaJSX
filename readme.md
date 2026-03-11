@@ -1,8 +1,11 @@
 ## 🌰TonkaJSX
 
 Lightweight _(and probably a bit unfinished)_ **frontend framework**.
+
 It doesn't use ~~**modules**~~ because they make browser debugging harder, but it does support **JSX** because it's great.
+
 Script-first, not for huge apps. Zero config, fast setup, for small sites, prototypes, and quick internal tools.
+
 The workspace contains the main scripts `serve.js` and `build.js`, plus the usual **Node.js** stuff.
 Each website/app lives in its own project folder inside the workspace.
 The structure is partly opinionated, but not too strict.
