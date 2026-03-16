@@ -87,7 +87,7 @@ const App = () => (
 document.body.appendChild(<App />);
 ```
 
-See the [**demo**](demo/) project included in this repo for a full working example.
+See the built and deployed [**demo**](https://tonkajsx.com), and check the files included in this [repo](demo/) for a complete working example.
 
 ![demo](demo/preview.png)
 
