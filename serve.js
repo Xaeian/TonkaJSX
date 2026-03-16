@@ -1,7 +1,8 @@
 import http from "http"
 import fs from "fs"
 import path from "path"
-import { PATH, readFile, fileList, getPort, loadVars, replaceVars, COLOR } from "./utils.js"
+import { PATH, readFile, fileList, getPort, loadVars, replaceVars, COLOR }
+  from "./utils.js"
 
 const vars = loadVars("serve")
 
@@ -88,7 +89,12 @@ const injectLinks = (html) => {
 
 const getIndex = (res) => {
   let html = readFile("index.html");
-  if(!html) {
+  if(html) {
+    console.warn(
+      `Serving production version of app from ${COLOR.orange}index.html${COLOR.end}`
+    )
+  }
+  else {
     html = readFile("app.html");
     if(!html) return false;
     html = injectLinks(html)
