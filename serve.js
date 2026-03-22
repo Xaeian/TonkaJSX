@@ -1,10 +1,8 @@
 import http from "http"
 import fs from "fs"
 import path from "path"
-import { PATH, readFile, fileList, getPort, loadVars, replaceVars, COLOR }
+import { PATH, readFile, fileList, getPort, loadVars, replaceVars, COLOR, hasFlag }
   from "./utils.js"
-
-const vars = loadVars("serve")
 
 const mimeTypes = {
   ".html": "text/html; charset=utf-8",
@@ -87,7 +85,7 @@ const injectLinks = (html) => {
   )
 }
 
-const getIndex = (res) => {
+const getIndex = (res, vars) => {
   let html = readFile("index.html");
   if(html) {
     console.warn(
@@ -110,12 +108,21 @@ const getIndex = (res) => {
 
 const TEXT_EXTS = new Set([".html", ".htm", ".css", ".js", ".jsx"])
 
+if(hasFlag("-d", "--delete")) {
+  const fp = path.join(PATH, "index.html")
+  if(fs.existsSync(fp)) {
+    fs.unlinkSync(fp)
+    console.log(`Deleted ${COLOR.orange}index.html${COLOR.reset}`)
+  }
+}
+
 const server = http.createServer((req, res) => {
+  const vars = loadVars("serve")
   const start = Date.now()
   const urlPath = getUrlPath(req)
   const noExt = !(path.posix.basename(urlPath)).includes(".")
   if(urlPath === "/" || noExt) {
-    const index = getIndex(res);
+    const index = getIndex(res, vars);
     if(!index) {
       res.writeHead(500, { "Content-Type": "text/plain; charset=utf-8" })
       res.end("Server error: missing index.html")

@@ -84,6 +84,19 @@ export function getBasePath(ignore = ["node_modules"], dirname = null) {
 export const PATH = getBasePath()
 
 /**
+ * Check if any of the given flags is present in CLI args.
+ * Stops parsing at `--` (same convention as `getPort`).
+ * @param {...string} names Flag names to look for (e.g. "-d", "--delete").
+ * @returns {boolean}
+ */
+export function hasFlag(...names) {
+  const argv = process.argv.slice(2)
+  const stop = argv.indexOf("--")
+  const a = stop >= 0 ? argv.slice(0, stop) : argv
+  return names.some(n => a.includes(n))
+}
+
+/**
  * Read UTF-8 text file.
  * Accepts path relative to project root `PATH` or absolute path.
  * Returns `null` when file does not exist (ENOENT).
