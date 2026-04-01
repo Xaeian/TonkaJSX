@@ -1,6 +1,6 @@
 const Hero = () => (
   <section class="hero">
-    <h1><img src="tonka.svg" alt="" width="50" height="50" />onka<code>JSX</code></h1>
+    <h1><img src="tonka.svg" alt="T" width="50" height="50" />onka<code>JSX</code></h1>
     <p class="tagline">Like Vanilla<code>JS</code> but with a hint of <code>JSX</code></p>
     <p class="desc">
       Lightweight <i>(and probably a bit unfinished)</i> <b>frontend framework</b>.
