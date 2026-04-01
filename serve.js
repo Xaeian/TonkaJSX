@@ -89,7 +89,7 @@ const getIndex = (res, vars) => {
   let html = readFile("index.html");
   if(html) {
     console.warn(
-      `Serving production version of app from ${COLOR.orange}index.html${COLOR.end}`
+      `Serving production version of app from ${COLOR.orange}index.html${COLOR.reset}`
     )
   }
   else {

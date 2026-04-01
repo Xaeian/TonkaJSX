@@ -1,5 +1,6 @@
 node_modules/
 /*/
 !/demo/
+demo/index.html
 /*.ico
 /*.ini
