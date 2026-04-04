@@ -2,10 +2,15 @@ import fs from "fs"
 import path from "path"
 import http from "http"
 import https from "https"
-import { PATH, readFile, fileList, loadVars, replaceVars, COLOR } from "./utils.js"
+import { PATH, readFile, fileList, loadVars, replaceVars, hasFlag, getFlagValues, COLOR } from "./utils.js"
 
-const ARGS = new Set(process.argv.slice(2))
-const INLINE_REMOTE = ARGS.has("--inline-remote") || ARGS.has("-i")
+const INLINE_REMOTE = hasFlag("--inline-remote", "-i")
+const FONTS_INLINE = hasFlag("--fonts", "-f")
+const SVG_INLINE = hasFlag("--svg", "-s")
+const COMPRESS = hasFlag("--compress", "-c")
+const SUBSET_TEXT = getFlagValues("--subset-text", "-t")
+const SUBSET_LIGATURE = getFlagValues("--subset-ligature", "-l")
+const FONTS = FONTS_INLINE || SUBSET_TEXT.length > 0 || SUBSET_LIGATURE.length > 0
 
 class Log {
   static c = COLOR
@@ -127,20 +132,6 @@ async function minifyJs(js) {
         defaults: true,
         passes: 3,
         toplevel: true,
-        dead_code: true,
-        drop_debugger: true,
-        conditionals: true,
-        booleans: true,
-        loops: true,
-        if_return: true,
-        join_vars: true,
-        sequences: true,
-        reduce_funcs: true,
-        reduce_vars: true,
-        comparisons: true,
-        evaluate: true,
-        hoist_funs: true,
-        hoist_vars: false,
         keep_fargs: false
       },
       mangle: {
@@ -254,13 +245,199 @@ async function fetchMany(urls, label) {
   return out.join("\n")
 }
 
+//---------------------------------------------------------------------------- Font inline (-f)
+
+const FONT_MAX_KB = 500
+
+async function processFonts(css, fontDir, subsetText, subsetLigature, srcDir) {
+  const faces = []
+  const cssBody = css.replace(/@font-face\s*\{[^}]+\}/g, block => {
+    faces.push(block); return ""
+  })
+  if(!faces.length) return css
+
+  // Detect used font-family names (check if defined name appears in rest of CSS)
+  const defined = new Set()
+  for(const f of faces) {
+    const fam = f.match(/font-family:\s*["']?([^"';,}]+)/)?.[1]?.trim().replace(/["']/g, "")
+    if(fam) defined.add(fam)
+  }
+  const usedFamilies = new Set()
+  for(const fam of defined) {
+    if(cssBody.includes(fam)) usedFamilies.add(fam)
+  }
+
+  // Detect used weights (shorthand `font: 500 11px` + `font-weight: 600`)
+  const usedWeights = new Set(["400"])
+  for(const m of cssBody.matchAll(/font-weight:\s*(\d+)/g)) usedWeights.add(m[1])
+  for(const m of cssBody.matchAll(/font:\s*(\d{3})\b/g)) usedWeights.add(m[1])
+  // Detect italic usage (`font-style: italic` or shorthand `font: italic ...`)
+  const usesItalic = /font-style:\s*italic/i.test(cssBody)
+    || /font:\s*italic\b/i.test(cssBody)
+
+  // Filter @font-face to only used entries
+  let kept = 0, skipped = 0
+  const keptFaces = faces.filter(block => {
+    const fam = block.match(/font-family:\s*["']?([^"';,}]+)/)?.[1]?.trim().replace(/["']/g, "")
+    const wm = block.match(/font-weight:\s*(\d+)(?:\s+(\d+))?/)
+    const style = block.match(/font-style:\s*(\w+)/)?.[1] || "normal"
+    if(!fam || !usedFamilies.has(fam)) { skipped++; return false }
+    if(style === "italic" && !usesItalic) { skipped++; return false }
+    if(wm && !wm[2] && !usedWeights.has(wm[1])) { skipped++; return false }
+    kept++; return true
+  })
+
+  Log.ok(`Fonts:${kept} (${skipped} skipped)`)
+  for(const f of keptFaces) {
+    const fam = f.match(/font-family:\s*["']?([^"';,}]+)/)?.[1]?.trim()
+    const wm = f.match(/font-weight:\s*(\d+)(?:\s+(\d+))?/)
+    const w = wm ? (wm[2] ? `${wm[1]}-${wm[2]}` : wm[1]) : "400"
+    const s = f.match(/font-style:\s*(\w+)/)?.[1] || "normal"
+    Log.info(`+ ${fam} ${w}${s === "italic" ? " italic" : ""}`)
+  }
+
+  // Load `subset-font` if any subset requested
+  const needSubset = subsetText.length > 0 || subsetLigature.length > 0
+  let subsetFn = null
+  if(needSubset) {
+    try {
+      const mod = await import("subset-font")
+      subsetFn = mod.default || mod
+    } catch {
+      Log.warn("subset-font missing: fonts not subsetted")
+      Log.run("npm i -D subset-font")
+    }
+  }
+
+  // Collect subset sources
+  let ligatureText = null, charText = null
+  if(subsetFn && needSubset) {
+    const srcFiles = fileList(srcDir, [".js", ".jsx"])
+    const rawSrc = srcFiles
+      .map(f => readFile(path.join(srcDir, ...f.split(/[\\/]+/))) || "").join("\n")
+    if(subsetLigature.length) {
+      const icons = new Set()
+      // JSX: <span class="icon">name</span> (only valid icon names: lowercase + underscore)
+      for(const m of rawSrc.matchAll(/class=["'][^"']*\bicon\b[^"']*["'][^>]*>([a-z][a-z_]*)</g))
+        icons.add(m[1].trim())
+      // Data: { icon: "name" }
+      for(const m of rawSrc.matchAll(/\bicon:\s*["']([a-z][a-z_]*)["']/g))
+        icons.add(m[1])
+      ligatureText = [...icons].join("\n")
+      Log.info(`  ligatures: ${icons.size} (${[...icons].slice(0, 12).join(", ")}${icons.size > 12 ? "…" : ""})`)
+    }
+    if(subsetText.length) {
+      charText = [...new Set(rawSrc)].join("")
+      Log.info(`  text chars: ${charText.length} unique`)
+    }
+  }
+
+  // Inline woff2 as base64 (+ optional subset)
+  const inlined = []
+  for(const block of keptFaces) {
+    const fam = block.match(/font-family:\s*["']?([^"';,}]+)/)?.[1]?.trim().replace(/["']/g, "")
+    const srcMatch = block.match(/url\(["']?([^"')]+)["']?\)/)
+    if(!srcMatch) { inlined.push(block); continue }
+    const basename = path.basename(srcMatch[1])
+    const fp = path.join(fontDir, basename)
+    if(!fs.existsSync(fp)) {
+      Log.warn(`Font missing: ${basename}`)
+      inlined.push(block); continue
+    }
+    let buf = fs.readFileSync(fp)
+    let wasSubsetted = false
+    // Subset if requested for this font family
+    if(subsetFn) {
+      let text = null
+      if(subsetLigature.includes(fam)) text = ligatureText
+      else if(subsetText.includes(fam)) text = charText
+      if(text) {
+        const b0 = buf.length
+        try {
+          buf = await subsetFn(buf, text, { targetFormat: "woff2" })
+          wasSubsetted = true
+          Log.info(`  subset: ${basename} ${(b0 / 1024).toFixed(1)}KB → ${(buf.length / 1024).toFixed(1)}KB`)
+        } catch(e) {
+          Log.warn(`  subset failed: ${basename} (${e?.message || e})`)
+        }
+      }
+    }
+    const sizeKB = buf.length / 1024
+    if(!wasSubsetted && sizeKB > FONT_MAX_KB) {
+      Log.warn(`Font too large: ${basename} (${sizeKB.toFixed(0)}KB > ${FONT_MAX_KB}KB) ${COLOR.gray}(skipped)${COLOR.reset}`)
+      continue
+    }
+    const mime = basename.endsWith(".woff2") ? "font/woff2"
+      : basename.endsWith(".woff") ? "font/woff" : "font/ttf"
+    Log.info(`  inline: ${basename} (${sizeKB.toFixed(1)}KB)`)
+    inlined.push(block.replace(srcMatch[0], `url(data:${mime};base64,${buf.toString("base64")})`))
+  }
+  return inlined.join("\n") + "\n" + cssBody
+}
+
+//----------------------------------------------------------------------------- SVG inline (-s)
+
+async function inlineSvgs(code, baseDir) {
+  const refs = new Set()
+  for(const m of code.matchAll(/["']([^"']*\.svg)["']/g)) refs.add(m[1])
+  if(!refs.size) return code
+  let optimize = null
+  try {
+    const svgo = await import("svgo")
+    optimize = (s) => svgo.optimize(s, {
+      multipass: true,
+      plugins: ["preset-default"]
+    }).data
+  } catch {
+    Log.warn("svgo missing: SVGs not optimized")
+    Log.run("npm i -D svgo")
+  }
+  for(const ref of refs) {
+    const fp = path.join(baseDir, ref)
+    if(!fs.existsSync(fp)) continue
+    let svg = fs.readFileSync(fp, "utf8")
+    const b0 = bytes(svg)
+    if(optimize) svg = optimize(svg)
+    const uri = `data:image/svg+xml,${encodeURIComponent(svg)}`
+    code = code.split(`"${ref}"`).join(`"${uri}"`)
+    code = code.split(`'${ref}'`).join(`'${uri}'`)
+    Log.ok(`SVG inline: ${ref} (${b0} → ${bytes(svg)})`)
+  }
+  return code
+}
+
+//------------------------------------------------------------------------ Pre-compression (-c)
+
+async function precompress(filePath) {
+  const { gzip, brotliCompress, constants } = await import("node:zlib")
+  const { promisify } = await import("node:util")
+  const gz = promisify(gzip)
+  const br = promisify(brotliCompress)
+  const input = fs.readFileSync(filePath)
+  const gzipped = await gz(input, { level: constants.Z_BEST_COMPRESSION })
+  fs.writeFileSync(filePath + ".gz", gzipped)
+  const brotlied = await br(input, { params: {
+    [constants.BROTLI_PARAM_MODE]: constants.BROTLI_MODE_TEXT,
+    [constants.BROTLI_PARAM_QUALITY]: constants.BROTLI_MAX_QUALITY,
+    [constants.BROTLI_PARAM_SIZE_HINT]: input.length,
+  }})
+  fs.writeFileSync(filePath + ".br", brotlied)
+  const fmt = (b) => (b / 1024).toFixed(1) + "KB"
+  Log.ok(`Compress: ${fmt(input.length)} → gz:${fmt(gzipped.length)} br:${fmt(brotlied.length)}`)
+}
+
 async function build()
 {
   Log.head(`Build ${COLOR.gray}${PATH}${COLOR.reset}`)
   const vars = loadVars("build")
   if(Object.keys(vars).length)
     Log.ok(`Vars:${Object.keys(vars).length} (${Object.keys(vars).join(", ")})`)
-  if(INLINE_REMOTE) Log.warn("--inline-remote enabled")
+  if(INLINE_REMOTE) Log.warn("-i inline-remote enabled")
+  if(FONTS) Log.ok("-f fonts enabled")
+  if(SVG_INLINE) Log.ok("-s svg enabled")
+  if(COMPRESS) Log.ok("-c compress enabled")
+  if(SUBSET_TEXT.length) Log.ok(`-t subset-text: ${SUBSET_TEXT.join(", ")}`)
+  if(SUBSET_LIGATURE.length) Log.ok(`-l subset-ligature: ${SUBSET_LIGATURE.join(", ")}`)
   const indexPath = path.join(PATH, "app.html")
   if(!fs.existsSync(indexPath)) throw new Error("app.html not found in PATH")
   let html = readFile(indexPath)
@@ -300,6 +477,12 @@ async function build()
     const b0 = bytes(cssBundle)
     cssBundle = await minifyCssSmart(cssBundle)
     Log.ok(`CSS min: ${b0} → ${bytes(cssBundle)}`)
+    if(FONTS) {
+      const fontDir = path.join(PATH, "fonts")
+      if(fs.existsSync(fontDir))
+        cssBundle = await processFonts(cssBundle, fontDir, SUBSET_TEXT, SUBSET_LIGATURE, path.join(PATH, "scripts"))
+      else Log.warn("fonts/ dir not found, skipping font inline")
+    }
   }
   else Log.warn("CSS bundle empty")
   const jsDir = path.join(PATH, "scripts")
@@ -362,6 +545,7 @@ async function build()
     else Log.warn("Babel returned empty output")
   }
   else Log.warn("JS bundle empty")
+  if(SVG_INLINE && jsBundle) jsBundle = await inlineSvgs(jsBundle, PATH)
   html = removeExternalTags(html)
 
   if(cssBundle) {
@@ -382,6 +566,7 @@ async function build()
   const outPath = path.join(PATH, "index.html")
   fs.writeFileSync(outPath, html, "utf8")
   Log.ok(`Wrote ${COLOR.gray}${outPath}${COLOR.reset}`)
+  if(COMPRESS) await precompress(outPath)
 }
 
 build().catch((e)=>{

@@ -178,6 +178,28 @@ export function loadVars(section) {
 }
 
 /**
+ * Collect values for a repeated flag (e.g. `--subset-text "Inter" -t "Mono"`).
+ * Supports `--flag value` and `--flag=value` forms.
+ * @param {...string} flags Flag names (e.g. "--subset-text", "-t").
+ * @returns {string[]}
+ */
+export function getFlagValues(...flags) {
+  const argv = process.argv.slice(2)
+  const stop = argv.indexOf("--")
+  const a = stop >= 0 ? argv.slice(0, stop) : argv
+  const vals = []
+  for(let i = 0; i < a.length; i++) {
+    if(flags.includes(a[i]) && i + 1 < a.length && !a[i+1].startsWith("-")) {
+      vals.push(a[++i]); continue
+    }
+    for(const f of flags) {
+      if(a[i].startsWith(f + "=")) { vals.push(a[i].slice(f.length + 1)); break }
+    }
+  }
+  return vals
+}
+
+/**
  * Replace `{{key}}` placeholders in content.
  * Undefined keys → warning + empty string.
  * @param {string} content

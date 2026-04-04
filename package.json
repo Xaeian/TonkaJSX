@@ -1,7 +1,9 @@
 {
   "name": "tonka",
   "type": "module",
-  "bin": { "tonka": "./tonka.js" },
+  "bin": {
+    "tonka": "./tonka.js"
+  },
   "devDependencies": {
     "@babel/core": "^7.28.5",
     "@babel/plugin-transform-react-jsx": "^7.27.1",
@@ -9,6 +11,8 @@
     "@tailwindcss/postcss": "^4.1.18",
     "lightningcss": "^1.30.2",
     "postcss": "^8.5.6",
+    "subset-font": "^2.5.0",
+    "svgo": "^4.0.1",
     "tailwindcss": "^4.1.18",
     "terser": "^5.44.1"
   }

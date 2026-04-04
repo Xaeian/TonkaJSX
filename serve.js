@@ -86,15 +86,15 @@ const injectLinks = (html) => {
 }
 
 const getIndex = (res, vars) => {
-  let html = readFile("index.html");
+  let html = readFile("index.html")
   if(html) {
     console.warn(
       `Serving production version of app from ${COLOR.orange}index.html${COLOR.reset}`
     )
   }
   else {
-    html = readFile("app.html");
-    if(!html) return false;
+    html = readFile("app.html")
+    if(!html) return false
     html = injectLinks(html)
   }
   html = replaceVars(html, vars)
@@ -120,9 +120,9 @@ const server = http.createServer((req, res) => {
   const vars = loadVars("serve")
   const start = Date.now()
   const urlPath = getUrlPath(req)
-  const noExt = !(path.posix.basename(urlPath)).includes(".")
+  const noExt = !path.posix.basename(urlPath).includes(".")
   if(urlPath === "/" || noExt) {
-    const index = getIndex(res, vars);
+    const index = getIndex(res, vars)
     if(!index) {
       res.writeHead(500, { "Content-Type": "text/plain; charset=utf-8" })
       res.end("Server error: missing index.html")
