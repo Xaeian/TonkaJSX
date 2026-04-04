@@ -5,6 +5,7 @@ const App = () => (
     <Structure />
     <Install />
     <Usage />
+    <BuildFlags />
     <Example />
     <Comparison />
     <Footer />

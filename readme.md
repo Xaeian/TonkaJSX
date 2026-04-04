@@ -11,7 +11,7 @@ The structure is partly opinionated, but not too strict.
 ```
 ROOT/                  (your workspace folder; name doesn't matter)
 ├─ tonka.js            (CLI entry: `tonka serve` / `tonka build`)
-├─ build.js            (packs project into production `prod.html`)
+├─ build.js            (packs project into production `index.html`)
 ├─ serve.js            (dev server; serves `index.html` if exists else `app.html` + injected links)
 ├─ utils.js            (shared helpers for `build.js` + `serve.js`)
 ├─ package.json        (npm config + `bin` for CLI)
@@ -37,17 +37,34 @@ ROOT/                  (your workspace folder; name doesn't matter)
 
 After `install` and `link` that **tonka** command works globally.
 
-```bash
+```sh
 npm install
 npm link
 ```
 
 The framework consists of two scripts: a development **server** and a **build** tool.
 
-```bash
+```sh
 tonka serve [<project-name>] [--port|-p <port>]  # start the development server
-tonka build [<project-name>] [--inline-remote|-i] # build the deploy version of the project
+tonka build [<project-name>] [options] # build the deploy version of the project
 ```
+
+Build supports optional optimization flags:
+
+```sh
+tonka build -i -f -s -c -l "Material Symbols"
+```
+
+| Flag | Long | What it does |
+|:-----|:-----|:-------------|
+| `-i` | `--inline-remote` | Inline remote CSS/JS from CDN |
+| `-f` | `--fonts` | Drop unused `@font-face`, inline remaining as base64 |
+| `-s` | `--svg` | Inline SVGs as data URIs (optimized with SVGO) |
+| `-c` | `--compress` | Generate `.gz` + `.br` alongside `index.html` |
+| `-t` | `--subset-text "Name"` | Subset text font to chars found in source |
+| `-l` | `--subset-ligature "Name"` | Subset icon font to ligatures found in source |
+
+`-t` and `-l` imply `-f`. Without flags, build works the same as before.
 
 Server and build work on the chosen project. If you don't pass a project name, it picks the first one _(useful when you only have one)_.
 If the project contains `app.ini`, variables defined there are replaced in all JS/JSX/CSS/HTML files using `{{key}}` syntax. Top-level values are shared; `[serve]` and `[build]` sections override per mode.

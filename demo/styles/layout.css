@@ -5,6 +5,7 @@
   border-bottom: 1px solid var(--brd);
 }
 .hero h1 { font-size: 2.6rem; letter-spacing: -0.02em; }
+.hero h1 code { padding-right: 0.3em; }
 .tagline { color: var(--acc); font-size: 1.1rem; margin: 12px 0; }
 .desc { font-size: 0.9rem; max-width: 555px; margin: 0 auto 8px; }
 .desc s { color: var(--dim); }

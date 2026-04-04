@@ -18,15 +18,7 @@ body {
   line-height: 1.6;
 }
 
-.app {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 60px 20px 40px;
-}
-
-.hero h1 code {
-  padding-right: 0.3em;
-}
+.app { max-width: 900px; margin: 0 auto; padding: 60px 20px 40px; }
 
 code {
   font-family: monospace;

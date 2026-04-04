@@ -10,8 +10,8 @@ const Footer = () => {
   footerFirst = true;
   return (
     <footer class="footer">
-      <Item>© Xaeian <a class="footer-link" href="https://github.com/Xaeian">GitHub</a></Item>
-      <Item>Like Vanilla but JSX</Item>
+      <Item>TonkaJSX {{ver}}</Item>
+      <Item>Xaeian ©<a class="footer-link" href="https://github.com/Xaeian">GitHub</a></Item>
       <Item>{{foot}} with<a class="footer-link" href="{{link}}">TonkaJSX</a></Item>
     </footer>
   );

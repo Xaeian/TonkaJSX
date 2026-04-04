@@ -12,7 +12,7 @@ const Usage = () => {
       <p class="subdesc">Start demo/project with <code>tonka serve</code> and build deploy version with <code>tonka build</code></p>
       <div class="code-block">
         <code>$ tonka serve [&lt;project&gt;] [--port|-p &lt;port&gt;]</code>
-        <code>$ tonka build [&lt;project&gt;] [--inline-remote|-i]</code>
+        <code>$ tonka build [&lt;project&gt;] [options]</code>
       </div>
       <ul>
         <li>Server and build work on the chosen project. Skip the name and it picks the first one.</li>
@@ -24,7 +24,6 @@ const Usage = () => {
         <li>Otherwise the server uses <code>app.html</code> and injects styles from <code>styles/</code> and scripts from <code>scripts/</code>.</li>
         <li>Script order: <code>.js</code> first, then <code>.jsx</code>. Deeper folders load before parents.</li>
         <li>All other files are served as static assets.</li>
-        <li>Use <code>--inline-remote</code> to embed CDN resources for offline use.</li>
       </ul>
     </Section>
   );
