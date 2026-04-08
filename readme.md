@@ -1,4 +1,4 @@
-## 🌰TonkaJSX
+# 🌰TonkaJSX
 
 Lightweight _(and probably a bit unfinished)_ **frontend framework**.
 It doesn't use ~~**modules**~~ because they make browser debugging harder, but it does support **JSX** because it's great.

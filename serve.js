@@ -1,7 +1,7 @@
 import http from "http"
 import fs from "fs"
 import path from "path"
-import { PATH, readFile, fileList, getPort, loadVars, replaceVars, COLOR, hasFlag }
+import { PATH, readFile, fileList, getPort, loadVars, replaceVars, COLOR as c, hasFlag }
   from "./utils.js"
 
 const mimeTypes = {
@@ -23,10 +23,10 @@ const mimeTypes = {
 }
 
 const statusColor = (code) => {
-  if(code >= 200 && code < 300) return COLOR.green
-  if(code >= 500) return COLOR.red
-  if(code >= 400) return COLOR.yellow
-  return COLOR.gray
+  if(code >= 200 && code < 300) return c.green
+  if(code >= 500) return c.red
+  if(code >= 400) return c.yellow
+  return c.gray
 }
 
 const logTime = () => {
@@ -43,8 +43,8 @@ function logRequest(req,res,start) {
   const time = logTime()
   const col=statusColor(res.statusCode)
   console.log(
-    `← ${req.method} ${req.url} ${col}${res.statusCode}${COLOR.reset} `+
-    `${COLOR.gray}[${time}] ${ms}ms${COLOR.reset}`
+    `← ${req.method} ${req.url} ${col}${res.statusCode}${c.reset} `+
+    `${c.gray}[${time}] ${ms}ms${c.reset}`
   )
 }
 
@@ -89,7 +89,7 @@ const getIndex = (res, vars) => {
   let html = readFile("index.html")
   if(html) {
     console.warn(
-      `Serving production version of app from ${COLOR.orange}index.html${COLOR.reset}`
+      `Serving production version of app from ${c.orange}index.html${c.reset}`
     )
   }
   else {
@@ -112,7 +112,7 @@ if(hasFlag("-d", "--delete")) {
   const fp = path.join(PATH, "index.html")
   if(fs.existsSync(fp)) {
     fs.unlinkSync(fp)
-    console.log(`Deleted ${COLOR.orange}index.html${COLOR.reset}`)
+    console.log(`Deleted ${c.orange}index.html${c.reset}`)
   }
 }
 
@@ -165,10 +165,10 @@ const server = http.createServer((req, res) => {
 
 const PORT = getPort()
 server.listen(PORT, () => {
-  console.log(`Server running at ${COLOR.blue}http://localhost:${PORT}${COLOR.reset}`)
+  console.log(`Server running at ${c.blue}http://localhost:${PORT}${c.reset}`)
 })
 
 process.on("SIGINT", () => {
-  console.log(`Server stopped ${COLOR.orange}(Ctrl+C)${COLOR.reset}`)
+  console.log(`Server stopped ${c.orange}(Ctrl+C)${c.reset}`)
   process.exit(0)
 })

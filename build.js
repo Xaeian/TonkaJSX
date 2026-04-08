@@ -2,7 +2,7 @@ import fs from "fs"
 import path from "path"
 import http from "http"
 import https from "https"
-import { PATH, readFile, fileList, loadVars, replaceVars, hasFlag, getFlagValues, COLOR } from "./utils.js"
+import { PATH, readFile, fileList, loadVars, replaceVars, hasFlag, getFlagValues, COLOR as c } from "./utils.js"
 
 const INLINE_REMOTE = hasFlag("--inline-remote", "-i")
 const FONTS_INLINE = hasFlag("--fonts", "-f")
@@ -13,13 +13,12 @@ const SUBSET_LIGATURE = getFlagValues("--subset-ligature", "-l")
 const FONTS = FONTS_INLINE || SUBSET_TEXT.length > 0 || SUBSET_LIGATURE.length > 0
 
 class Log {
-  static c = COLOR
-  static head(s) { console.log(`${this.c.blue}✦${this.c.reset} ${s}`) } 
-  static ok(s) { console.log(`${this.c.green}✔${this.c.reset} ${s}`) }
-  static warn(s) { console.log(`${this.c.yellow}!${this.c.reset} ${s}`) }
-  static err(s) { console.log(`${this.c.red}✖${this.c.reset} ${s}`) }
-  static info(s) { console.log(`${this.c.gray}${s}${this.c.reset}`) }
-  static run(s) { console.log(`${this.c.cyan}▶${this.c.reset} ${s}`) }
+  static head(s) { console.log(`${c.blue}✦${c.reset} ${s}`) }
+  static ok(s)   { console.log(`${c.green}✔${c.reset} ${s}`) }
+  static warn(s) { console.log(`${c.yellow}!${c.reset} ${s}`) }
+  static err(s)  { console.log(`${c.red}✖${c.reset} ${s}`) }
+  static info(s) { console.log(`${c.gray}${s}${c.reset}`) }
+  static run(s)  { console.log(`${c.cyan}▶${c.reset} ${s}`) }
 }
 
 const bytes = (s) => Buffer.byteLength(String(s || ""), "utf8")
@@ -317,12 +316,18 @@ async function processFonts(css, fontDir, subsetText, subsetLigature, srcDir) {
       .map(f => readFile(path.join(srcDir, ...f.split(/[\\/]+/))) || "").join("\n")
     if(subsetLigature.length) {
       const icons = new Set()
-      // JSX: <span class="icon">name</span> (only valid icon names: lowercase + underscore)
-      for(const m of rawSrc.matchAll(/class=["'][^"']*\bicon\b[^"']*["'][^>]*>([a-z][a-z_]*)</g))
+      const NAME = "[a-z][a-z0-9_]*"
+      // JSX: <span class="icon">name</span>
+      for(const m of rawSrc.matchAll(new RegExp(`class=["'][^"']*\\bicon\\b[^"']*["'][^>]*>(${NAME})<`, "g")))
         icons.add(m[1].trim())
       // Data: { icon: "name" }
-      for(const m of rawSrc.matchAll(/\bicon:\s*["']([a-z][a-z_]*)["']/g))
+      for(const m of rawSrc.matchAll(new RegExp(`\\bicon:\\s*["'](${NAME})["']`, "g")))
         icons.add(m[1])
+      // Arrays: const *ICON[S] = ["name", ...] — variable name must end in ICON or ICONS
+      for(const m of rawSrc.matchAll(/\b\w*ICONS?\s*=\s*\[([\s\S]*?)\]/gi)) {
+        for(const s of m[1].matchAll(new RegExp(`["'](${NAME})["']`, "g")))
+          icons.add(s[1])
+      }
       ligatureText = [...icons].join("\n")
       Log.info(`  ligatures: ${icons.size} (${[...icons].slice(0, 12).join(", ")}${icons.size > 12 ? "…" : ""})`)
     }
@@ -364,7 +369,7 @@ async function processFonts(css, fontDir, subsetText, subsetLigature, srcDir) {
     }
     const sizeKB = buf.length / 1024
     if(!wasSubsetted && sizeKB > FONT_MAX_KB) {
-      Log.warn(`Font too large: ${basename} (${sizeKB.toFixed(0)}KB > ${FONT_MAX_KB}KB) ${COLOR.gray}(skipped)${COLOR.reset}`)
+      Log.warn(`Font too large: ${basename} (${sizeKB.toFixed(0)}KB > ${FONT_MAX_KB}KB) ${c.gray}(skipped)${c.reset}`)
       continue
     }
     const mime = basename.endsWith(".woff2") ? "font/woff2"
@@ -428,7 +433,7 @@ async function precompress(filePath) {
 
 async function build()
 {
-  Log.head(`Build ${COLOR.gray}${PATH}${COLOR.reset}`)
+  Log.head(`Build ${c.gray}${PATH}${c.reset}`)
   const vars = loadVars("build")
   if(Object.keys(vars).length)
     Log.ok(`Vars:${Object.keys(vars).length} (${Object.keys(vars).join(", ")})`)
@@ -565,7 +570,7 @@ async function build()
   html = replaceVars(html, vars)
   const outPath = path.join(PATH, "index.html")
   fs.writeFileSync(outPath, html, "utf8")
-  Log.ok(`Wrote ${COLOR.gray}${outPath}${COLOR.reset}`)
+  Log.ok(`Wrote ${c.gray}${outPath}${c.reset}`)
   if(COMPRESS) await precompress(outPath)
 }
 
