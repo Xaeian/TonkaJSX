@@ -1,13 +1,13 @@
 ## Changes TonkaJSX
 
-- `1.1.0` Build optimization flags:
+### `1.1.0` Build optimization flags:
 
 - `-f` font filter + inline base64 _(unused `@font-face` dropped)_
 - `-s` SVG inline via SVGO
 - `-c` gzip + brotli pre-compression
 - `-t "Name"` / `-l "Name"` font subsetting _(text / ligature)_
 
-- `1.0.0` Stable version
+### `1.0.0` Stable version
 
 Lightweight **JSX** framework for small sites, prototypes, and internal tools. No modules, no bundler, just scripts in the browser.
 
