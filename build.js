@@ -540,7 +540,7 @@ async function build()
     const src = replaceVars(rawJS, vars)
     const { transformSync, jsxPlugin } = await loadBabel()
     Log.ok("Babel: JSX → JS")
-    const out = transformSync(src, { babelrc: false, configFile: false, sourceType: "unambiguous", comments: false, plugins: [[jsxPlugin, { pragma: "JSX.createElement", pragmaFrag: "JSX.createFragment", throwIfNamespace: false }]] })
+    const out = transformSync(src, { babelrc: false, configFile: false, sourceType: "unambiguous", comments: false, plugins: [[jsxPlugin, { pragma: "JSX.createElement", pragmaFrag: "JSX.Fragment", throwIfNamespace: false }]] })
     jsBundle = out?.code || ""
     if(jsBundle){
       const b0 = bytes(jsBundle)

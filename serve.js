@@ -151,7 +151,7 @@ const server = http.createServer((req, res) => {
       let src = data.toString("utf8")
       src = replaceVars(src, vars)
       if(ext === ".jsx")
-        src = `/** @jsx JSX.createElement */\n/** @jsxFrag JSX.createFragment */\n\n${src}`
+        src = `/** @jsx JSX.createElement */\n/** @jsxFrag JSX.Fragment */\n\n${src}`
       body = Buffer.from(src)
     }
     res.writeHead(200,{

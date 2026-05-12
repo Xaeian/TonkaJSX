@@ -8,8 +8,7 @@ const ROOT = path.dirname(url.fileURLToPath(import.meta.url))
 
 const cmd = process.argv[2]
 const rest = process.argv.slice(3)
-const wantHelp = !cmd || cmd === "-h" || cmd === "--help"
-              || rest.includes("-h") || rest.includes("--help")
+const wantHelp = !cmd || cmd === "-h" || cmd === "--help" || rest.includes("-h") || rest.includes("--help")
 
 if((cmd === "serve" || cmd === "build") && !wantHelp) {
   process.argv.splice(2, 1)
