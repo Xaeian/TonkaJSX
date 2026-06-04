@@ -17,7 +17,7 @@ class Log {
   static ok(s)   { console.log(`${c.green}✔${c.reset} ${s}`) }
   static warn(s) { console.log(`${c.yellow}!${c.reset} ${s}`) }
   static err(s)  { console.log(`${c.red}✖${c.reset} ${s}`) }
-  static info(s) { console.log(`${c.gray}${s}${c.reset}`) }
+  static info(s) { console.log(`${c.grey}${s}${c.reset}`) }
   static run(s)  { console.log(`${c.cyan}▶${c.reset} ${s}`) }
 }
 
@@ -369,7 +369,7 @@ async function processFonts(css, fontDir, subsetText, subsetLigature, srcDir) {
     }
     const sizeKB = buf.length / 1024
     if(!wasSubsetted && sizeKB > FONT_MAX_KB) {
-      Log.warn(`Font too large: ${basename} (${sizeKB.toFixed(0)}KB > ${FONT_MAX_KB}KB) ${c.gray}(skipped)${c.reset}`)
+      Log.warn(`Font too large: ${basename} (${sizeKB.toFixed(0)}KB > ${FONT_MAX_KB}KB) ${c.grey}(skipped)${c.reset}`)
       continue
     }
     const mime = basename.endsWith(".woff2") ? "font/woff2"
@@ -433,7 +433,7 @@ async function precompress(filePath) {
 
 async function build()
 {
-  Log.head(`Build ${c.gray}${PATH}${c.reset}`)
+  Log.head(`Build ${c.grey}${PATH}${c.reset}`)
   const vars = loadVars("build")
   if(Object.keys(vars).length)
     Log.ok(`Vars:${Object.keys(vars).length} (${Object.keys(vars).join(", ")})`)
@@ -570,7 +570,7 @@ async function build()
   html = replaceVars(html, vars)
   const outPath = path.join(PATH, "index.html")
   fs.writeFileSync(outPath, html, "utf8")
-  Log.ok(`Wrote ${c.gray}${outPath}${c.reset}`)
+  Log.ok(`Wrote ${c.grey}${outPath}${c.reset}`)
   if(COMPRESS) await precompress(outPath)
 }
 

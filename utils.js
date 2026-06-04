@@ -4,7 +4,7 @@ import url from "url"
 
 export const COLOR = {
   reset: "\x1b[0m",
-  gray: "\x1b[90m",
+  grey: "\x1b[90m",
   green: "\x1b[32m",
   yellow: "\x1b[33m",
   red: "\x1b[31m",
@@ -51,7 +51,7 @@ const OPTS_WITH_VALUE = new Set(["-p", "--port" /*, "--host", "--root", ... */])
 
 /**
  * Get target directory.
- * - If argv[2] exists -> resolve it from `dirname` and use it.
+ * - If argv[2] exists -> resolve it from `dirname` and use it (exits if missing).
  * - Else -> pick preferred dir name (web/public/site/app/src), otherwise first directory.
  * - Skips hidden dirs and ignored names.
  * @param {string[]} [ignore=["node_modules"]] Directory names to ignore.
@@ -70,7 +70,15 @@ export function getBasePath(ignore = ["node_modules"], dirname = null) {
     if(a.startsWith("-")) continue
     argPath = a; break
   }
-  if(argPath) return path.resolve(dirname, argPath)
+  if(argPath) {
+    const resolved = path.resolve(dirname, argPath)
+    // named folder must exist; serve/build fail loudly instead of running on a missing dir
+    if(!fs.existsSync(resolved) || !fs.statSync(resolved).isDirectory()) {
+      console.log(`${COLOR.red}Folder not found${COLOR.grey}:${COLOR.reset} ${argPath}`)
+      process.exit(1)
+    }
+    return resolved
+  }
   const prefer = ["web", "public", "site", "app", "src"]
   const dirs = fs.readdirSync(dirname,{withFileTypes:true})
     .filter(d => d.isDirectory() && !d.name.startsWith(".") && !ignore.includes(d.name))

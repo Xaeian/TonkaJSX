@@ -1,5 +1,6 @@
 {
   "name": "tonka",
+  "version": "1.1.1",
   "type": "module",
   "bin": {
     "tonka": "./tonka.js"

@@ -5,10 +5,14 @@ import path from "path"
 import url from "url"
 
 const ROOT = path.dirname(url.fileURLToPath(import.meta.url))
+const { version } = JSON.parse(fs.readFileSync(path.join(ROOT, "package.json"), "utf8"))
 
 const cmd = process.argv[2]
 const rest = process.argv.slice(3)
 const wantHelp = !cmd || cmd === "-h" || cmd === "--help" || rest.includes("-h") || rest.includes("--help")
+const wantVersion = cmd === "-v" || cmd === "--version" || rest.includes("-v") || rest.includes("--version")
+
+if(wantVersion) { console.log(version); process.exit(0) }
 
 if((cmd === "serve" || cmd === "build") && !wantHelp) {
   process.argv.splice(2, 1)
@@ -28,15 +32,15 @@ function help() {
   const projects = listProjects()
   const plist = projects.length
     ? projects.map(p => `  ${c.green}•${c.reset} ${p}`).join("\n")
-    : `  ${c.gray}(none: create a folder with app.html)${c.reset}`
+    : `  ${c.grey}(none: create a folder with app.html)${c.reset}`
   console.log(`
-${c.cyan}TonkaJSX${c.reset}: lightweight JSX frontend framework
+${c.cyan}TonkaJSX${c.reset} ${c.grey}${version}${c.reset}: lightweight JSX frontend framework
 
-${c.gray}Usage:${c.reset}
-  ${c.yellow}tonka${c.reset} serve [<${c.green}project${c.reset}>] [${c.blue}-p${c.reset} <${c.gray}port${c.reset}>]  start dev server
+${c.grey}Usage:${c.reset}
+  ${c.yellow}tonka${c.reset} serve [<${c.green}project${c.reset}>] [${c.blue}-p${c.reset} <${c.grey}port${c.reset}>]  start dev server
   ${c.yellow}tonka${c.reset} build [<${c.green}project${c.reset}>] [${c.blue}options${c.reset}]    build production index.html
 
-${c.gray}Build options:${c.reset}
+${c.grey}Build options:${c.reset}
   ${c.blue}-i${c.reset}, --inline-remote           inline remote CSS/JS from CDN
   ${c.blue}-f${c.reset}, --fonts                   drop unused @font-face, inline as base64
   ${c.blue}-s${c.reset}, --svg                     inline SVGs as data URIs
@@ -44,8 +48,9 @@ ${c.gray}Build options:${c.reset}
   ${c.blue}-t${c.reset}, --subset-text ${c.orange}"Name"${c.reset}      subset text font to chars in source
   ${c.blue}-l${c.reset}, --subset-ligature ${c.orange}"Name"${c.reset}  subset icon font to ligatures in source
   ${c.blue}-h${c.reset}, --help                    show this message
+  ${c.blue}-v${c.reset}, --version                 show version
 
-${c.gray}Projects(${c.green}${projects.length}${c.gray}):${c.reset}
+${c.grey}Projects(${c.green}${projects.length}${c.grey}):${c.reset}
 ${plist}
 `)
 }

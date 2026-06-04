@@ -1,5 +1,10 @@
 ## Changes TonkaJSX
 
+### `1.1.1` CLI:
+
+- `-v` / `--version`
+- `serve` / `build` fail on missing folder
+
 ### `1.1.0` Build optimization flags:
 
 - `-f` font filter + inline base64 _(unused `@font-face` dropped)_

@@ -26,7 +26,7 @@ const statusColor = (code) => {
   if(code >= 200 && code < 300) return c.green
   if(code >= 500) return c.red
   if(code >= 400) return c.yellow
-  return c.gray
+  return c.grey
 }
 
 const logTime = () => {
@@ -44,7 +44,7 @@ function logRequest(req,res,start) {
   const col=statusColor(res.statusCode)
   console.log(
     `← ${req.method} ${req.url} ${col}${res.statusCode}${c.reset} `+
-    `${c.gray}[${time}] ${ms}ms${c.reset}`
+    `${c.grey}[${time}] ${ms}ms${c.reset}`
   )
 }
 
