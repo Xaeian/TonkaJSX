@@ -1,9 +1,9 @@
 ## Changes TonkaJSX
 
-### `1.1.1` CLI:
+### `1.1.1` Version flag + folder guard:
 
-- `-v` / `--version`
-- `serve` / `build` fail on missing folder
+- `-v` / `--version` command
+- `serve` / `build` fail on missing folder/project
 
 ### `1.1.0` Build optimization flags:
 
