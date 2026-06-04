@@ -12,7 +12,7 @@ const rest = process.argv.slice(3)
 const wantHelp = !cmd || cmd === "-h" || cmd === "--help" || rest.includes("-h") || rest.includes("--help")
 const wantVersion = cmd === "-v" || cmd === "--version" || rest.includes("-v") || rest.includes("--version")
 
-if(wantVersion) { console.log(version); process.exit(0) }
+if(wantVersion) { console.log("TonkaJSX " + version); process.exit(0) }
 
 if((cmd === "serve" || cmd === "build") && !wantHelp) {
   process.argv.splice(2, 1)
