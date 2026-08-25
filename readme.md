@@ -45,7 +45,7 @@ npm link
 The framework consists of two scripts: a development **server** and a **build** tool.
 
 ```sh
-tonka serve [<project-name>] [--port|-p <port>]  # start the development server
+tonka serve [<project-name>] [--port|-p <port>] [--remove|-r]  # start the development server
 tonka build [<project-name>] [options] # build the deploy version of the project
 ```
 
@@ -68,6 +68,7 @@ tonka build -i -f -s -c -l "Material Symbols"
 
 Server and build work on the chosen project. If you don't pass a project name, it picks the first one _(useful when you only have one)_.
 If the project contains `app.ini`, variables defined there are replaced in all JS/JSX/CSS/HTML files using `{{key}}` syntax. Top-level values are shared; `[serve]` and `[build]` sections override per mode.
+Built-in `{{date}}` and `{{time}}` are always available, and values may reference other vars, e.g. `foot = Build {{date}}`.
 
 ```ini
 title = TonkaJSX
@@ -80,6 +81,7 @@ foot = Build
 
 If the project is built, `index.html` exists and the server serves it.
 If not, the server uses `app.html` and injects styles from `styles/` and scripts from `scripts/`.
+With `--remove`/`-r` the server first deletes a built `index.html`, so you're sure it serves the app you're editing.
 Script order matters: load `.js` first, then `.jsx`. Files in deeper folders load before files in parent folders.
 All other files are served as static assets, exactly as they are in the project folder.
 During build you can inline remote styles and scripts with `--inline-remote` (good for offline use).

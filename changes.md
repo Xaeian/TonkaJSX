@@ -1,4 +1,10 @@
-## Changes TonkaJSX
+## Changes 🌰TonkaJSX
+
+### `1.1.2` Built-in vars + remove flag:
+
+- `{{date}}` and `{{time}}` available in serve and build
+- `app.ini` values may reference other vars, e.g. `foot = Build {{date}}`
+- `serve -r` / `--remove` deletes built `index.html` _(serve the app you're editing)_
 
 ### `1.1.1` Version flag + folder guard:
 

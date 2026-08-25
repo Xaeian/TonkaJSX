@@ -108,7 +108,7 @@ const getIndex = (res, vars) => {
 
 const TEXT_EXTS = new Set([".html", ".htm", ".css", ".js", ".jsx"])
 
-if(hasFlag("-d", "--delete")) {
+if(hasFlag("-r", "--remove")) {
   const fp = path.join(PATH, "index.html")
   if(fs.existsSync(fp)) {
     fs.unlinkSync(fp)

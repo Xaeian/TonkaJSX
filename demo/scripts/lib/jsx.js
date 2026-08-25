@@ -1,4 +1,7 @@
 // scripts/lib/jsx.js
+// Minimal JSX runtime: createElement builds real DOM nodes, no virtual DOM and no diffing.
+
+//------------------------------------------------------------------------------------------ Create
 
 const JSX = {
   Fragment: Symbol.for("jsx.fragment"),
@@ -12,41 +15,33 @@ const JSX = {
     let _deferValue;
     let _ref;
     Object.entries(props || {}).forEach(([name, value]) => {
-      // Skip internal props
       if(name === "children" || name === "key") return;
-      // Handle ref callback/object
       if(name === "ref") {
         _ref = value;
         return;
       }
-      // Handle class/className
       if(name === "class" || name === "className") {
         const className = JSX.NormalizeClass(value);
         if(className) element.className = className;
         return;
       }
-      // Handle htmlFor -> for
       if(name === "htmlFor") {
         if(value === false || value == null) return;
         element.setAttribute("for", value.toString());
         return;
       }
-      // Handle style object/string
       if(name === "style") {
         JSX.AssignStyle(element, value);
         return;
       }
-      // Handle dataset object
       if(name === "dataset" && value && typeof value === "object") {
         JSX.AssignData(element, value);
         return;
       }
-      // Handle events
       if(name.startsWith("on") && typeof value === "function") {
         element.addEventListener(JSX.GetEventName(name), value);
         return;
       }
-      // Handle prop aliases
       if(name === "readonly") name = "readOnly";
       else if(name === "tabindex") name = "tabIndex";
       // Defer select value until options exist
@@ -61,11 +56,15 @@ const JSX = {
     JSX.SetRef(_ref, element);
     return element;
   },
+
+//---------------------------------------------------------------------------------------- Children
+
   AppendChild: (parent, child) => {
     if(Array.isArray(child)) {
       child.forEach((nested) => JSX.AppendChild(parent, nested));
       return;
     }
+    // Set/generator children; strings and nodes are iterable too, hence the guards
     if(
       child &&
       typeof child !== "string" &&
@@ -95,6 +94,9 @@ const JSX = {
     JSX.AppendChild(frag, children);
     return frag;
   },
+
+//------------------------------------------------------------------------------------------- Props
+
   GetEventName: (name) => {
     if(name === "onDoubleClick") return "dblclick";
     return name.substring(2).toLowerCase();
@@ -124,6 +126,7 @@ const JSX = {
     if(typeof styles !== "object") return;
     Object.entries(styles).forEach(([name, value]) => {
       if(value === false || value == null) return;
+      // custom properties and kebab-case names reach the style object only via setProperty
       if(name.startsWith("--") || name.includes("-")) {
         element.style.setProperty(name, value.toString());
         return;
@@ -134,6 +137,7 @@ const JSX = {
   AssignData: (element, data) => {
     Object.entries(data).forEach(([key, value]) => {
       if(value == null) return;
+      // dataset can't express dashed keys, those go straight to the data-* attribute
       if(key.includes("-")) {
         element.setAttribute(`data-${key}`, value.toString());
         return;
@@ -145,7 +149,7 @@ const JSX = {
     const attrOnly = name.startsWith("data-") || name.startsWith("aria-");
     const canAssign = !attrOnly && JSX.CanAssignProperty(element, name);
     if(value == null) return;
-    // Keep false for aria/data, set false for boolean DOM props, skip rest
+    // false: write attr for aria/data, unset boolean props, drop otherwise
     if(value === false) {
       if(attrOnly) {
         element.setAttribute(name, "false");
@@ -156,7 +160,7 @@ const JSX = {
       }
       return;
     }
-    // Keep true for boolean DOM props, set attribute for rest
+    // true: set boolean props, else empty attr
     if(value === true) {
       if(canAssign && typeof element[name] === "boolean") {
         element[name] = true;
@@ -165,12 +169,12 @@ const JSX = {
       element.setAttribute(name, attrOnly ? "true" : "");
       return;
     }
-    // Prefer writable property when possible
+    // a writable property wins over the attribute
     if(canAssign) {
       element[name] = value;
       return;
     }
-    // Keep object/function on unknown expando props
+    // attributes can't hold object/function, stash as expando
     if(
       !attrOnly &&
       !(name in element) &&
@@ -179,9 +183,9 @@ const JSX = {
       element[name] = value;
       return;
     }
-    // Set attribute
     element.setAttribute(name, value.toString());
   },
+  // DOM properties sit on prototypes, so the whole chain is walked, not just the instance
   CanAssignProperty: (element, name) => {
     let target = element;
     while(target) {
@@ -192,6 +196,7 @@ const JSX = {
     return false;
   },
   SetValue: (element, value) => {
+    // multi-select ignores element.value, the selection has to be written per option
     if(
       element instanceof HTMLSelectElement &&
       element.multiple &&
@@ -215,6 +220,10 @@ const JSX = {
     }
     if(typeof ref === "object") ref.current = element;
   },
+
+//------------------------------------------------------------------------------------------- Mount
+
+  // a plain word is looked up as an id first, then retried as a selector
   ResolveTarget: (target) => {
     if(target instanceof Element) return target;
     if(typeof target !== "string") return null;
@@ -237,6 +246,7 @@ const JSX = {
       return null;
     }
   },
+  /** Runs `fnc` once the target is connected, waiting on the tree. Returns a disposer. */
   onMount: (target, fnc) => {
     if(typeof fnc !== "function") return () => {};
     let done = false;

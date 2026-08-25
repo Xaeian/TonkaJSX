@@ -157,15 +157,29 @@ export function fileList(dir, exts=[]) {
 const VARS_FILE = "app.ini"
 
 /**
- * Parse app.ini — top-level vars merged with [section] overrides.
- * Returns flat {key: string} map. Missing file → empty {}.
+ * Built-in vars available in every project: current {{date}} and {{time}}.
+ * @returns {Record<string, string>}
+ */
+function builtinVars() {
+  const d = new Date()
+  const p = n => String(n).padStart(2, "0")
+  return {
+    date: `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`,
+    time: `${p(d.getHours())}:${p(d.getMinutes())}`,
+  }
+}
+
+/**
+ * Parse app.ini: built-ins, then top-level vars, then [section] overrides.
+ * Values may reference other vars (e.g. `foot = Build {{date}}`), resolved
+ * one level deep. Missing file → built-ins only.
  * @param {string} section "serve" | "build"
  * @returns {Record<string, string>}
  */
 export function loadVars(section) {
+  const vars = builtinVars()
   const raw = readFile(VARS_FILE)
-  if(!raw) return {}
-  const vars = {}
+  if(!raw) return vars
   let current = null
   for(const line of raw.split(/\r?\n/)) {
     const t = line.trim()
@@ -182,6 +196,8 @@ export function loadVars(section) {
     if(current === null || current === section?.toLowerCase())
       vars[k] = v
   }
+  for(const k of Object.keys(vars))
+    vars[k] = vars[k].replace(/\{\{(\w+)\}\}/g, (m, n) => n in vars ? vars[n] : m)
   return vars
 }
 

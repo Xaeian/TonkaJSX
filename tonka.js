@@ -37,8 +37,11 @@ function help() {
 ${c.cyan}TonkaJSX${c.reset} ${c.grey}${version}${c.reset}: lightweight JSX frontend framework
 
 ${c.grey}Usage:${c.reset}
-  ${c.yellow}tonka${c.reset} serve [<${c.green}project${c.reset}>] [${c.blue}-p${c.reset} <${c.grey}port${c.reset}>]  start dev server
-  ${c.yellow}tonka${c.reset} build [<${c.green}project${c.reset}>] [${c.blue}options${c.reset}]    build production index.html
+  ${c.yellow}tonka${c.reset} serve [<${c.green}project${c.reset}>] [${c.blue}-p${c.reset} <${c.grey}port${c.reset}>] [${c.blue}-r${c.reset}]  start dev server
+  ${c.yellow}tonka${c.reset} build [<${c.green}project${c.reset}>] [${c.blue}options${c.reset}]         build production index.html
+
+${c.grey}Serve options:${c.reset}
+  ${c.blue}-r${c.reset}, --remove                  delete built index.html before serving
 
 ${c.grey}Build options:${c.reset}
   ${c.blue}-i${c.reset}, --inline-remote           inline remote CSS/JS from CDN
