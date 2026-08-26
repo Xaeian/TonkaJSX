@@ -76,7 +76,7 @@ const injectLinks = (html) => {
   const js = fileList(path.join(PATH,"scripts"),[".js"])
   const jsx = fileList(path.join(PATH,"scripts"),[".jsx"])
   const tag = (f)=> f.endsWith(".jsx")
-    ? `${space2}<script type="text/babel" src="./scripts/${f}"></script>`
+    ? `${space2}<script type="text/babel" data-presets="tonka" src="./scripts/${f}"></script>`
     : `${space2}<script src="./scripts/${f}"></script>`
   const scriptFiles = [...js, ...jsx].map(tag).join("\n")
   return html.replace(
@@ -150,8 +150,6 @@ const server = http.createServer((req, res) => {
     if(TEXT_EXTS.has(ext)) {
       let src = data.toString("utf8")
       src = replaceVars(src, vars)
-      if(ext === ".jsx")
-        src = `/** @jsx JSX.createElement */\n/** @jsxFrag JSX.Fragment */\n\n${src}`
       body = Buffer.from(src)
     }
     res.writeHead(200,{

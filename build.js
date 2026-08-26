@@ -131,7 +131,9 @@ async function minifyJs(js) {
         defaults: true,
         passes: 3,
         toplevel: true,
-        keep_fargs: false
+        keep_fargs: false,
+        // Babel exists only in dev, folding it drops the jsx.js preset bootstrap
+        global_defs: { Babel: undefined }
       },
       mangle: {
         toplevel: true,
@@ -540,7 +542,7 @@ async function build()
     const src = replaceVars(rawJS, vars)
     const { transformSync, jsxPlugin } = await loadBabel()
     Log.ok("Babel: JSX → JS")
-    const out = transformSync(src, { babelrc: false, configFile: false, sourceType: "unambiguous", comments: false, plugins: [[jsxPlugin, { pragma: "JSX.createElement", pragmaFrag: "JSX.Fragment", throwIfNamespace: false }]] })
+    const out = transformSync(src, { babelrc: false, configFile: false, sourceType: "unambiguous", comments: false, plugins: [[jsxPlugin, { runtime: "classic", pragma: "JSX.createElement", pragmaFrag: "JSX.Fragment", throwIfNamespace: false }]] })
     jsBundle = out?.code || ""
     if(jsBundle){
       const b0 = bytes(jsBundle)

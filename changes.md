@@ -1,5 +1,11 @@
 ## Changes 🌰TonkaJSX
 
+### `1.2.0` Babel 8 compatibility:
+
+- `tonka` preset _(classic runtime + `JSX.*` pragma)_ instead of `@jsx` comments
+- `jsx.js`: SVG namespace, `onMount` disposer, safer `on*` and boolean props
+- deps and `@babel/standalone` bumped to 8, browser tests in `.tests`
+
 ### `1.1.2` Built-in vars + remove flag:
 
 - `{{date}}` and `{{time}}` available in serve and build

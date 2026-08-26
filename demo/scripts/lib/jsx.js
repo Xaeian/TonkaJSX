@@ -1,17 +1,31 @@
 // scripts/lib/jsx.js
 // Minimal JSX runtime: createElement builds real DOM nodes, no virtual DOM and no diffing.
+// Conscious limits: SVG covers icon-grade tags with native attributes (stroke-width,
+// not strokeWidth), event names are lowercased, so custom events must be lowercase too.
 
 //------------------------------------------------------------------------------------------ Create
 
 const JSX = {
   Fragment: Symbol.for("jsx.fragment"),
+  // tags colliding with HTML (a, title, style, script) stay out and resolve as HTML
+  SvgTags: new Set([
+    "svg", "path", "circle", "ellipse", "line", "rect", "polygon", "polyline",
+    "g", "defs", "use", "symbol", "marker", "mask", "pattern", "clipPath",
+    "linearGradient", "radialGradient", "stop", "filter", "feBlend", "feColorMatrix",
+    "feComposite", "feDropShadow", "feFlood", "feGaussianBlur", "feMerge",
+    "feMergeNode", "feOffset", "feTurbulence", "text", "tspan", "textPath",
+    "image", "foreignObject", "animate", "animateMotion", "animateTransform",
+    "desc", "metadata", "view", "switch", "mpath"
+  ]),
   createElement: (tag, props, ...children) => {
     if(tag === JSX.Fragment) return JSX.createFragment(props, ...children);
     if(typeof tag === "function") {
       return tag({ ...(props || {}), children });
     }
     if(typeof tag !== "string") throw new TypeError("Invalid JSX tag");
-    const element = document.createElement(tag);
+    const element = JSX.SvgTags.has(tag)
+      ? document.createElementNS("http://www.w3.org/2000/svg", tag)
+      : document.createElement(tag);
     let _deferValue;
     let _ref;
     Object.entries(props || {}).forEach(([name, value]) => {
@@ -22,12 +36,20 @@ const JSX = {
       }
       if(name === "class" || name === "className") {
         const className = JSX.NormalizeClass(value);
-        if(className) element.className = className;
+        // attribute, not property: SVG className is a read-only SVGAnimatedString
+        if(className) element.setAttribute("class", className);
         return;
       }
       if(name === "htmlFor") {
         if(value === false || value == null) return;
         element.setAttribute("for", value.toString());
+        return;
+      }
+      // contentEditable is a string property, booleans must become "true"/"false"
+      if(name === "contentEditable" || name === "contenteditable") {
+        if(value == null) return;
+        element.contentEditable = value === true ? "true"
+          : value === false ? "false" : value.toString();
         return;
       }
       if(name === "style") {
@@ -38,8 +60,12 @@ const JSX = {
         JSX.AssignData(element, value);
         return;
       }
-      if(name.startsWith("on") && typeof value === "function") {
-        element.addEventListener(JSX.GetEventName(name), value);
+      // camelCase on*: functions become listeners, other values are dropped
+      // (lowercase on* hits the property path: known handler props null out
+      //  strings, unknown on* names become inert attributes)
+      if(/^on[A-Z]/.test(name)) {
+        if(typeof value === "function")
+          element.addEventListener(JSX.GetEventName(name), value);
         return;
       }
       if(name === "readonly") name = "readOnly";
@@ -149,20 +175,23 @@ const JSX = {
     const attrOnly = name.startsWith("data-") || name.startsWith("aria-");
     const canAssign = !attrOnly && JSX.CanAssignProperty(element, name);
     if(value == null) return;
-    // false: write attr for aria/data, unset boolean props, drop otherwise
+    // false: attr for aria/data, boolean and setter-only props take the value,
+    // drop otherwise so `value={cond && x}` stays an absence
     if(value === false) {
       if(attrOnly) {
         element.setAttribute(name, "false");
         return;
       }
-      if(canAssign && typeof element[name] === "boolean") {
+      const type = typeof element[name];
+      if(canAssign && (type === "boolean" || type === "undefined")) {
         element[name] = false;
       }
       return;
     }
-    // true: set boolean props, else empty attr
+    // true: boolean and setter-only props take the value, else empty attr
     if(value === true) {
-      if(canAssign && typeof element[name] === "boolean") {
+      const type = typeof element[name];
+      if(canAssign && (type === "boolean" || type === "undefined")) {
         element[name] = true;
         return;
       }
@@ -250,6 +279,7 @@ const JSX = {
   onMount: (target, fnc) => {
     if(typeof fnc !== "function") return () => {};
     let done = false;
+    let disposed = false;
     let observer = null;
     const bind = () => {
       if(done) return true;
@@ -257,12 +287,20 @@ const JSX = {
       if(element && element.isConnected) {
         done = true;
         if(observer) observer.disconnect();
-        queueMicrotask(() => fnc(element));
+        // the disposer may still run before this microtask fires
+        queueMicrotask(() => {
+          if(!disposed) fnc(element);
+        });
         return true;
       }
       return false;
     };
-    if(bind()) return () => {};
+    const dispose = () => {
+      done = true;
+      disposed = true;
+      if(observer) observer.disconnect();
+    };
+    if(bind()) return dispose;
     observer = new MutationObserver(() => {
       bind();
     });
@@ -270,9 +308,22 @@ const JSX = {
       childList: true,
       subtree: true
     });
-    return () => {
-      done = true;
-      observer.disconnect();
-    };
+    return dispose;
   }
 };
+
+//------------------------------------------------------------------------------------------- Babel
+
+// Babel 8 defaults JSX to the automatic runtime; scripts opt back into the
+// classic JSX.* pragma via data-presets="tonka"
+if(typeof Babel !== "undefined") {
+  Babel.registerPreset("tonka", {
+    presets: [
+      [Babel.availablePresets.react, {
+        runtime: "classic",
+        pragma: "JSX.createElement",
+        pragmaFrag: "JSX.Fragment"
+      }]
+    ]
+  });
+}
