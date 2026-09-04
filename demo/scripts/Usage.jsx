@@ -14,7 +14,7 @@ const Usage = () => {
     <Section title="Usage">
       <p class="subdesc">Start demo/project with <code>tonka serve</code> and build deploy version with <code>tonka build</code></p>
       <div class="code-block">
-        <code>$ tonka serve [&lt;project&gt;] [--port|-p &lt;port&gt;]</code>
+        <code>$ tonka serve [&lt;project&gt;] [--port|-p &lt;port&gt;] [--remove|-r]</code>
         <code>$ tonka build [&lt;project&gt;] [options]</code>
       </div>
       <ul>
@@ -26,6 +26,7 @@ const Usage = () => {
       <ul>
         <li>If built, <code>index.html</code> exists and the server serves it.</li>
         <li>Otherwise the server uses <code>app.html</code> and injects styles from <code>styles/</code> and scripts from <code>scripts/</code>.</li>
+        <li>With <code>--remove</code>/<code>-r</code> the server deletes a built <code>index.html</code> first, so you're sure it serves the app you're editing.</li>
         <li>Script order: <code>.js</code> first, then <code>.jsx</code>. Deeper folders load before parents.</li>
         <li>All other files are served as static assets.</li>
       </ul>

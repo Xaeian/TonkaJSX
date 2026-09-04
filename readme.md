@@ -38,6 +38,8 @@ ROOT/                  (your workspace folder; name doesn't matter)
 After `install` and `link` that **tonka** command works globally.
 
 ```sh
+git clone https://github.com/Xaeian/TonkaJSX.git
+cd TonkaJSX
 npm install
 npm link
 ```
