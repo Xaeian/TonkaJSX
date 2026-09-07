@@ -1,0 +1,63 @@
+/* styles/ui/alert.css */
+
+@layer components {
+  /* stack: fixed at the bottom, newest at the bottom, grows upwards */
+  .alerts {
+    position: fixed;
+    left: var(--space-md);
+    right: var(--space-md);
+    bottom: var(--space-2xl);
+    z-index: var(--z-toast);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+    pointer-events: none;
+  }
+  body:has(.sidebar) .alerts { left: calc(var(--sidebar-w) + var(--space-md)); }
+
+  .alert {
+    display: flex;
+    align-items: stretch;
+    background: var(--bg2);
+    border: var(--bw) solid var(--c);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-size: var(--text-sm);
+    overflow: hidden;
+    pointer-events: auto;
+    opacity: 0;
+    transition: opacity var(--dur) var(--ease-out);
+  }
+  .alert.show { opacity: 1; }
+
+  .alert-icon {
+    flex: none;
+    display: flex;
+    align-items: center;
+    padding-left: var(--space-md);
+    color: var(--c);
+  }
+  .alert-msg {
+    flex: 1;
+    padding: var(--space-sm) var(--space-md);
+    line-height: 1.4;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .alert-confirm, .alert-close {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    padding: 0 var(--space-sm);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: color var(--dur) var(--ease-out);
+  }
+  .alert-close { color: var(--text4); }
+  .alert-close:hover { color: var(--text); }
+  .alert-confirm { color: var(--c); }
+  .alert-confirm:hover { filter: brightness(1.3); }
+}

@@ -1,6 +1,10 @@
 const Install = () => (
   <Section title="Install">
-    <p class="subdesc">After <code>install</code> and <code>link</code> that <b>tonka</b> command works globally.</p>
+    <p class="subdesc">
+      Install <a href="https://nodejs.org/en/download">Node.js</a> first,
+      then clone this repository.
+      After <code>install</code> and <code>link</code> that <b>tonka</b> command works globally.
+    </p>
     <div class="code-block">
       <code>$ git clone https://github.com/Xaeian/TonkaJSX.git</code>
       <code>$ cd TonkaJSX</code>

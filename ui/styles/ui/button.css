@@ -1,0 +1,69 @@
+/* styles/ui/button.css */
+
+@layer components {
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-xs);
+    color: var(--text3);
+    cursor: pointer;
+    user-select: none;
+    transition: all var(--dur) var(--ease-out);
+  }
+  .btn-label:empty { display: none; }
+  .btn:hover { background: var(--surface2); color: var(--text); border-color: var(--border2); }
+  .btn.active {
+    color: var(--accent);
+    border-color: var(--accent-dim);
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+  }
+  .btn-icon { width: var(--ctrl-h); padding: 0; }
+
+  /* variants */
+  .btn-primary {
+    border-color: transparent;
+    background: var(--accent-dim);
+    color: var(--text-on-solid);
+  }
+  .btn-primary:hover {
+    background: color-mix(in srgb, var(--accent-dim) 75%, black);
+    border-color: transparent;
+    color: var(--text-on-solid);
+  }
+  .btn-danger:hover { color: var(--err); border-color: var(--err); }
+  .btn-ghost { background: transparent; border-color: transparent; color: var(--text4); }
+  .btn-ghost:hover {
+    background: var(--surface2);
+    border-color: transparent;
+    color: var(--text2);
+  }
+  .btn-ghost.active, .btn-ghost.active:hover {
+    color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    border-color: transparent;
+  }
+
+  /* confirm flow: idle -> wait -> confirm, tinted by `color` attribute */
+  .btn-confirm { display: inline-grid; grid-template-areas: "s"; }
+  .btn-confirm > * {
+    grid-area: s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-xs);
+  }
+  /* hidden copies of every state reserve widest width, so button never resizes */
+  .btn-confirm .confirm-ghost { visibility: hidden; pointer-events: none; }
+  .btn-confirm.wait, .btn-confirm.wait:hover {
+    color: var(--text4);
+    background: transparent;
+    border-color: var(--border);
+  }
+  .btn-confirm.confirm, .btn-confirm.confirm:hover {
+    color: var(--text-on-solid);
+    background: var(--c);
+    border-color: var(--c);
+  }
+  .btn-confirm.btn-ghost.confirm { border-color: transparent; }
+}

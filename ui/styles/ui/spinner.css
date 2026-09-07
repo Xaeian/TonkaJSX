@@ -1,0 +1,9 @@
+/* styles/ui/spinner.css */
+
+@layer components {
+  .spinner { font-size: var(--text-lg); line-height: 1; }
+  .spinner.sm { font-size: var(--text-sm); }
+  .spinner.lg { font-size: var(--text-xl); }
+  .spinner-wrap { display: inline-flex; align-items: center; gap: var(--space-xs); }
+  .spinner-text { font-size: var(--text-sm); line-height: 1; }
+}

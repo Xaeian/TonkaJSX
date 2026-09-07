@@ -1,0 +1,58 @@
+/* styles/ui/login.css */
+
+@layer components {
+  .login { position: relative; }
+  .login-logged { color: var(--accent); }
+
+  /* dropdown panel under trigger; fields are ghost Inputs */
+  .login-panel {
+    --login-offset: 0px;
+    position: absolute;
+    top: calc(100% + var(--login-offset));
+    width: 250px;
+    display: flex;
+    background: var(--surface2);
+    border: var(--bw) solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    z-index: var(--z-dropdown);
+    opacity: 0;
+    transform: translateY(calc(-1 * var(--space-xs)));
+    transition: opacity var(--dur) var(--ease-out), transform var(--dur) var(--ease-out);
+  }
+  .login-panel.show { opacity: 1; transform: translateY(0); }
+  .login-right { right: 0; }
+  .login-left { left: 0; }
+  .login-center {
+    left: 50%;
+    transform: translateX(-50%) translateY(calc(-1 * var(--space-xs)));
+  }
+  .login-center.show { transform: translateX(-50%) translateY(0); }
+
+  .login-fields { flex: 1 1 auto; min-width: 0; }
+  .login-fields > .input-group { padding: 0 var(--space-sm); font-family: var(--font-mono); }
+  .login-fields > .input-group:focus-within { background: var(--surface); }
+
+  .login-submit {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 var(--space-md);
+    border: none;
+    border-left: var(--bw) solid var(--border);
+    background: transparent;
+    color: var(--text4);
+    cursor: pointer;
+    transition: color var(--dur) var(--ease-out), background var(--dur) var(--ease-out);
+  }
+  .login-submit:hover { color: var(--accent); background: var(--bg); }
+  .login-submit .icon { font-size: var(--text-lg); }
+
+  .login-error {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--err);
+    padding: var(--space-xs) var(--space-sm);
+  }
+  .login-error:empty { display: none; }
+}

@@ -9,7 +9,7 @@ const Flag = ({ flag, long, desc }) => (
 const BuildFlags = () => (
   <Section title="Build Flags">
     <p class="subdesc">
-      All flags are optional. Without them, build works the same as before.
+      All flags are optional. Without them, build works as before.
       <code>-t</code> and <code>-l</code> imply <code>-f</code>.
     </p>
     <div class="table-wrap">

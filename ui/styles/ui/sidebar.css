@@ -1,0 +1,43 @@
+/* styles/ui/sidebar.css */
+
+@layer components {
+  .sidebar {
+    width: var(--sidebar-w);
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: var(--space-xs) 0;
+    gap: 2px;
+    background: var(--surface2);
+    border-right: var(--bw) solid var(--border);
+    user-select: none;
+    --ctrl-icon: var(--text-xl);
+    /* tooltips sit beside rail, not over icon */
+    --tt-x: -4px;
+    --tt-y: 8px;
+  }
+
+  /* rail: sidebar's own button variant */
+  .btn-rail {
+    width: var(--sidebar-btn);
+    height: var(--sidebar-btn);
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: var(--text4);
+    position: relative;
+  }
+  .btn-rail:hover { color: var(--text2); background: var(--surface); }
+  .btn-rail.active, .btn-rail.active:hover { color: var(--text); background: var(--surface); }
+  .btn-rail.active::before {
+    content: "";
+    position: absolute;
+    left: -6px;
+    top: var(--space-sm);
+    bottom: var(--space-sm);
+    width: 2px;
+    background: var(--accent);
+    border-radius: 1px;
+  }
+}

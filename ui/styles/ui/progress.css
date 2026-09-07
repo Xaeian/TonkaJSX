@@ -1,0 +1,32 @@
+/* styles/ui/progress.css */
+
+@layer components {
+  .progress { display: inline-flex; align-items: center; gap: var(--space-sm); width: 100%; }
+  .progress-bar {
+    flex: 1;
+    position: relative;
+    height: 4px;
+    background: var(--surface2);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+    min-width: 0;
+  }
+  .progress.sm .progress-bar { height: 2px; }
+  .progress.lg .progress-bar { height: 6px; }
+  .progress-fill {
+    display: block;
+    height: 100%;
+    width: 0;
+    background: var(--c);
+    border-radius: var(--radius-full);
+    transition: width var(--dur) var(--ease-out);
+  }
+  .progress-indeterminate .progress-fill {
+    width: 40%;
+    animation: progress-slide 1.2s ease-in-out infinite;
+  }
+  @keyframes progress-slide {
+    0%   { transform: translateX(-100%); }
+    100% { transform: translateX(350%); }
+  }
+}

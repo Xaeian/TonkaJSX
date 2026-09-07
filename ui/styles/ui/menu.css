@@ -1,0 +1,38 @@
+/* styles/ui/menu.css */
+
+@layer components {
+  .menu {
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: var(--z-overlay);
+    display: flex;
+    flex-direction: column;
+    max-width: 320px;
+    max-height: 80vh;
+    background: var(--bg3);
+    border: var(--bw) solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    opacity: 0;
+    transform: translateY(-4px);
+    transition: opacity var(--dur) var(--ease-out), transform var(--dur) var(--ease-out);
+    pointer-events: none;
+    overflow: hidden;
+  }
+  .menu.show { opacity: 1; transform: none; pointer-events: auto; }
+  .menu-head {
+    padding: var(--space-sm) var(--space-md);
+    border-bottom: var(--bw) solid var(--border);
+    background: var(--surface2);
+    flex-shrink: 0;
+  }
+  .menu-title {
+    font-family: var(--font-head);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: var(--tracking-tight);
+  }
+  .menu-body { padding: var(--space-sm); overflow-y: auto; min-height: 0; }
+}

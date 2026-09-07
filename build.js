@@ -23,6 +23,8 @@ class Log {
 
 const bytes = (s) => Buffer.byteLength(String(s || ""), "utf8")
 
+const kb = (n) => (n / 1024).toFixed(1)
+
 const removeExternalTags = (html) => {
   const linkRe = /<link\b[^>]*href=["'](?:\.?\/)?styles\/[^"']+\.css[^"']*["'][^>]*>\s*/gi
   const scriptRe = /<script\b[^>]*src=["'](?:\.?\/)?scripts\/[^"']+\.(?:js|jsx)[^"']*["'][^>]*>\s*<\/script>\s*/gi
@@ -197,7 +199,7 @@ function extractRemoteHeadAssets(html) {
   return { html: html.replace(head0, head), css, js }
 }
 
-function fetchText(url, depth = 0) {
+function fetchBytes(url, depth = 0) {
   return new Promise((resolve, reject) => {
     let u
     try { u = new URL(url) }
@@ -216,7 +218,7 @@ function fetchText(url, depth = 0) {
       if((sc === 301 || sc === 302 || sc === 303 || sc === 307 || sc === 308) && loc && depth < 5) {
         res.resume()
         const next = new URL(loc, u).toString()
-        resolve(fetchText(next, depth + 1))
+        resolve(fetchBytes(next, depth + 1))
         return
       }
       if(sc < 200 || sc >= 300) {
@@ -226,12 +228,14 @@ function fetchText(url, depth = 0) {
       }
       const chunks = []
       res.on("data", (c) => chunks.push(c))
-      res.on("end", () => resolve(Buffer.concat(chunks).toString("utf8")))
+      res.on("end", () => resolve(Buffer.concat(chunks)))
     })
     req.on("error", (e) => reject(new Error(`${url}: ${e?.message || e}`)))
     req.end()
   })
 }
+
+const fetchText = async (url) => (await fetchBytes(url)).toString("utf8")
 
 async function fetchMany(urls, label) {
   if(!urls.length) return ""
@@ -250,7 +254,71 @@ async function fetchMany(urls, label) {
 
 const FONT_MAX_KB = 500
 
-async function processFonts(css, fontDir, subsetText, subsetLigature, srcDir) {
+//--------------------------------------------------------------------------------- Font lookup
+
+const FONT_FILE = /\.(?:woff2?|ttf|otf)$/i
+
+// Every font file the project carries, wherever it sits, keyed by its path from the
+// project root. No folder name is a convention, so any layout is read the same way.
+function fontIndex(root) {
+  const out = []
+  const walk = (dir, rel) => {
+    for(const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      if(entry.name.startsWith(".") || entry.name === "node_modules") continue
+      const at = rel ? `${rel}/${entry.name}` : entry.name
+      if(entry.isDirectory()) walk(path.join(dir, entry.name), at)
+      else if(FONT_FILE.test(entry.name)) out.push({ file: path.join(dir, entry.name), rel: at })
+    }
+  }
+  if(fs.existsSync(root)) walk(root, "")
+  return out
+}
+
+// The src path without host or query, then every shorter tail of it:
+// "inter/400-italic.woff2" first, "400-italic.woff2" after.
+function pathTails(ref) {
+  const parts = ref.replace(/^\w+:\/\/[^/]+/, "").replace(/[?#].*$/, "")
+    .split("/").filter(part => part && part !== "." && part !== "..")
+  return parts.map((_, i) => parts.slice(i).join("/"))
+}
+
+/**
+ * The local file a font `src` points at, or null when the project does not carry it.
+ * The longest tail of the src path that ends a file path wins, so a remote url finds a
+ * mirrored folder and a bare name finds the file whatever folder holds it.
+ * Nothing is guessed here: a miss means the caller reaches for the address instead.
+ */
+function findFont(ref, index) {
+  for(const tail of pathTails(ref)) {
+    const hit = index.find(entry => entry.rel === tail || entry.rel.endsWith(`/${tail}`))
+    if(hit) return hit
+  }
+  return null
+}
+
+/**
+ * The bytes behind a font `src`, with the name to report them under, or null when neither
+ * the project nor the network gives them up.
+ * What the project carries is read from disk, the rest comes from the address the
+ * `@font-face` already states, so a project holding no fonts still builds whole.
+ */
+async function fontBytes(ref, index) {
+  const found = findFont(ref, index)
+  if(found) return { buf: fs.readFileSync(found.file), name: path.basename(found.rel) }
+  if(!/^https?:/i.test(ref)) return null
+  const name = path.basename(ref.replace(/[?#].*$/, ""))
+  try {
+    const buf = await fetchBytes(ref)
+    Log.info(`  fetched: ${name} (${kb(buf.length)}KB)`)
+    return { buf, name }
+  }
+  catch(e) {
+    Log.warn(`Font fetch failed: ${ref} (${e?.message || e})`)
+    return null
+  }
+}
+
+async function processFonts(css, projectDir, subsetText, subsetLigature, srcDir) {
   const faces = []
   const cssBody = css.replace(/@font-face\s*\{[^}]+\}/g, block => {
     faces.push(block); return ""
@@ -339,45 +407,48 @@ async function processFonts(css, fontDir, subsetText, subsetLigature, srcDir) {
     }
   }
 
-  // Inline woff2 as base64 (+ optional subset)
+  // Every kept face becomes a data uri, cut down first where that was asked for
+  const index = fontIndex(projectDir)
   const inlined = []
   for(const block of keptFaces) {
     const fam = block.match(/font-family:\s*["']?([^"';,}]+)/)?.[1]?.trim().replace(/["']/g, "")
     const srcMatch = block.match(/url\(["']?([^"')]+)["']?\)/)
     if(!srcMatch) { inlined.push(block); continue }
-    const basename = path.basename(srcMatch[1])
-    const fp = path.join(fontDir, basename)
-    if(!fs.existsSync(fp)) {
-      Log.warn(`Font missing: ${basename}`)
+    const source = await fontBytes(srcMatch[1], index)
+    if(!source) {
+      Log.warn(`Font missing: ${srcMatch[1]}`)
       inlined.push(block); continue
     }
-    let buf = fs.readFileSync(fp)
-    let wasSubsetted = false
-    // Subset if requested for this font family
+    let { buf, name } = source
+    let subsetted = false
     if(subsetFn) {
-      let text = null
-      if(subsetLigature.includes(fam)) text = ligatureText
-      else if(subsetText.includes(fam)) text = charText
+      const text = subsetLigature.includes(fam) ? ligatureText
+        : subsetText.includes(fam) ? charText
+        : null
       if(text) {
-        const b0 = buf.length
+        const before = buf.length
         try {
           buf = await subsetFn(buf, text, { targetFormat: "woff2" })
-          wasSubsetted = true
-          Log.info(`  subset: ${basename} ${(b0 / 1024).toFixed(1)}KB → ${(buf.length / 1024).toFixed(1)}KB`)
-        } catch(e) {
-          Log.warn(`  subset failed: ${basename} (${e?.message || e})`)
+          subsetted = true
+          Log.info(`  subset: ${name} ${kb(before)}KB → ${kb(buf.length)}KB`)
         }
+        catch(e) { Log.warn(`  subset failed: ${name} (${e?.message || e})`) }
       }
     }
-    const sizeKB = buf.length / 1024
-    if(!wasSubsetted && sizeKB > FONT_MAX_KB) {
-      Log.warn(`Font too large: ${basename} (${sizeKB.toFixed(0)}KB > ${FONT_MAX_KB}KB) ${c.grey}(skipped)${c.reset}`)
+    // a cut face is already as small as it gets, so only a whole one meets the cap
+    if(!subsetted && buf.length / 1024 > FONT_MAX_KB) {
+      Log.warn(`Font too large: ${name} (${kb(buf.length)}KB > ${FONT_MAX_KB}KB)`
+        + ` ${c.grey}(skipped)${c.reset}`)
       continue
     }
-    const mime = basename.endsWith(".woff2") ? "font/woff2"
-      : basename.endsWith(".woff") ? "font/woff" : "font/ttf"
-    Log.info(`  inline: ${basename} (${sizeKB.toFixed(1)}KB)`)
-    inlined.push(block.replace(srcMatch[0], `url(data:${mime};base64,${buf.toString("base64")})`))
+    // subsetting answers in woff2 whatever went in, and both the type and the hint that
+    // follows the url have to name what the data now is
+    const ext = subsetted ? "woff2" : name.split(".").pop().toLowerCase()
+    const mime = { woff2: "font/woff2", woff: "font/woff", otf: "font/otf" }[ext] || "font/ttf"
+    Log.info(`  inline: ${name} (${kb(buf.length)}KB)`)
+    let face = block.replace(srcMatch[0], `url(data:${mime};base64,${buf.toString("base64")})`)
+    if(subsetted) face = face.replace(/format\(\s*["']?[\w-]+["']?\s*\)/i, `format("woff2")`)
+    inlined.push(face)
   }
   return inlined.join("\n") + "\n" + cssBody
 }
@@ -485,10 +556,10 @@ async function build()
     cssBundle = await minifyCssSmart(cssBundle)
     Log.ok(`CSS min: ${b0} → ${bytes(cssBundle)}`)
     if(FONTS) {
-      const fontDir = path.join(PATH, "fonts")
-      if(fs.existsSync(fontDir))
-        cssBundle = await processFonts(cssBundle, fontDir, SUBSET_TEXT, SUBSET_LIGATURE, path.join(PATH, "scripts"))
-      else Log.warn("fonts/ dir not found, skipping font inline")
+      // A face is looked up among the project files whatever folder holds them, and one
+      // the project does not carry is fetched from the address its @font-face states.
+      cssBundle = await processFonts(cssBundle, PATH, SUBSET_TEXT, SUBSET_LIGATURE,
+        path.join(PATH, "scripts"))
     }
   }
   else Log.warn("CSS bundle empty")

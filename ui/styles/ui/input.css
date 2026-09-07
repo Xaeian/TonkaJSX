@@ -1,0 +1,78 @@
+/* styles/ui/input.css */
+
+@layer components {
+  .input-group {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: 0 var(--ctrl-pad);
+    min-width: 0;
+    flex: 0 0 auto;
+  }
+  /* in a row a field takes free width */
+  row > .input-group, .panel-toolbar > .input-group { flex: 1 1 200px; }
+  .input-group:focus-within { border-color: var(--accent-dim); }
+  .input-group .icon { color: var(--text4); flex-shrink: 0; }
+  .input-group:focus-within .icon { color: var(--text3); }
+
+  .input-group input, .input-group textarea {
+    width: 100%;
+    min-width: 0;
+    border: none;
+    background: transparent;
+    padding: 0;
+    outline: none;
+    font: inherit;
+    color: var(--text);
+  }
+  .input-group input::placeholder, .input-group textarea::placeholder { color: var(--text4); }
+  .input-group:focus-within input::placeholder,
+  .input-group:focus-within textarea::placeholder { color: var(--border); }
+
+  /* number: no native spinners */
+  .input-group input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
+  .input-group input[type="number"]::-webkit-inner-spin-button,
+  .input-group input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  /* ghost: borderless, inline */
+  .input-group-ghost {
+    border-color: transparent;
+    background: transparent;
+    padding-left: 0;
+    padding-right: 0;
+  }
+  .input-group-ghost:focus-within { border-color: transparent; }
+
+  /* trailing button (clear, eye) */
+  .input-group-btn {
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: color var(--dur) var(--ease-out);
+  }
+  .input-group-btn:hover { color: var(--text2); }
+
+  /* date: picker glyph sits flush right */
+  .input-group-date { padding-right: var(--space-sm); }
+  .input-group-date input::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    opacity: 0.5;
+    margin-left: var(--space-xs);
+    transition: opacity var(--dur) var(--ease-out);
+  }
+  .input-group-date input::-webkit-calendar-picker-indicator:hover { opacity: 0.9; }
+  .input-group-date:focus-within input::-webkit-calendar-picker-indicator { opacity: 0.8; }
+
+  /* textarea */
+  .input-group-textarea {
+    height: auto;
+    align-items: stretch;
+    padding: var(--space-sm) var(--ctrl-pad);
+  }
+  .input-group-textarea textarea { line-height: var(--leading); resize: none; }
+  .input-group-auto textarea { overflow: hidden; }
+  .input-group-textarea textarea::-webkit-scrollbar,
+  .input-group-textarea textarea::-webkit-scrollbar-thumb { cursor: default; }
+}

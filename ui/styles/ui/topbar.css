@@ -1,0 +1,40 @@
+/* styles/ui/topbar.css */
+
+@layer components {
+  .topbar {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
+    border-bottom: var(--bw) solid var(--border);
+    background: var(--surface2);
+    flex-shrink: 0;
+    user-select: none;
+  }
+  .topbar.sm { gap: var(--space-xs); padding: var(--space-xsm) var(--space-md); }
+  .topbar.lg { gap: var(--space-md); padding: var(--space-md) var(--space-lg); }
+
+  .topbar-logo {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    color: var(--text3);
+    font-family: var(--font-head);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: var(--tracking-tight);
+    margin-right: var(--space-xs);
+    transition: color var(--dur) var(--ease-out);
+  }
+  .topbar-logo:hover { color: var(--text); }
+  .topbar-logo .icon { font-size: var(--text-lg); }
+  .topbar-logo img { width: 20px; height: 20px; display: block; }
+  .topbar.sm .topbar-logo img { width: 18px; height: 18px; }
+  .topbar.lg .topbar-logo { font-size: var(--text-base); gap: var(--space-sm); }
+  .topbar.lg .topbar-logo img { width: 24px; height: 24px; }
+
+  /* Material glyphs sit a hair below text baseline; drop text to meet them */
+  .topbar span:not(.icon) { transform: translateY(1px); }
+  .topbar.lg span:not(.icon) { transform: translateY(2px); }
+}

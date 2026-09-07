@@ -1,0 +1,25 @@
+/* styles/ui/color-picker.css */
+
+@layer components {
+  .color-picker {
+    display: inline-flex;
+    gap: var(--space-xsm);
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .color-dot {
+    width: var(--ctrl-h);
+    height: var(--ctrl-h);
+    padding: 0;
+    border: 2px solid var(--c);
+    border-radius: var(--radius-full);
+    background: transparent;
+    cursor: pointer;
+    transition: background var(--dur) var(--ease-out), box-shadow var(--dur) var(--ease-out);
+  }
+  .color-dot:hover { background: color-mix(in srgb, var(--c) 30%, transparent); }
+  .color-dot:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--accent); }
+  .color-dot.active { background: var(--c); }
+  .color-picker.sm .color-dot { width: var(--ctrl-h-sm); height: var(--ctrl-h-sm); }
+  .color-picker.lg .color-dot { width: var(--ctrl-h-lg); height: var(--ctrl-h-lg); }
+}

@@ -1,0 +1,50 @@
+/* styles/ui/badge.css */
+
+@layer components {
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: 1px 6px;
+    border: var(--bw) solid transparent;
+    border-radius: var(--radius-sm);
+    font-size: var(--text-xs);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.4;
+    white-space: nowrap;
+    user-select: none;
+  }
+  .badge.sm { padding: 0 4px; font-size: 0.625rem; }
+  .badge.lg { padding: var(--space-xs) var(--space-md); font-size: var(--text-sm); }
+  .badge .icon { font-size: 0.875em; }
+  .badge.lg .icon { font-size: 1em; }
+  .badge-mono { font-family: var(--font-mono); user-select: all; }
+  .badge-text:empty { display: none; }
+
+  /* variants read `color` attribute */
+  .badge-solid { background: var(--c); border-color: var(--c); color: var(--bg2); }
+  .badge-tint { background: color-mix(in srgb, var(--c) 20%, transparent); color: var(--c); }
+  .badge-tint[color="neutral"] {
+    background: color-mix(in srgb, var(--text4) 14%, transparent);
+    color: var(--text2);
+  }
+  .badge-tint[color="wrn"] { background: color-mix(in srgb, var(--c) 24%, transparent); }
+  .badge-outline {
+    background: color-mix(in srgb, var(--c) 12%, transparent);
+    border-color: var(--c);
+    color: var(--c);
+  }
+  .badge-outline[color="neutral"] {
+    background: transparent;
+    border-color: var(--border);
+    color: var(--text4);
+  }
+
+  /* corner counter, parent must be positioned */
+  .badge-abs { position: absolute; z-index: 1; }
+  .badge-top-right    { top: -4px; right: -4px; }
+  .badge-top-left     { top: -4px; left: -4px; }
+  .badge-bottom-right { bottom: -4px; right: -4px; }
+  .badge-bottom-left  { bottom: -4px; left: -4px; }
+}

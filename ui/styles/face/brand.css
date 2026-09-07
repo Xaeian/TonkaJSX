@@ -1,0 +1,134 @@
+/* styles/face/brand.css */
+
+/* tokens < base < components < utilities: an attribute in JSX beats a component default */
+@layer tokens, base, components, utilities;
+
+@layer tokens {
+  :root {
+    --font-head: "Inter", system-ui, sans-serif;
+    --font-body: "Inter", system-ui, sans-serif;
+    --font-mono: "JetBrains Mono", "SF Mono", ui-monospace, monospace;
+    color-scheme: light dark;
+    /* surfaces */
+    --bg:       light-dark(#dcdee2, #101012);
+    --bg2:      light-dark(#f5f6f8, #08080a);
+    --bg3:      light-dark(#e4e6ea, #161619);
+    --surface:  light-dark(#eceef2, #1a1a1e);
+    --surface2: light-dark(#f4f5f8, #242428);
+    --border:   light-dark(#b8bcc2, #38383e);
+    --border2:  light-dark(#8a9098, #525258);
+    /* text */
+    --text:  light-dark(#18191c, #e0e0e4);
+    --text2: light-dark(#34383e, #b0b0b6);
+    --text3: light-dark(#50565e, #808088);
+    --text4: light-dark(#74797e, #5e5e66);
+    --text-disabled: light-dark(#a0a4aa, #46464c);
+    --bg-disabled:   light-dark(#d8dade, #151518);
+    --opacity-disabled: 0.4;
+    --text-on-solid: #fff;
+    /* accent */
+    --accent:     light-dark(#2b6cb0, #569cd6);
+    --accent-dim: light-dark(#357abd, #264f78);
+    /* semantic, with a tinted twin */
+    --ok:  light-dark(#2e9c1f, #6a9955);
+    --err: light-dark(#e02020, #f04747);
+    --wrn: light-dark(#d99500, #e8c547);
+    --inf: light-dark(#1565c0, #4e9cd8);
+    --ok2:  light-dark(#bee0b8, #34642b);
+    --err2: light-dark(#e0b8b8, #642b2b);
+    --wrn2: light-dark(#e0d3b8, #64522b);
+    --inf2: light-dark(#b8cce0, #2b4764);
+    /* neutral, with a tinted twin */
+    --neutral:  var(--text4);
+    --neutral2: var(--border);
+    /* shadows */
+    --shadow-sm: light-dark(0 1px 2px  rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.3));
+    --shadow:    light-dark(0 4px 12px rgba(0,0,0,0.10), 0 4px 12px rgba(0,0,0,0.4));
+    --shadow-lg: light-dark(0 8px 24px rgba(0,0,0,0.14), 0 8px 24px rgba(0,0,0,0.5));
+    /* syntax */
+    --string:   light-dark(#a31515, #ce9178);
+    --number:   light-dark(#098658, #b5cea8);
+    --variable: light-dark(#001080, #9cdcfe);
+    --type:     light-dark(#267f99, #4ec9b0);
+    --keyword:  light-dark(#af00db, #c586c0);
+    --entity:   light-dark(#795e26, #d7ba7d);
+    /* fixed palette, with a muted twin */
+    --red:    #d04848;
+    --orange: #c47030;
+    --amber:  #b8902a;
+    --green:  #5a9945;
+    --teal:   #3a9d8d;
+    --blue:   #4a88c8;
+    --purple: #9560b0;
+    --pink:   #c85890;
+    --gray:   #888888;
+    --red2:    #996156;
+    --orange2: #956550;
+    --amber2:  #a38b5c;
+    --green2:  #81925d;
+    --teal2:   #568676;
+    --blue2:   #5d7392;
+    --purple2: #8d6490;
+    --pink2:   #a26d7a;
+    --gray2:   #77736e;
+    /* type scale: dense tool UI */
+    --text-xs:   0.6875rem;
+    --text-sm:   0.75rem;
+    --text-base: 0.8125rem;
+    --text-md:   0.875rem;
+    --text-lg:   1rem;
+    --text-xl:   1.25rem;
+    --leading:       1.5;
+    --leading-tight: 1.25;
+    --tracking-tight: -0.01em;
+    /* spacing */
+    --space-xs:  0.25rem;
+    --space-xsm: 0.375rem;
+    --space-sm:  0.5rem;
+    --space-md:  0.75rem;
+    --space-lg:  1rem;
+    --space-xl:  1.5rem;
+    --space-2xl: 2rem;
+    --space-3xl: 3rem;
+    /* shape */
+    --radius-sm:   3px;
+    --radius:      6px;
+    --radius-lg:   10px;
+    --radius-full: 9999px;
+    --bw: 1px;
+    /* chrome */
+    --sidebar-w:   48px;
+    --sidebar-btn: 36px;
+    /* z-index */
+    --z-dropdown: 100;
+    --z-sticky:   200;
+    --z-overlay:  300;
+    --z-modal:    400;
+    --z-toast:    500;
+    --z-tooltip:  600;
+    /* motion */
+    --dur-fast: 100ms;
+    --dur:      150ms;
+    --dur-slow: 250ms;
+    --ease-out:    cubic-bezier(0, 0, 0.2, 1);
+    --ease-in:     cubic-bezier(0.4, 0, 1, 1);
+    --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+    /* control scale: every control reads these, `.sm`/`.lg` on control rewrite them */
+    --ctrl-h:    28px;
+    --ctrl-h-sm: 24px;
+    --ctrl-h-lg: 34px;
+    --ctrl-text: var(--text-sm);
+    --ctrl-pad:  var(--space-md);
+    --ctrl-icon: var(--text-md);
+    /* large decorative glyphs */
+    --display-icon:    2.5rem;
+    --display-icon-sm: 1.75rem;
+    --display-icon-lg: 3.5rem;
+  }
+  /* an explicit choice beats system preference */
+  [data-theme="light"] { color-scheme: light; }
+  [data-theme="dark"]  { color-scheme: dark; }
+  @media (prefers-reduced-motion: reduce) {
+    :root { --dur-fast: 0ms; --dur: 0ms; --dur-slow: 0ms; }
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "moduleDetection": "legacy",
+    "jsx": "preserve",
+    "jsxFactory": "JSX.createElement",
+    "jsxFragmentFactory": "JSX.Fragment",
+    "allowJs": true,
+    "checkJs": false,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "types": [],
+    "typeRoots": [],
+    "allowSyntheticDefaultImports": true
+  },
+  "include": ["app.jsx", "app.js", "scripts/**/*.js", "scripts/**/*.jsx"],
+  "exclude": ["images", "fonts", "assets", "styles"]
+}

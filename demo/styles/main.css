@@ -39,6 +39,8 @@ code {
 }
 .section .subdesc { margin-bottom: 12px; }
 .subdesc { color: var(--dim); font-size: 0.82rem; }
+.subdesc a { color: var(--acc); text-decoration: none; }
+.subdesc a:hover { text-decoration: underline; }
 
 ul { margin-top: 14px; padding-left: 20px; list-style: disc; }
 li { font-size: 0.82rem; padding: 3px 0; color: var(--dim); }

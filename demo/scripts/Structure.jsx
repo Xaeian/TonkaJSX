@@ -29,9 +29,9 @@ const Folder = ({ pre, name, note, cls, open: initOpen, children }) => {
 const Structure = () => (
   <Section title="Structure">
     <p class="subdesc">
-      The workspace contains <code>serve.js</code> and <code>build.js</code> plus the usual Node.js stuff.
+      Workspace contains <code>serve.js</code> and <code>build.js</code> plus usual Node.js stuff.
       Each website/app lives in its own project folder.
-      The structure is partly opinionated, but not too strict.
+      Structure is partly opinionated, but not too strict.
     </p>
     <div class="tree">
       <Branch pre="├─" name="tonka.js" note="CLI entry: tonka serve / tonka build" cls="accent" />

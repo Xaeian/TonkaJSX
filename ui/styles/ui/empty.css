@@ -1,0 +1,28 @@
+/* styles/ui/empty.css */
+
+@layer components {
+  .empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+    padding: var(--space-xl) var(--space-md);
+    text-align: center;
+    color: var(--text4);
+    border: var(--bw) dashed var(--border);
+    border-radius: var(--radius);
+  }
+  .empty-icon { font-size: var(--display-icon); }
+  .empty-title { font-weight: 500; color: var(--text3); }
+  .empty-desc { font-size: var(--text-sm); line-height: var(--leading); }
+
+  .empty.sm { padding: var(--space-md) var(--space-sm); gap: var(--space-xs); }
+  .empty.sm .empty-icon { font-size: var(--display-icon-sm); }
+  .empty.sm .empty-title { font-size: var(--text-sm); }
+  .empty.sm .empty-desc { font-size: var(--text-xs); }
+  .empty.lg { padding: var(--space-xl) var(--space-lg); gap: var(--space-md); }
+  .empty.lg .empty-icon { font-size: var(--display-icon-lg); }
+  .empty.lg .empty-title { font-size: var(--text-lg); }
+  .empty.lg .empty-desc { font-size: var(--text-md); }
+}

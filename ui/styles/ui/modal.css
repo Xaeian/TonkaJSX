@@ -1,0 +1,82 @@
+/* styles/ui/modal.css */
+
+@layer components {
+  .modal {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-modal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-md);
+    background: color-mix(in srgb, var(--bg2) 70%, transparent);
+    backdrop-filter: blur(2px);
+    opacity: 0;
+    transition: opacity var(--dur) var(--ease-out);
+  }
+  .modal.show { opacity: 1; }
+  body.modal-locked { overflow: hidden; }
+
+  .modal-dialog {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 560px;
+    max-height: calc(100vh - 2 * var(--space-md));
+    background: var(--bg3);
+    border: var(--bw) solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-8px) scale(0.98);
+    transition: transform var(--dur) var(--ease-out);
+    min-width: 0;
+  }
+  .modal.show .modal-dialog { transform: none; }
+  .modal-dialog.sm { max-width: 360px; }
+  .modal-dialog.lg { max-width: 880px; }
+
+  .modal-head {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
+    border-bottom: var(--bw) solid var(--border);
+    background: var(--surface2);
+    border-top-left-radius: var(--radius);
+    border-top-right-radius: var(--radius);
+    flex-shrink: 0;
+  }
+  .modal-title {
+    font-family: var(--font-head);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: var(--tracking-tight);
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .modal-actions { display: flex; align-items: center; gap: var(--space-xs); }
+  .modal-body {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-md);
+    padding: var(--space-md);
+    color: var(--text2);
+    overflow-y: auto;
+    min-width: 0;
+  }
+  .modal-foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
+    border-top: var(--bw) solid var(--border);
+    background: var(--surface2);
+    border-bottom-left-radius: var(--radius);
+    border-bottom-right-radius: var(--radius);
+    flex-shrink: 0;
+  }
+}

@@ -1,0 +1,18 @@
+/* styles/ui/toggle.css */
+
+@layer components {
+  .toggle { display: inline-flex; overflow: hidden; }
+  .toggle > .btn {
+    height: 100%;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    color: var(--text4);
+  }
+  .toggle > .btn + .btn { border-left: var(--bw) solid var(--border); }
+  .toggle > .btn:hover { color: var(--text2); background: transparent; }
+  .toggle > .btn.active, .toggle > .btn.active:hover {
+    background: var(--accent-dim);
+    color: var(--text-on-solid);
+  }
+}

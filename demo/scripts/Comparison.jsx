@@ -25,8 +25,14 @@ const Comparison = () => (
           <Row label="Code structure" scores={[3,1,1,2,3,3]} />
           <Row label="Scaling" scores={[1,1,1,2,3,3]} />
           <Row label="Handover" scores={[2,1,3,2,2,2]} />
+          <Row label="LLM-friendly" scores={[3,2,2,2,2,1]} />
         </tbody>
       </table>
     </div>
+    <p class="subdesc">
+      <b>LLM-friendly</b> means nothing is hidden: no imports to resolve,
+      and <code>serve</code> runs files in browser exactly as written,
+      so a model can check its own work.
+    </p>
   </Section>
 );

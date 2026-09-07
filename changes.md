@@ -1,5 +1,10 @@
 ## Changes 🌰TonkaJSX
 
+### `1.2.1` TonkaUI + font lookup:
+
+- `ui` demo project: TonkaUI component kit
+- `-f` takes a face from any folder, else from its `@font-face` url
+
 ### `1.2.0` Babel 8 compatibility:
 
 - `tonka` preset _(classic runtime + `JSX.*` pragma)_ instead of `@jsx` comments

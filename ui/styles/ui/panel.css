@@ -1,0 +1,198 @@
+/* styles/ui/panel.css */
+
+@layer components {
+  .panel {
+    display: flex;
+    flex-direction: column;
+    background: var(--bg3);
+    border: var(--bw) solid var(--border);
+    border-radius: var(--radius);
+    min-width: 0;
+    transition: border-color var(--dur) var(--ease-out);
+  }
+  /* cap: max-width from app, centered in its column */
+  .panel-cap { width: 100%; margin-inline: auto; }
+
+  /* head */
+  .panel-head {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
+    border-bottom: var(--bw) solid var(--border);
+    background: var(--surface2);
+    border-top-left-radius: var(--radius);
+    border-top-right-radius: var(--radius);
+    flex-shrink: 0;
+  }
+  .panel-compact > .panel-head {
+    padding: var(--space-xs) var(--space-md);
+    gap: var(--space-xs);
+  }
+  .panel-head-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+  }
+  .panel-icon { font-size: var(--text-md); color: var(--text3); flex: 0 0 auto; }
+  .panel[color] .panel-icon { color: var(--stripe); }
+  .panel-title {
+    font-family: var(--font-head);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: var(--tracking-tight);
+  }
+  .panel-meta {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--text4);
+    flex: 0 0 auto;
+  }
+  .panel-actions {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+  }
+
+  /* tabs */
+  .panel-tabs {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    margin: 0 calc(-1 * var(--space-md)) calc(-1 * var(--space-sm));
+    padding: 0 var(--space-md);
+    border-top: var(--bw) solid var(--border);
+  }
+  .panel-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: var(--space-sm) 0;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    color: var(--text4);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    cursor: pointer;
+    transition: color var(--dur) var(--ease-out), border-color var(--dur) var(--ease-out);
+  }
+  .panel-tab:hover { color: var(--text2); }
+  .panel-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .panel-tab .icon { font-size: var(--text-md); }
+
+  /* toolbar: full-width strip between head and body */
+  .panel-toolbar {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
+    background: var(--bg3);
+    border-bottom: var(--bw) solid var(--border);
+    flex-shrink: 0;
+  }
+
+  /* body */
+  .panel-body {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-md);
+    padding: var(--space-md);
+    color: var(--text2);
+    min-width: 0;
+  }
+  .panel.sm > .panel-body { padding: var(--space-sm) var(--space-md); gap: var(--space-sm); }
+  .panel.lg > .panel-body { padding: var(--space-lg); gap: var(--space-lg); }
+  /* tab panes mirror body layout */
+  .panel-body > [data-tab] {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-md);
+    min-width: 0;
+  }
+
+  /* inline: one row of icon + main + actions */
+  .panel-inline {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--space-md);
+    padding: var(--space-sm) var(--space-md);
+    min-height: var(--ctrl-h-lg);
+  }
+  .panel-inline.sm { min-height: var(--ctrl-h); padding: var(--space-xs) var(--space-md); }
+  .panel-inline.lg {
+    min-height: calc(var(--ctrl-h-lg) + var(--space-sm));
+    padding: var(--space-md) var(--space-lg);
+  }
+  .panel-inline .panel-icon { font-size: var(--text-lg); }
+  .panel-inline .panel-main {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+  }
+  .panel-inline .panel-actions { flex: 0 0 auto; margin-left: 0; }
+  .panel-stack .panel-main {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-xs);
+  }
+  .panel-top.panel-inline { align-items: flex-start; }
+
+  /* stripe: right edge accent; `color` paints it, `tint` picks muted twin */
+  .panel-stripe {
+    --stripe: var(--border2);
+    border-right: 3px solid var(--stripe);
+    border-radius: var(--radius) 0 0 var(--radius);
+  }
+  .panel[color] { --stripe: var(--c); }
+  .panel[color][tint] { --stripe: var(--c2); }
+
+  /* looks */
+  .panel-dashed { border-style: dashed; background: transparent; }
+  .panel-dashed.panel-stripe { border-right-style: solid; }
+  .panel-ghost {
+    background: transparent;
+    border-color: transparent;
+    padding: var(--space-xs) var(--space-md);
+    min-height: var(--ctrl-h);
+  }
+  .panel-ghost > .panel-body { padding: 0; }
+  .panel-pointer { cursor: pointer; }
+  .panel-glow:hover { border-color: var(--border2); }
+  .panel-stripe.panel-glow:hover { border-right-color: var(--stripe); }
+  .panel-ghost.panel-glow:hover { border-color: transparent; background: var(--surface2); }
+  .panel-flash:hover .panel-icon { color: var(--accent); }
+  .panel-stripe.panel-flash:hover { --stripe: var(--accent); }
+
+  /* sizing */
+  .panel-flush { overflow: hidden; }
+  .panel-flush > .panel-body { padding: 0; gap: 0; flex: 1 1 auto; min-height: 0; }
+  .panel-grow > .panel-body { flex: 1 1 auto; overflow-y: auto; }
+  .panel-fill > .panel-body { flex: 1 1 auto; }
+  .panel-fill > .panel-body > .empty { flex: 1 1 auto; }
+
+  /* state: tinted background; :hover twin keeps it above glow hover rules */
+  .panel[state="selected"], .panel[state="selected"]:hover {
+    background: color-mix(in srgb, var(--inf2) 10%, var(--bg3));
+  }
+  .panel[state="armed"],   .panel[state="armed"]:hover   { background: var(--wrn2); }
+  .panel[state="confirm"], .panel[state="confirm"]:hover { background: var(--err2); }
+  .panel[state="moved"],   .panel[state="moved"]:hover   { background: var(--ok2); }
+  .panel[state="danger"],  .panel[state="danger"]:hover  { background: var(--err2); }
+  /* a colored chip selects in its own stripe color */
+  .panel-ghost.panel-pointer[color][state="selected"],
+  .panel-ghost.panel-pointer[color][state="selected"]:hover {
+    background: color-mix(in srgb, var(--stripe) 12%, transparent);
+    border-color: var(--stripe);
+  }
+}

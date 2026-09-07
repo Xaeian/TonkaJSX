@@ -1,0 +1,36 @@
+/* styles/ui/lightbox.css */
+
+@layer components {
+  .lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-modal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-lg);
+    background: color-mix(in srgb, var(--bg2) 70%, transparent);
+    backdrop-filter: blur(2px);
+    opacity: 0;
+    transition: opacity var(--dur) var(--ease-out);
+    cursor: zoom-out;
+  }
+  .lightbox.show { opacity: 1; }
+  .lightbox-img {
+    max-width: 92vw;
+    max-height: 92vh;
+    border-radius: var(--radius);
+    cursor: default;
+    display: block;
+    object-fit: contain;
+  }
+  .lightbox > .btn {
+    position: absolute;
+    top: var(--space-md);
+    right: var(--space-md);
+    background: var(--surface);
+    border-color: var(--border);
+    color: var(--text);
+  }
+  .lightbox > .btn:hover { background: var(--bg2); }
+}

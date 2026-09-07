@@ -1,0 +1,36 @@
+/* styles/ui/control.css */
+
+/* shared base of every form control: Button, Select, Input, Toggle */
+
+@layer components {
+  .btn, .select, .input-group, .toggle {
+    height: var(--ctrl-h);
+    font-family: var(--font-body);
+    font-size: var(--ctrl-text);
+    border: var(--bw) solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    color: var(--text);
+  }
+  .btn, .select, .toggle { flex: 0 0 auto; font-weight: 500; }
+  .btn, .select { padding: 0 var(--ctrl-pad); }
+  .btn .icon, .input-group .icon, .toggle .icon { font-size: var(--ctrl-icon); }
+
+  :is(.btn, .select, .input-group, .toggle).sm {
+    --ctrl-h:    var(--ctrl-h-sm);
+    --ctrl-text: var(--text-xs);
+    --ctrl-pad:  var(--space-sm);
+    --ctrl-icon: var(--text-sm);
+  }
+  :is(.btn, .select, .input-group, .toggle).lg {
+    --ctrl-h:    var(--ctrl-h-lg);
+    --ctrl-text: var(--text-base);
+    --ctrl-pad:  var(--space-lg);
+    --ctrl-icon: var(--text-lg);
+  }
+
+  .btn:disabled, .select:disabled, .input-group:has(:disabled) {
+    opacity: var(--opacity-disabled);
+    pointer-events: none;
+  }
+}

@@ -1,0 +1,34 @@
+/* styles/ui/file-drop.css */
+
+/* interaction states on top of Empty look */
+
+@layer components {
+  .file-drop {
+    cursor: pointer;
+    user-select: none;
+    outline: none;
+    transition: border-color var(--dur) var(--ease-out), background var(--dur) var(--ease-out),
+      color var(--dur) var(--ease-out);
+  }
+  .file-drop:hover { border-color: var(--border2); color: var(--text3); }
+  .file-drop:hover .empty-title { color: var(--text2); }
+  .file-drop:focus-visible {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 30%, transparent);
+  }
+  .file-drop-over {
+    border-color: var(--accent);
+    border-style: solid;
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
+  }
+  .file-drop-over .empty-icon, .file-drop-over .empty-title { color: var(--accent); }
+  .file-drop-selected {
+    border-style: solid;
+    border-color: var(--accent);
+    color: var(--text2);
+  }
+  .file-drop-selected .empty-icon { color: var(--accent); }
+  .file-drop-selected .empty-title { color: var(--text); }
+  .file-drop-loading { cursor: wait; opacity: 0.6; border-color: var(--border); }
+  .file-drop-loading .empty-icon { color: var(--accent); }
+}
