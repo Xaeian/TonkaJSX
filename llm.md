@@ -15,6 +15,8 @@ Refs are closures, a forward reference is a `let` filled in later.
 **Files** load from `scripts/` and `styles/`, deeper folders first, `.js` before `.jsx`.
 `Name is not defined` means the file is missing or loads too late.
 
+**Libraries** are listed in `lib.tonkajsx.com/list.txt`, linked in `app.html` head, baked in by `build`.
+
 **Traps.**
 `class=` not `className`.
 A component naming itself inside its own body shadows the global, rename the inner one to `_Name`.

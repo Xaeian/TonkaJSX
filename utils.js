@@ -224,6 +224,22 @@ export function getFlagValues(...flags) {
 }
 
 /**
+ * Size limit carried by a flag (e.g. `-f 800KB`, `--svg=100KB`).
+ * A bare flag means no limit, a missing flag means the flag was not used at all.
+ * @param {...string} flags Flag names (e.g. "--fonts", "-f").
+ * @returns {number|null} Bytes, `Infinity` for a bare flag, `null` when absent.
+ * @throws {Error} When the value carries no KB or MB suffix.
+ */
+export function flagLimit(...flags) {
+  if(!hasFlag(...flags)) return null
+  const [value] = getFlagValues(...flags)
+  if(!value) return Infinity
+  const m = value.match(/^(\d+(?:\.\d+)?)(KB|MB)$/i)
+  if(!m) throw new Error(`${flags[flags.length - 1]}: size needs a KB or MB suffix, got "${value}"`)
+  return Number(m[1]) * (m[2].toLowerCase() === "mb" ? 1048576 : 1024)
+}
+
+/**
  * Replace `{{key}}` placeholders in content.
  * Undefined keys → warning + empty string.
  * @param {string} content

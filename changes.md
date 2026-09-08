@@ -1,5 +1,10 @@
 ## Changes 🌰TonkaJSX
 
+### `1.2.2` Limits + libs:
+
+- `-i` `-f` `-s` take a size _(`-f 800KB`)_
+- Remote libs [lib.tonkajsx.com](https://lib.tonkajsx.com/list.html)
+
 ### `1.2.1` TonkaUI + font lookup:
 
 - `ui` demo project: TonkaUI component kit

@@ -2,15 +2,8 @@ import fs from "fs"
 import path from "path"
 import http from "http"
 import https from "https"
-import { PATH, readFile, fileList, loadVars, replaceVars, hasFlag, getFlagValues, COLOR as c } from "./utils.js"
-
-const INLINE_REMOTE = hasFlag("--inline-remote", "-i")
-const FONTS_INLINE = hasFlag("--fonts", "-f")
-const SVG_INLINE = hasFlag("--svg", "-s")
-const COMPRESS = hasFlag("--compress", "-c")
-const SUBSET_TEXT = getFlagValues("--subset-text", "-t")
-const SUBSET_LIGATURE = getFlagValues("--subset-ligature", "-l")
-const FONTS = FONTS_INLINE || SUBSET_TEXT.length > 0 || SUBSET_LIGATURE.length > 0
+import { PATH, readFile, fileList, loadVars, replaceVars, hasFlag, getFlagValues, flagLimit,
+  COLOR as c } from "./utils.js"
 
 class Log {
   static head(s) { console.log(`${c.blue}✦${c.reset} ${s}`) }
@@ -24,6 +17,15 @@ class Log {
 const bytes = (s) => Buffer.byteLength(String(s || ""), "utf8")
 
 const kb = (n) => (n / 1024).toFixed(1)
+
+const size = (n) => n === Infinity ? "no limit" : `${kb(n)}KB`
+
+// a file over its ceiling stays where it was, so the page reaches for it by address
+const external = []
+function tooBig(name, len, max, flag) {
+  external.push(`${name} ${size(len)} > ${size(max)} (${flag})`)
+  Log.warn(`Too large for ${flag}: ${name} (${size(len)} > ${size(max)})`)
+}
 
 const removeExternalTags = (html) => {
   const linkRe = /<link\b[^>]*href=["'](?:\.?\/)?styles\/[^"']+\.css[^"']*["'][^>]*>\s*/gi
@@ -160,43 +162,40 @@ const normRemoteUrl = (u) => {
   return u
 }
 
-function extractRemoteHeadAssets(html) {
+/** Remote CSS and JS of the head, each with the tag that asked for it; `html` is untouched. */
+function findRemoteHeadAssets(html) {
   const m = html.match(/<head\b[^>]*>[\s\S]*?<\/head>/i)
-  if(!m) return { html, css: [], js: [] }
-  const head0 = m[0]
+  if(!m) return { css: [], js: [] }
+  const head = m[0]
   const css = [], js = []
   const seen = new Set()
-  const take = (arr, url) => {
+  const take = (arr, url, tag) => {
     url = normRemoteUrl(url)
     const k = url.toLowerCase()
     if(seen.has(k)) return
     seen.add(k)
-    arr.push(url)
+    arr.push({ url, tag })
   }
-  let head = head0
-  head = head.replace(/[ \t]*<link\b[^>]*>[ \t]*(?:\r?\n)?/gi, (tag) => {
+  for(const [tag] of head.matchAll(/[ \t]*<link\b[^>]*>[ \t]*(?:\r?\n)?/gi)) {
     const hrefM = tag.match(/\bhref=["']([^"']+)["']/i)
-    if(!hrefM) return tag
+    if(!hrefM) continue
     const href = String(hrefM[1] || "").trim()
-    if(!isRemoteUrl(href)) return tag
+    if(!isRemoteUrl(href)) continue
     const relM = tag.match(/\brel=["']([^"']+)["']/i)
     const rel = String(relM?.[1] || "").toLowerCase()
     const p = href.split("#")[0].split("?")[0].toLowerCase()
-    const isCss = rel.includes("stylesheet") || p.endsWith(".css")
-    if(!isCss) return tag
-    take(css, href)
-    return ""
-  })
-  head = head.replace(/[ \t]*<script\b[^>]*\bsrc=["']([^"']+)["'][^>]*>\s*<\/script>[ \t]*(?:\r?\n)?/gi, (tag, src) => {
-    src = String(src || "").trim()
-    if(!isRemoteUrl(src)) return tag
-    const p = src.split("#")[0].split("?")[0].toLowerCase()
-    if(!p || p.startsWith("data:")) return tag
-    take(js, src)
-    return ""
-  })
-  if(head === head0) return { html, css: [], js: [] }
-  return { html: html.replace(head0, head), css, js }
+    if(!rel.includes("stylesheet") && !p.endsWith(".css")) continue
+    take(css, href, tag)
+  }
+  const srcRe = /[ \t]*<script\b[^>]*\bsrc=["']([^"']+)["'][^>]*>\s*<\/script>[ \t]*(?:\r?\n)?/gi
+  for(const [tag, src] of head.matchAll(srcRe)) {
+    const url = String(src || "").trim()
+    if(!isRemoteUrl(url)) continue
+    const p = url.split("#")[0].split("?")[0].toLowerCase()
+    if(!p || p.startsWith("data:")) continue
+    take(js, url, tag)
+  }
+  return { css, js }
 }
 
 function fetchBytes(url, depth = 0) {
@@ -237,22 +236,22 @@ function fetchBytes(url, depth = 0) {
 
 const fetchText = async (url) => (await fetchBytes(url)).toString("utf8")
 
-async function fetchMany(urls, label) {
-  if(!urls.length) return ""
-  Log.ok(`REMOTE ${label}:${urls.length}`)
-  const out = []
-  for(const u of urls) {
-    Log.info(`+ ${u}`)
-    const t = await fetchText(u)
-    Log.info(`  bytes:${bytes(t)}`)
-    out.push(String(t || "").trimEnd())
+/** Bodies that fit under `max`, with the tags they came from for the caller to drop. */
+async function fetchWithin(items, label, max) {
+  if(!items.length) return { code: "", taken: [] }
+  Log.ok(`REMOTE ${label}:${items.length}`)
+  const out = [], taken = []
+  for(const { url, tag } of items) {
+    Log.info(`+ ${url}`)
+    const text = await fetchText(url)
+    const len = bytes(text)
+    if(len > max) { tooBig(url, len, max, "-i"); continue }
+    Log.info(`  bytes:${len}`)
+    out.push(String(text || "").trimEnd())
+    taken.push(tag)
   }
-  return out.join("\n")
+  return { code: out.join("\n"), taken }
 }
-
-//---------------------------------------------------------------------------- Font inline (-f)
-
-const FONT_MAX_KB = 500
 
 //--------------------------------------------------------------------------------- Font lookup
 
@@ -318,7 +317,7 @@ async function fontBytes(ref, index) {
   }
 }
 
-async function processFonts(css, projectDir, subsetText, subsetLigature, srcDir) {
+async function processFonts(css, projectDir, subsetText, subsetLigature, srcDir, max) {
   const faces = []
   const cssBody = css.replace(/@font-face\s*\{[^}]+\}/g, block => {
     faces.push(block); return ""
@@ -435,10 +434,10 @@ async function processFonts(css, projectDir, subsetText, subsetLigature, srcDir)
         catch(e) { Log.warn(`  subset failed: ${name} (${e?.message || e})`) }
       }
     }
-    // a cut face is already as small as it gets, so only a whole one meets the cap
-    if(!subsetted && buf.length / 1024 > FONT_MAX_KB) {
-      Log.warn(`Font too large: ${name} (${kb(buf.length)}KB > ${FONT_MAX_KB}KB)`
-        + ` ${c.grey}(skipped)${c.reset}`)
+    // a cut face is already as small as it gets, so only a whole one meets the ceiling
+    if(!subsetted && buf.length > max) {
+      tooBig(name, buf.length, max, "-f")
+      inlined.push(block)
       continue
     }
     // subsetting answers in woff2 whatever went in, and both the type and the hint that
@@ -455,7 +454,7 @@ async function processFonts(css, projectDir, subsetText, subsetLigature, srcDir)
 
 //----------------------------------------------------------------------------- SVG inline (-s)
 
-async function inlineSvgs(code, baseDir) {
+async function inlineSvgs(code, baseDir, max) {
   const refs = new Set()
   for(const m of code.matchAll(/["']([^"']*\.svg)["']/g)) refs.add(m[1])
   if(!refs.size) return code
@@ -476,6 +475,8 @@ async function inlineSvgs(code, baseDir) {
     let svg = fs.readFileSync(fp, "utf8")
     const b0 = bytes(svg)
     if(optimize) svg = optimize(svg)
+    const len = bytes(svg)
+    if(len > max) { tooBig(ref, len, max, "-s"); continue }
     const uri = `data:image/svg+xml,${encodeURIComponent(svg)}`
     code = code.split(`"${ref}"`).join(`"${uri}"`)
     code = code.split(`'${ref}'`).join(`'${uri}'`)
@@ -507,15 +508,24 @@ async function precompress(filePath) {
 async function build()
 {
   Log.head(`Build ${c.grey}${PATH}${c.reset}`)
+  const remoteMax = flagLimit("--inline-remote", "-i")
+  const svgMax = flagLimit("--svg", "-s")
+  const fontFlag = flagLimit("--fonts", "-f")
+  const compress = hasFlag("--compress", "-c")
+  const subsetText = getFlagValues("--subset-text", "-t")
+  const subsetLigature = getFlagValues("--subset-ligature", "-l")
+  // -t and -l pull fonts in without -f, and then nothing bounds them
+  const fontMax = fontFlag ?? Infinity
+  const fonts = fontFlag !== null || subsetText.length > 0 || subsetLigature.length > 0
   const vars = loadVars("build")
   if(Object.keys(vars).length)
     Log.ok(`Vars:${Object.keys(vars).length} (${Object.keys(vars).join(", ")})`)
-  if(INLINE_REMOTE) Log.warn("-i inline-remote enabled")
-  if(FONTS) Log.ok("-f fonts enabled")
-  if(SVG_INLINE) Log.ok("-s svg enabled")
-  if(COMPRESS) Log.ok("-c compress enabled")
-  if(SUBSET_TEXT.length) Log.ok(`-t subset-text: ${SUBSET_TEXT.join(", ")}`)
-  if(SUBSET_LIGATURE.length) Log.ok(`-l subset-ligature: ${SUBSET_LIGATURE.join(", ")}`)
+  if(remoteMax !== null) Log.warn(`-i inline-remote enabled (${size(remoteMax)})`)
+  if(fonts) Log.ok(`-f fonts enabled (${size(fontMax)})`)
+  if(svgMax !== null) Log.ok(`-s svg enabled (${size(svgMax)})`)
+  if(compress) Log.ok("-c compress enabled")
+  if(subsetText.length) Log.ok(`-t subset-text: ${subsetText.join(", ")}`)
+  if(subsetLigature.length) Log.ok(`-l subset-ligature: ${subsetLigature.join(", ")}`)
   const indexPath = path.join(PATH, "app.html")
   if(!fs.existsSync(indexPath)) throw new Error("app.html not found in PATH")
   let html = readFile(indexPath)
@@ -527,12 +537,15 @@ async function build()
     for(const s of r.removed) Log.info(`- ${s}`)
   }
   let remoteCss = "", remoteJs = ""
-  if(INLINE_REMOTE) {
-    const x = extractRemoteHeadAssets(html)
-    html = x.html
-    if(x.css.length || x.js.length) {
-      remoteCss = await fetchMany(x.css, "CSS")
-      remoteJs = await fetchMany(x.js, "JS")
+  if(remoteMax !== null) {
+    const found = findRemoteHeadAssets(html)
+    if(found.css.length || found.js.length) {
+      const css = await fetchWithin(found.css, "CSS", remoteMax)
+      const js = await fetchWithin(found.js, "JS", remoteMax)
+      remoteCss = css.code
+      remoteJs = js.code
+      // a tag leaves the document only once its body sits in the bundle
+      for(const tag of [...css.taken, ...js.taken]) html = html.split(tag).join("")
     } else {
       Log.warn("INLINE REMOTE: no remote CSS/JS found in <head>")
     }
@@ -555,11 +568,11 @@ async function build()
     const b0 = bytes(cssBundle)
     cssBundle = await minifyCssSmart(cssBundle)
     Log.ok(`CSS min: ${b0} → ${bytes(cssBundle)}`)
-    if(FONTS) {
+    if(fonts) {
       // A face is looked up among the project files whatever folder holds them, and one
       // the project does not carry is fetched from the address its @font-face states.
-      cssBundle = await processFonts(cssBundle, PATH, SUBSET_TEXT, SUBSET_LIGATURE,
-        path.join(PATH, "scripts"))
+      cssBundle = await processFonts(cssBundle, PATH, subsetText, subsetLigature,
+        path.join(PATH, "scripts"), fontMax)
     }
   }
   else Log.warn("CSS bundle empty")
@@ -623,7 +636,7 @@ async function build()
     else Log.warn("Babel returned empty output")
   }
   else Log.warn("JS bundle empty")
-  if(SVG_INLINE && jsBundle) jsBundle = await inlineSvgs(jsBundle, PATH)
+  if(svgMax !== null && jsBundle) jsBundle = await inlineSvgs(jsBundle, PATH, svgMax)
   html = removeExternalTags(html)
 
   if(cssBundle) {
@@ -643,8 +656,12 @@ async function build()
   html = replaceVars(html, vars)
   const outPath = path.join(PATH, "index.html")
   fs.writeFileSync(outPath, html, "utf8")
-  Log.ok(`Wrote ${c.grey}${outPath}${c.reset}`)
-  if(COMPRESS) await precompress(outPath)
+  Log.ok(`Wrote ${c.grey}${outPath}${c.reset} (${size(fs.statSync(outPath).size)})`)
+  if(external.length) {
+    Log.warn(`Left external:${external.length}`)
+    for(const line of external) Log.info(`  ${line}`)
+  }
+  if(compress) await precompress(outPath)
 }
 
 build().catch((e)=>{

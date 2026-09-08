@@ -44,9 +44,10 @@ ${c.grey}Serve options:${c.reset}
   ${c.blue}-r${c.reset}, --remove                  delete built index.html before serving
 
 ${c.grey}Build options:${c.reset}
-  ${c.blue}-i${c.reset}, --inline-remote           inline remote CSS/JS from CDN
-  ${c.blue}-f${c.reset}, --fonts                   drop unused @font-face, inline as base64
-  ${c.blue}-s${c.reset}, --svg                     inline SVGs as data URIs
+  ${c.blue}-i${c.reset}, --inline-remote ${c.orange}[size]${c.reset}    inline remote CSS/JS from CDN
+  ${c.blue}-f${c.reset}, --fonts ${c.orange}[size]${c.reset}            drop unused @font-face, inline as base64
+  ${c.blue}-s${c.reset}, --svg ${c.orange}[size]${c.reset}              inline SVGs as data URIs
+      ${c.grey}size = 800KB or 10MB; a file above it stays linked instead${c.reset}
   ${c.blue}-c${c.reset}, --compress                generate .gz + .br alongside index.html
   ${c.blue}-t${c.reset}, --subset-text ${c.orange}"Name"${c.reset}      subset text font to chars in source
   ${c.blue}-l${c.reset}, --subset-ligature ${c.orange}"Name"${c.reset}  subset icon font to ligatures in source

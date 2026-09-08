@@ -57,19 +57,21 @@ tonka build [<project-name>] [options] # build deploy version of project
 Build supports optional optimization flags:
 
 ```sh
-tonka build -i -f -s -c -l "Material Symbols"
+tonka build -i -f 800KB -s -c -l "Material Symbols"
 ```
 
 | Flag | Long | What it does |
 |:-----|:-----|:-------------|
-| `-i` | `--inline-remote` | Inline remote CSS/JS from CDN |
-| `-f` | `--fonts` | Drop unused `@font-face`, inline remaining as base64 |
-| `-s` | `--svg` | Inline SVGs as data URIs (optimized with SVGO) |
+| `-i` | `--inline-remote [size]` | Inline remote CSS/JS from CDN |
+| `-f` | `--fonts [size]` | Drop unused `@font-face`, inline remaining as base64 |
+| `-s` | `--svg [size]` | Inline SVGs as data URIs (optimized with SVGO) |
 | `-c` | `--compress` | Generate `.gz` + `.br` alongside `index.html` |
 | `-t` | `--subset-text "Name"` | Subset text font to chars found in source |
 | `-l` | `--subset-ligature "Name"` | Subset icon font to ligatures found in source |
 
 `-t` and `-l` imply `-f`. Without flags, build works as before.
+`[size]` is `800KB` or `10MB`, and a file above it keeps its address instead of moving in.
+Build then prints how big `index.html` came out and what stayed outside.
 
 Server and build work on chosen project. If you don't pass a project name, it picks the first one _(useful when you only have one)_.
 If project contains `app.ini`, variables defined there are replaced in all JS/JSX/CSS/HTML files using `{{key}}` syntax. Top-level values are shared; `[serve]` and `[build]` sections override per mode.
