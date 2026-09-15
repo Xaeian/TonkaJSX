@@ -33,7 +33,7 @@ const Toggle = ({ value, size, title, onChange, class: className, children, ...r
 };
 
 /**
- * One option of a `Toggle`; parent handles clicks and active state.
+ * One option of a `Toggle`; the parent handles clicks and the active state.
  * @param {Object} props
  * @param {string} props.value
  * @param {string} [props.icon]

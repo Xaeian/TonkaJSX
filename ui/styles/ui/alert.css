@@ -1,11 +1,13 @@
 /* styles/ui/alert.css */
 
 @layer components {
-  /* stack: fixed at the bottom, newest at the bottom, grows upwards */
+  /* stack: fixed at the bottom, newest at the bottom, grows upwards.
+     Left of the sidebar and right of the scrollbar the content reserves, so a toast lines up
+     with the panels it covers instead of reaching past them by a scrollbar's width. */
   .alerts {
     position: fixed;
     left: var(--space-md);
-    right: var(--space-md);
+    right: calc(var(--space-md) + var(--scrollbar-w, 0px));
     bottom: var(--space-2xl);
     z-index: var(--z-toast);
     display: flex;

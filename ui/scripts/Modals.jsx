@@ -27,7 +27,7 @@ const Modals = () => {
   );
   const tosChk = <Checkbox label="I accept terms" />;
   const formModal = (
-    <Modal title="Create user" footer={<>
+    <Modal title="Create user" noClickAway footer={<>
       <Button onClick={() => formModal.close()}>Cancel</Button>
       <Button variant="primary" icon="person_add" onClick={() => {
         if(!tosChk.checked) { Alert.wrn("Accept terms first"); return; }
@@ -37,6 +37,21 @@ const Modals = () => {
     </>}>
       <row>{nameIn}{emailIn}</row>
       <row>{roleSel}{tosChk}</row>
+    </Modal>
+  );
+
+  //------------------------------------------------------------------------------------------ Wide
+
+  const wideModal = (
+    <Modal title="Wide" size="xl"
+      footer={<Button onClick={() => wideModal.close()}>Close</Button>}>
+      <p>
+        The widest of the three, for a dialog holding text rather than a form.
+        A file in a <code>Code</code> box is what it was added for.
+      </p>
+      <Code height="md" lang="query.sql" readOnly
+        value={"-- the widest dialog, so a long line still fits\nSELECT id, name, city"
+          + "\nFROM users\nWHERE city = 'Warszawa'\nORDER BY name;"} />
     </Modal>
   );
 
@@ -84,11 +99,19 @@ const Modals = () => {
         Create a modal once, then open and close it from code:
         <code>modal.open()</code>, <code>modal.close()</code>, <code>modal.opened</code>.
       </p>
+      <p>
+        Escape, the backdrop and the close button all dismiss a modal.
+        The form below carries <code>noClickAway</code>, so a click beside it leaves what you
+        typed alone; <code>noClose</code> takes all three away.
+      </p>
       <row>
         <Button icon="open_in_new" onClick={() => confirmModal.open()}>Small confirm</Button>
         <Button icon="open_in_new" onClick={() => formModal.open()}>Form</Button>
         <Button variant="primary" icon="open_in_new" onClick={() => largeModal.open()}>
           Large
+        </Button>
+        <Button variant="primary" icon="open_in_new" onClick={() => wideModal.open()}>
+          Wide
         </Button>
       </row>
     </Panel>

@@ -1,12 +1,14 @@
 // scripts/ui/Img.jsx
 
 /**
- * Image with a fallback for empty and error states and a loading overlay.
+ * Image with a fallback for the empty and error states and a loading overlay.
  *
  * Size: `height` and `width` are independent.
  * Each is a preset ("sm" 40px, "md" 80px, "lg" 160px), a number of pixels or a CSS length.
- * With one of them picture keeps its aspect ratio;
- * `minSquare` then stops it from getting narrower (or shorter) than given side.
+ * With one of them the picture keeps its aspect ratio;
+ * `minSquare` then stops it from getting narrower (or shorter) than the given side.
+ * `maxWidth` beside `height` lets a wide picture spread that far and no further,
+ * losing height rather than its edges; the box keeps the height it was given.
  *
  * Mutators: .src, .alt, .loading
  *
@@ -16,6 +18,7 @@
  * @param {string} [props.title]
  * @param {string|number} [props.height]
  * @param {string|number} [props.width]
+ * @param {string|number} [props.maxWidth]
  * @param {"contain"|"cover"|"fill"} [props.fit="contain"]
  * @param {boolean} [props.minSquare]
  * @param {boolean} [props.rounded]
@@ -25,8 +28,8 @@
  * @param {string} [props.fallbackText]
  * @param {() => void} [props.onClick]
  */
-const Img = ({ src, alt, height, width, fit = "contain", minSquare, rounded, circle, border,
-  fallbackIcon, fallbackText, onClick, class: className, ...rest }) => {
+const Img = ({ src, alt, height, width, maxWidth, fit = "contain", minSquare, rounded, circle,
+  border, fallbackIcon, fallbackText, onClick, class: className, ...rest }) => {
   const img = <img class="image-inner" alt={alt || ""} loading="lazy" />;
   const iconEl = <span class="icon"></span>;
   const el = (
@@ -60,6 +63,15 @@ const Img = ({ src, alt, height, width, fit = "contain", minSquare, rounded, cir
   if(w && !h) {
     el.style.height = "auto";
     if(minSquare) el.style.minHeight = w;
+  }
+  // The limits go on the picture as well as on the box, so it scales itself down to fit
+  // instead of being cut off at the edge.
+  const mw = css(maxWidth);
+  if(mw) {
+    el.classList.add("image-bounded");
+    el.style.maxWidth = mw;
+    img.style.maxWidth = mw;
+    if(h) img.style.maxHeight = h;
   }
 
   let _src = "";

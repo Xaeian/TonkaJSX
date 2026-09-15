@@ -6,7 +6,7 @@ const Sidebar = ({ class: className, children, ...rest }) => (
 );
 
 /**
- * Rail button: an `IconBtn` in rail look with tooltip beside rail.
+ * Rail button: an `IconBtn` in the rail look with the tooltip beside the rail.
  * `badge` puts a corner Badge on it (`<Badge pos="top-right">`).
  *
  * Mutators: .icon, .active, .title, .loading

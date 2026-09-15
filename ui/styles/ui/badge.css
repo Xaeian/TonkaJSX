@@ -17,12 +17,22 @@
   }
   .badge.sm { padding: 0 4px; font-size: 0.625rem; }
   .badge.lg { padding: var(--space-xs) var(--space-md); font-size: var(--text-sm); }
-  .badge .icon { font-size: 0.875em; }
-  .badge.lg .icon { font-size: 1em; }
+  /* A badge draws its glyph at its own size and never under it: at 0.875em a `sm` badge was
+     asking for a nine-pixel icon off a grid drawn for twenty-four, and the strokes went to
+     the pixel grid. The optical size follows the real one, and a little grade puts back what
+     the rounding eats. A `lg` badge is large enough to want neither. */
+  .badge .icon { font-size: 1em; --icon-opsz: 20; --icon-grad: 50; }
+  .badge.lg .icon { --icon-opsz: 24; --icon-grad: 0; }
+
+  /* Both boxes are centred, but neither font centres its ink in one: Inter's optical middle
+     sits 0.091em below its box's, the glyph's own 0.047em below the glyph box's. Without the
+     difference put back, an icon reads half a pixel high beside its word. An icon with no
+     word to line up against is centred already and keeps its own middle. */
+  .badge:not(:has(.badge-text:empty)) .icon { position: relative; top: 0.044em; }
   .badge-mono { font-family: var(--font-mono); user-select: all; }
   .badge-text:empty { display: none; }
 
-  /* variants read `color` attribute */
+  /* variants read the `color` attribute */
   .badge-solid { background: var(--c); border-color: var(--c); color: var(--bg2); }
   .badge-tint { background: color-mix(in srgb, var(--c) 20%, transparent); color: var(--c); }
   .badge-tint[color="neutral"] {

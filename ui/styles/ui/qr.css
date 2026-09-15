@@ -1,0 +1,23 @@
+/* styles/ui/qr.css */
+
+/* QR code card (Qr.jsx). A code has to sit on white to scan, whatever the theme,
+   so the ground is a literal, not a token; the corners follow every other surface. */
+@layer components {
+  .qr {
+    display: inline-block;
+    padding: var(--space-md);
+    background: #fff;
+    border-radius: var(--radius);
+  }
+  .qr svg { display: block; }
+
+  /* camera view (QrScan): full width, never taller than the screen it is scanning on */
+  .qr-scan {
+    display: block;
+    width: 100%;
+    max-height: 60dvh;
+    object-fit: cover;
+    background: #000;
+    border-radius: var(--radius);
+  }
+}

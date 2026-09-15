@@ -1,4 +1,4 @@
-/* styles/layout.css */
+/* styles/ui/layout.css */
 
 /* Layout tags and their attributes, whole layout vocabulary of an app:
    <row gap="sm" justify="end">, <stack fill>, <span flex="2">, <span color="red">. */
@@ -63,7 +63,8 @@
   /* flex tuning, on child */
   [grow] { flex: 1 1 auto; min-width: 0; min-height: 0; }
   [stretch] { align-self: stretch; }
-  [scroll] { overflow: auto; min-width: 0; min-height: 0; }
+  /* gutter stays reserved, as in `.content`: a view must not jump when its scrollbar appears */
+  [scroll] { overflow: auto; scrollbar-gutter: stable; min-width: 0; min-height: 0; }
   [pointer] { cursor: pointer; }
   /* fill: take parent's height; [grow] child is the one that scrolls */
   stack[fill] { height: 100%; overflow: hidden; }
@@ -133,6 +134,14 @@
   [text="right"]  { text-align: right; }
   [wrap] { white-space: pre-wrap; word-break: break-word; }
   [quoted] { color: var(--text3); font-style: italic; }
+  /* a link inside running text: underlined in a quiet color, brighter under the pointer */
+  [link] {
+    color: var(--text3);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    transition: color var(--dur) var(--ease-out);
+  }
+  [link]:hover { color: var(--text); }
   [tone="meta"] { font-size: var(--text-xs); color: var(--text4); }
   [tone="note"] { font-size: var(--text-sm); color: var(--text3); }
   [tone="tag"] {
@@ -147,8 +156,18 @@
     white-space: pre-wrap;
     word-break: break-word;
   }
-  @media (max-width: 600px) {
+  /* narrow screens: what does not fit beside each other goes under each other;
+     `hide-narrow` leaves, `only-narrow` is the control that stands in for it there */
+  @media (min-width: 721px) {
+    [only-narrow] { display: none; }
+  }
+  @media (max-width: 720px) {
     [hide-narrow] { display: none; }
+    /* weighted columns of a row become lines: a column squeezed to a word each reads as nothing;
+       a `nowrap` row is one the author wants whole, a field beside its button */
+    row:not([nowrap]) > [flex] { flex-basis: 100%; }
+    /* lines of one entry sit close, as lines of text do; the column gap was for columns */
+    row:not([nowrap]):has(> [flex]) { row-gap: var(--space-xs); }
   }
 
   /* color: one dictionary for every component, read as --c (strong) and --c2 (tinted) */

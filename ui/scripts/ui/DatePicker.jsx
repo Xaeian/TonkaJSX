@@ -2,8 +2,8 @@
 
 /**
  * Date/time picker over a native input.
- * `format` (strftime: %Y %m %d %H %M %S) picks native type
- * and is string form of `value`, `.value` and `onChange`.
+ * `format` (strftime: %Y %m %d %H %M %S) picks the native type
+ * and is the string form of `value`, `.value` and `onChange`.
  *
  * Mutators: .value (formatted string or null), .focus(), .input
  *

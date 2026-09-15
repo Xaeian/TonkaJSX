@@ -2,7 +2,7 @@
 
 const FileDrops = () => {
   const fmtSize = (n) =>
-    n < 1048576 ? (n / 1024).toFixed(1) + " KB" : (n / 1048576).toFixed(1) + " MB";
+    n < 1048576 ? (n / 1024).toFixed(1) + "kB" : (n / 1048576).toFixed(1) + "MB";
 
   //---------------------------------------------------------------------------------------- Avatar
 
@@ -20,7 +20,7 @@ const FileDrops = () => {
   );
   const avatarDrop = (
     <FileDrop accept="image/*" maxSize={2 * 1024 * 1024} icon="account_circle"
-      title="Choose your avatar" description="PNG, JPG or SVG up to 2 MB"
+      title="Choose your avatar" description="PNG, JPG or SVG up to 2MB"
       onFiles={([file]) => showImage(file)} onError={(msg) => Alert.wrn(msg)} />
   );
   showDrop();
@@ -44,12 +44,12 @@ const FileDrops = () => {
   renderFiles();
   const attachDrop = (
     <FileDrop multiple maxCount={5} maxSize={10 * 1024 * 1024} icon="attach_file" size="sm"
-      title="Attach up to five files" description="any type, 10 MB each"
+      title="Attach up to five files" description="any type, 10MB each"
       onFiles={(picked) => { files.push(...picked); renderFiles(); }}
       onError={(msg) => Alert.wrn(msg)} />
   );
 
-  //--------------------------------------------------------------------------------- Keep file
+  //------------------------------------------------------------------------------------- Keep file
 
   const keepDrop = (
     <FileDrop icon="draft" title="Pick one file"

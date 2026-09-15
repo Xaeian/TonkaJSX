@@ -550,9 +550,10 @@ async function build()
       Log.warn("INLINE REMOTE: no remote CSS/JS found in <head>")
     }
   }
-  const m = html.match(/\n(\s*)<head/)
-  const space = m ? m[1] : "  "
-  const space2 = space + space
+  const m = html.match(/\n([ \t]*)<head/)
+  const space = m ? m[1] : ""   // `<head>` indent, empty at column 0
+  const step = space || "  "    // one level, two spaces when `<head>` shows none
+  const space2 = space + step   // children of `<head>` and `<body>`
   const cssDir = path.join(PATH, "styles")
   const cssList = fileList(cssDir, [".css"])
   Log.ok(`CSS:${cssList.length}`)
@@ -640,7 +641,8 @@ async function build()
   html = removeExternalTags(html)
 
   if(cssBundle) {
-    const styleBlock = `${space}<style>\n${cssBundle}\n${space2}</style>\n${space}`
+    // `space` already sits before `</head>`, so only `step` is added
+    const styleBlock = `${step}<style>\n${cssBundle}\n${space2}</style>\n${space}`
     const next = injectBefore(html, `</head>`, styleBlock)
     if(!next) throw new Error("Missing </head> in HTML")
     html = next

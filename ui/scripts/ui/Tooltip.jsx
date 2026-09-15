@@ -1,10 +1,11 @@
 // scripts/ui/Tooltip.jsx
 
 /**
- * One tooltip per page, driven by `data-tooltip` (`title` prop in JSX).
+ * One tooltip for the page, driven by `data-tooltip` (the `title` prop in JSX).
  * Event delegation on `document`, so dynamic elements work too.
- * `data-tooltip-pos` picks placement (see `UI.place`, default bottom);
- * CSS variables `--tt-x`/`--tt-y` on trigger or an ancestor nudge it in px.
+ * `data-tooltip-pos` picks the placement (see `UI.place`, default bottom);
+ * the CSS variables `--tt-x`/`--tt-y` on the trigger or an ancestor nudge it in px.
+ * Mouse and pen only: a finger cannot hover, and a tap would leave the tooltip standing.
  *
  * API: Tooltip.hide(), Tooltip.config({ delay, gap, margin })
  */
@@ -35,11 +36,11 @@ const Tooltip = (() => {
       watch();
     };
     clearTimeout(_timer);
-    // moving between triggers shows next one at once
+    // moving between triggers shows the next one at once
     if(_el.classList.contains("show")) run();
     else _timer = setTimeout(run, _delay);
   };
-  // trigger may vanish without a pointer event (re-render, hidden): drop with it
+  // the trigger may vanish without a pointer event (re-render, hidden): drop with it
   const watch = () => {
     _raf = requestAnimationFrame(() => {
       if(!_el.classList.contains("show")) return;
@@ -53,13 +54,17 @@ const Tooltip = (() => {
     _el?.classList.remove("show");
     _current = null;
   };
+  // a tap fires over with no out to follow, so the tooltip would stay until the next tap
+  const hovers = (e) => e.pointerType !== "touch";
   const over = (e) => {
+    if(!hovers(e)) return;
     const t = e.target.closest("[data-tooltip]");
     if(!t || t === _current) return;
     _current = t;
     show(t);
   };
   const out = (e) => {
+    if(!hovers(e)) return;
     if(_current && !(e.relatedTarget && _current.contains(e.relatedTarget))) hide();
   };
   const config = ({ delay, gap, margin } = {}) => {
@@ -67,8 +72,8 @@ const Tooltip = (() => {
     if(gap != null) _gap = gap;
     if(margin != null) _margin = margin;
   };
-  document.addEventListener("mouseover", over);
-  document.addEventListener("mouseout", out);
+  document.addEventListener("pointerover", over);
+  document.addEventListener("pointerout", out);
   document.addEventListener("scroll", hide, true);
   return { hide, config };
 })();

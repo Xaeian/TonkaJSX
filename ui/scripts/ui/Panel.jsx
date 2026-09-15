@@ -7,7 +7,7 @@
  *
  * Looks, combined freely:
  *   stripe    right edge accent
- *   color     palette name for stripe and icon; `tint` picks muted twin
+ *   color     palette name for the stripe and the icon; `tint` picks the muted twin
  *   dashed, ghost, pointer
  *   glow      hover border
  *   flash     hover icon
@@ -16,10 +16,10 @@
  *   compact   slimmer head
  *   flush     body without padding
  *
- * Space: `grow` takes free height and scrolls body, `fill` takes it without scrolling;
- * `height`, `maxWidth` (centered), `maxHeight`.
+ * Space: `grow` takes the free height and scrolls the body, `fill` takes it without scrolling;
+ * `height`, `maxWidth` (centered), `maxHeight`. A tab pane of either fills the body it is in.
  *
- * State: `state` selected|armed|confirm|moved|danger tints background.
+ * State: `state` selected|armed|confirm|moved|danger tints the background.
  * `selected` is a shortcut for `state="selected"`.
  *
  * Mutators: .title, .icon, .color, .state, .selected, .tab.
@@ -98,7 +98,7 @@ const Panel = ({
     () => titleEl ? titleEl.textContent : "",
     (v) => { if(titleEl) { titleEl.textContent = v || ""; titleEl.hidden = !v; } });
 
-  // tabs: buttons in head, panes (`[data-tab]`) in body
+  // tabs: buttons in the head, panes (`[data-tab]`) in the body
   let current = hasTabs ? (value || tabs[0].key) : null;
   const sync = () => {
     for(const pane of body.querySelectorAll("[data-tab]")) {
@@ -128,5 +128,5 @@ const Panel = ({
   return el;
 };
 
-/** Tab pane inside `<Panel tabs>`; shown when `value` is active key. */
+/** Tab pane inside `<Panel tabs>`; shown when `value` is the active key. */
 const TabPanel = ({ value, children }) => <div data-tab={value}>{children}</div>;

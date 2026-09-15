@@ -2,7 +2,7 @@
 
 /**
  * Toasts stacked above the bottom edge.
- * Same type and message refreshes existing toast; past `max` oldest one goes.
+ * The same type and message refreshes the existing toast; past `max` the oldest goes.
  *
  * API:
  *   Alert.inf/ok/wrn/err(msg, ms?)   ms=0 keeps it until dismissed

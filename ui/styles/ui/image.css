@@ -29,8 +29,10 @@
   .image-fit-contain .image-inner { object-fit: contain; }
   .image-fit-fill    .image-inner { object-fit: fill; }
   .image-ok .image-inner { opacity: 1; }
-  /* only height given: picture dictates width, so inner must not be 100% */
+  /* only height given: the picture dictates the width, so the inner must not be 100% */
   .image-auto-width .image-inner { width: auto; }
+  /* bounded: the picture sizes itself within the limits, so a wide one comes out shorter */
+  .image-bounded .image-inner { width: auto; height: auto; }
 
   .image-fallback {
     position: absolute;

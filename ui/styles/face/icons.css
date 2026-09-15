@@ -14,7 +14,13 @@
     font-size: 1.125rem;
     font-weight: 400;
     line-height: 1;
-    font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+    /* The four axes as knobs, so a place that draws its icons small can say so and nothing
+       else changes. `opsz` is the size the glyph was drawn for: one drawn for 24 and painted
+       at 9 loses half a stroke to the pixel grid. `GRAD` puts that weight back without
+       moving a sidebearing, which is what it exists for. */
+    font-variation-settings:
+      "FILL" var(--icon-fill, 0), "wght" var(--icon-wght, 400),
+      "GRAD" var(--icon-grad, 0), "opsz" var(--icon-opsz, 24);
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }

@@ -1,0 +1,78 @@
+/* styles/ui/code.css */
+
+@layer components {
+  .code {
+    /* three digits and the space after them, so the column stands still */
+    --code-gutter: 4ch;
+    position: relative;
+    background: var(--bg2);
+    border: var(--bw) solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  /* one box, two layers: the painted copy under a field that shows only its caret */
+  .code-paint,
+  .code-field {
+    margin: 0;
+    border: 0;
+    padding: var(--space-md);
+    font: var(--text-base) / 1.6 var(--font-mono);
+    tab-size: 2;
+    white-space: pre;
+    background: transparent;
+    overflow: auto;
+  }
+  .code-paint {
+    position: absolute;
+    inset: 0;
+    color: var(--text);
+    pointer-events: none;
+  }
+  .code-field {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 100%;
+    resize: none;
+    outline: none;
+    color: transparent;
+    caret-color: var(--text);
+  }
+  .code-read .code-field { caret-color: transparent; }
+
+  /* one box per source line: a fold keeps the line it belongs to, and the number sits at the
+     top of that box rather than beside every fold of it */
+  .code-line { min-height: 1lh; }
+  .code-num .code-line { position: relative; padding-left: var(--code-gutter); }
+  .code-no {
+    position: absolute;
+    left: 0;
+    width: calc(var(--code-gutter) - var(--space-sm));
+    text-align: right;
+    color: var(--text4);
+  }
+  /* the field carries the same gutter as padding, so the caret lands where the text is */
+  .code-num .code-field { padding-left: calc(var(--space-md) + var(--code-gutter)); }
+  .code-wrap .code-paint,
+  .code-wrap .code-field { white-space: pre-wrap; word-break: break-word; }
+
+  .code .cd-key     { color: var(--variable); }
+  .code .cd-str     { color: var(--string); }
+  .code .cd-num     { color: var(--number); }
+  .code .cd-kw      { color: var(--keyword); }
+  .code .cd-type    { color: var(--type); }
+  .code .cd-meta    { color: var(--entity); }
+  .code .cd-comment { color: var(--text4); font-style: italic; }
+
+  /* a column takes its colour from its place in the row, so the eye can follow one down the
+     page; the order alternates warm and cool, so neighbours never blur together */
+  .code .cd-sep { color: var(--text4); }
+  .code .cd-c0 { color: var(--blue); }
+  .code .cd-c1 { color: var(--amber); }
+  .code .cd-c2 { color: var(--green); }
+  .code .cd-c3 { color: var(--pink); }
+  .code .cd-c4 { color: var(--teal); }
+  .code .cd-c5 { color: var(--orange); }
+  .code .cd-c6 { color: var(--purple); }
+  .code .cd-c7 { color: var(--red); }
+}

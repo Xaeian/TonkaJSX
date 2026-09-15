@@ -10,7 +10,7 @@
     min-width: 0;
     transition: border-color var(--dur) var(--ease-out);
   }
-  /* cap: max-width from app, centered in its column */
+  /* cap: max-width from the app, centered in its column */
   .panel-cap { width: 100%; margin-inline: auto; }
 
   /* head */
@@ -52,6 +52,8 @@
     color: var(--text4);
     flex: 0 0 auto;
   }
+  /* a row in a slot is a group, not a full line, as a row inside another row */
+  :is(.panel-meta, .panel-actions, .panel-toolbar) > row { width: auto; }
   .panel-actions {
     margin-left: auto;
     display: flex;
@@ -110,7 +112,7 @@
   }
   .panel.sm > .panel-body { padding: var(--space-sm) var(--space-md); gap: var(--space-sm); }
   .panel.lg > .panel-body { padding: var(--space-lg); gap: var(--space-lg); }
-  /* tab panes mirror body layout */
+  /* tab panes mirror the body layout */
   .panel-body > [data-tab] {
     display: flex;
     flex-direction: column;
@@ -147,8 +149,26 @@
     gap: var(--space-xs);
   }
   .panel-top.panel-inline { align-items: flex-start; }
+  /* narrow screens: a panel with actions becomes two columns, icon and content, the actions
+     on a line of their own under the content and flush with it, so nothing squeezes the text;
+     `nowrap` keeps a short row whole, as it does on a row */
+  @media (max-width: 720px) {
+    /* head and content wrap before anything is squeezed to a letter */
+    .panel-head-row { flex-wrap: wrap; }
+    .panel-inline:not([nowrap]) .panel-main { flex-wrap: wrap; }
+    .panel-inline:not([nowrap]):has(.panel-actions) {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      row-gap: var(--space-xs);
+    }
+    .panel-inline:not([nowrap]):has(.panel-actions) .panel-main { grid-column: 2; }
+    .panel-inline:not([nowrap]):has(.panel-actions) .panel-actions {
+      grid-column: 2;
+      margin-left: 0;
+    }
+  }
 
-  /* stripe: right edge accent; `color` paints it, `tint` picks muted twin */
+  /* stripe: right edge accent; `color` paints it, `tint` picks the muted twin */
   .panel-stripe {
     --stripe: var(--border2);
     border-right: 3px solid var(--stripe);
@@ -180,8 +200,13 @@
   .panel-grow > .panel-body { flex: 1 1 auto; overflow-y: auto; }
   .panel-fill > .panel-body { flex: 1 1 auto; }
   .panel-fill > .panel-body > .empty { flex: 1 1 auto; }
+  /* a tab pane of such a panel fills it too, as the body it stands in does: a pane holding a
+     surface of its own ends where the panel ends, not where its last line fell. It grows and
+     never shrinks, so content taller than the panel still scrolls in the body above it. */
+  .panel-grow > .panel-body > [data-tab],
+  .panel-fill > .panel-body > [data-tab] { flex: 1 0 auto; }
 
-  /* state: tinted background; :hover twin keeps it above glow hover rules */
+  /* state: tinted background; the :hover twin keeps it above the glow hover rules */
   .panel[state="selected"], .panel[state="selected"]:hover {
     background: color-mix(in srgb, var(--inf2) 10%, var(--bg3));
   }
@@ -189,9 +214,9 @@
   .panel[state="confirm"], .panel[state="confirm"]:hover { background: var(--err2); }
   .panel[state="moved"],   .panel[state="moved"]:hover   { background: var(--ok2); }
   .panel[state="danger"],  .panel[state="danger"]:hover  { background: var(--err2); }
-  /* a colored chip selects in its own stripe color */
-  .panel-ghost.panel-pointer[color][state="selected"],
-  .panel-ghost.panel-pointer[color][state="selected"]:hover {
+  /* a colored ghost panel (a chip, a row) selects in its own stripe color */
+  .panel-ghost[color][state="selected"],
+  .panel-ghost[color][state="selected"]:hover {
     background: color-mix(in srgb, var(--stripe) 12%, transparent);
     border-color: var(--stripe);
   }

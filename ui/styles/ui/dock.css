@@ -1,7 +1,7 @@
 /* styles/ui/dock.css */
 
 @layer components {
-  /* a bar glued to one edge of its flex parent, bordered on content side only */
+  /* a bar glued to one edge of its flex parent, bordered on the content side only */
   .dock {
     display: flex;
     background: var(--surface);
@@ -12,7 +12,7 @@
   .dock.lg { padding: var(--space-md) var(--space-lg); }
   .dock-tint { background: var(--bg2); }
 
-  /* top / bottom: sticky horizontal bars, a single child spans width */
+  /* top / bottom: sticky horizontal bars, a single child spans the width */
   .dock-top, .dock-bottom {
     flex-direction: row;
     align-items: center;
@@ -24,7 +24,7 @@
   .dock-bottom { bottom: 0; border-top:    var(--bw) solid var(--border); }
   .dock-top > :only-child, .dock-bottom > :only-child { flex: 1 1 auto; min-width: 0; }
 
-  /* left / right: vertical bars beside content, inside a DockRow */
+  /* left / right: vertical bars beside the content, inside a DockRow */
   .dock-left, .dock-right { flex-direction: column; align-self: stretch; }
   .dock-left  { border-right: var(--bw) solid var(--border); }
   .dock-right { border-left:  var(--bw) solid var(--border); }
@@ -32,7 +32,7 @@
   .dock-dashed { border-style: dashed; }
   .dock-flush { border: none; }
 
-  /* DockRow: left dock + content + right dock; content shrinks and may scroll */
+  /* DockRow: left dock + content + right dock; the content shrinks and may scroll */
   .dock-row { display: flex; flex: 1 1 0; min-height: 0; min-width: 0; }
   .dock-row > :not(.dock) { flex: 1 1 0; min-width: 0; min-height: 0; }
 }

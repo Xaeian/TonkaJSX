@@ -3,7 +3,9 @@
 @layer base {
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
-  html, body { height: 100%; }
+  /* the viewport a phone actually shows: `dvh` shrinks while its toolbars are out, so a
+     shell of one screen leaves no strip of page to scroll past. `%` is the older fallback */
+  html, body { height: 100%; height: 100dvh; }
 
   body {
     font-family: var(--font-body);

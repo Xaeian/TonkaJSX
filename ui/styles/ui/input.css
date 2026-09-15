@@ -9,7 +9,7 @@
     min-width: 0;
     flex: 0 0 auto;
   }
-  /* in a row a field takes free width */
+  /* in a row the field takes the free width */
   row > .input-group, .panel-toolbar > .input-group { flex: 1 1 200px; }
   .input-group:focus-within { border-color: var(--accent-dim); }
   .input-group .icon { color: var(--text4); flex-shrink: 0; }
@@ -54,7 +54,7 @@
   }
   .input-group-btn:hover { color: var(--text2); }
 
-  /* date: picker glyph sits flush right */
+  /* date: the picker glyph sits flush right */
   .input-group-date { padding-right: var(--space-sm); }
   .input-group-date input::-webkit-calendar-picker-indicator {
     cursor: pointer;

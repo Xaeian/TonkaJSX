@@ -18,33 +18,60 @@
     border-color: var(--accent-dim);
     background: color-mix(in srgb, var(--accent) 12%, transparent);
   }
-  .btn-icon { width: var(--ctrl-h); padding: 0; }
+  .btn.btn-icon { width: var(--ctrl-h); padding: 0; }
 
-  /* variants */
-  .btn-primary {
+  /* variants: two classes, so they beat the control base whatever order the files load in
+     (control.css comes after this file and sets the same background, border and padding) */
+  .btn.btn-primary {
     border-color: transparent;
     background: var(--accent-dim);
     color: var(--text-on-solid);
   }
-  .btn-primary:hover {
+  .btn.btn-primary:hover {
     background: color-mix(in srgb, var(--accent-dim) 75%, black);
     border-color: transparent;
     color: var(--text-on-solid);
   }
-  .btn-danger:hover { color: var(--err); border-color: var(--err); }
-  .btn-ghost { background: transparent; border-color: transparent; color: var(--text4); }
-  .btn-ghost:hover {
+  .btn.btn-danger:hover { color: var(--err); border-color: var(--err); }
+  .btn.btn-ghost { background: transparent; border-color: transparent; color: var(--text4); }
+  .btn.btn-ghost:hover {
     background: var(--surface2);
     border-color: transparent;
     color: var(--text2);
   }
-  .btn-ghost.active, .btn-ghost.active:hover {
+  .btn.btn-ghost.active, .btn.btn-ghost.active:hover {
     color: var(--accent);
     background: color-mix(in srgb, var(--accent) 12%, transparent);
     border-color: transparent;
   }
 
-  /* confirm flow: idle -> wait -> confirm, tinted by `color` attribute */
+  /* confirm flow: idle -> wait -> confirm, tinted by the `color` attribute */
+  /* the rail the sidebar stands its buttons in; two classes, like every variant above */
+  .btn.btn-rail {
+    width: var(--sidebar-btn);
+    height: var(--sidebar-btn);
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: var(--text4);
+    position: relative;
+  }
+  .btn.btn-rail:hover { color: var(--text2); background: var(--surface); }
+  .btn.btn-rail.active, .btn.btn-rail.active:hover {
+    color: var(--text);
+    background: var(--surface);
+  }
+  .btn.btn-rail.active::before {
+    content: "";
+    position: absolute;
+    left: -6px;
+    top: var(--space-sm);
+    bottom: var(--space-sm);
+    width: 2px;
+    background: var(--accent);
+    border-radius: 1px;
+  }
+
   .btn-confirm { display: inline-grid; grid-template-areas: "s"; }
   .btn-confirm > * {
     grid-area: s;
@@ -53,7 +80,7 @@
     justify-content: center;
     gap: var(--space-xs);
   }
-  /* hidden copies of every state reserve widest width, so button never resizes */
+  /* hidden copies of every state reserve the widest width, so the button never resizes */
   .btn-confirm .confirm-ghost { visibility: hidden; pointer-events: none; }
   .btn-confirm.wait, .btn-confirm.wait:hover {
     color: var(--text4);

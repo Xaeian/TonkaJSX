@@ -1,7 +1,7 @@
 // scripts/ui/ui.js
-// Glue shared by components: property mutators, overlay lifecycle, anchored placement.
+// Glue shared by the components: property mutators, overlay lifecycle, anchored placement.
 
-// `title` in JSX is library tooltip (Tooltip.jsx), never native `title`
+// `title` in JSX is the library tooltip (Tooltip.jsx), never the native one
 JSX.TitleAttr = "data-tooltip";
 
 const UI = {
@@ -17,7 +17,65 @@ const UI = {
     () => target ? target.textContent : "",
     (v) => { if(target) target.textContent = v ?? ""; }),
 
-  /** `.title`: tooltip text, mirrored to aria-label when element carries one. */
+  /**
+   * Copies `text` and flashes a check on `btn` (an icon button), then its `icon` is back.
+   * `clearAfter` seconds later the copy is taken back, for a secret that should not sit in
+   * the clipboard until the next copy.
+   */
+  copy: (btn, text, { icon = "content_copy", clearAfter = 0 } = {}) => {
+    navigator.clipboard.writeText(text);
+    btn.icon = "check";
+    setTimeout(() => { btn.icon = icon; }, 1200);
+    if(clearAfter > 0) UI.uncopy(text, clearAfter);
+  },
+
+  /**
+   * Takes `text` off the clipboard after `sec`, replacing whatever wipe was pending.
+   * A page without focus may not write the clipboard, so a wipe that falls due then waits
+   * for the tab to come back. Where the clipboard may be read without asking for it (a
+   * granted permission) the wipe lands only while the text is still there; elsewhere it
+   * lands blind, since a password left behind costs more than someone else's line of text.
+   */
+  uncopy: (text, sec) => {
+    clearTimeout(UI._wipeTimer);
+    const wipe = async () => {
+      if(UI._wipe !== wipe) return; // a newer copy owns the clipboard now
+      if(!document.hasFocus()) { addEventListener("focus", wipe, { once: true }); return; }
+      UI._wipe = null;
+      try {
+        const can = await navigator.permissions?.query({ name: "clipboard-read" });
+        if(can?.state === "granted" && await navigator.clipboard.readText() !== text) return;
+      }
+      catch {} // no way to ask and no way to read: wipe anyway
+      try { await navigator.clipboard.writeText(""); } catch {}
+    };
+    UI._wipe = wipe;
+    UI._wipeTimer = setTimeout(wipe, sec * 1000);
+  },
+
+  /** Runs a pending `uncopy` now, for a lock that should not leave the copy behind. */
+  uncopyNow: () => { clearTimeout(UI._wipeTimer); UI._wipe?.(); },
+
+  _wipe: null,
+  _wipeTimer: null,
+
+  /** Loads a script once, with SRI when given; the same `src` again resolves at once. */
+  script: (src, integrity) => UI._scripts[src] ??= new Promise((resolve, reject) => {
+    const s = document.createElement("script");
+    s.src = src;
+    if(integrity) { s.integrity = integrity; s.crossOrigin = "anonymous"; }
+    s.onload = resolve;
+    s.onerror = () => reject(new Error(`Could not load ${src}`));
+    document.head.appendChild(s);
+  }),
+  _scripts: {},
+
+  /** `text` as children: every http(s) address in it a `[link]` that opens in a new tab. */
+  linkify: (text) => String(text ?? "").split(/(https?:\/\/[^\s]+)/).map((part, i) => i % 2
+    ? JSX.createElement("a", { link: true, href: part, target: "_blank", rel: "noopener" }, part)
+    : part),
+
+  /** `.title`: the tooltip text, mirrored to aria-label when the element carries one. */
   title: (el) => UI.prop(el, "title",
     () => el.getAttribute("data-tooltip"),
     (v) => {
@@ -28,7 +86,7 @@ const UI = {
       }
     }),
 
-  /** `.active`: toggles `active` class and aria-pressed. */
+  /** `.active`: toggles the `active` class and aria-pressed. */
   active: (el, initial = false) => {
     UI.prop(el, "active",
       () => el.classList.contains("active"),
@@ -39,11 +97,11 @@ const UI = {
     if(initial) el.active = true;
   },
 
-  /** `.loading`: icon becomes a spinner and element is disabled. */
+  /** `.loading`: the icon becomes a spinner and the element is disabled. */
   loading: (el, iconEl) => {
     let on = false;
     let glyph = "";
-    let own = false; // an icon that exists only for spinner leaves with it
+    let own = false; // an icon that exists only for the spinner leaves with it
     let wasDisabled = false;
     UI.prop(el, "loading", () => on, (v) => {
       if(!!v === on) return;
@@ -76,23 +134,23 @@ const UI = {
     + "textarea:not([disabled]), [tabindex]:not([tabindex='-1'])"
   )].filter((el) => el.offsetParent),
 
-  /** Length of element's CSS transition in ms. */
+  /** Length of the element's CSS transition in ms. */
   duration: (el) => (parseFloat(getComputedStyle(el).transitionDuration) || 0) * 1000,
 
   /**
    * Overlay lifecycle on `root`: `.open()`, `.close()`, `.toggle()`, `.opened`.
-   * Open mounts root in body (`portal`), unhides it and adds `show` a frame later,
-   * so CSS transition runs; close removes `show` and hides once transition ends.
+   * Open mounts the root in the body (`portal`), unhides it and adds `show` a frame later,
+   * so the CSS transition runs; close removes `show` and hides once the transition ends.
    * While open, Escape closes it and so does a pointer down outside,
-   * unless `dismiss` is false or, as a predicate on pointer event, says no.
-   * Focus returns to previous element when overlay held it.
-   * `onOpen` receives arguments of `open()`.
+   * unless `dismiss` is false or, as a predicate on the pointer event, says no.
+   * Focus returns to the previous element when the overlay held it.
+   * `onOpen` receives the arguments of `open()`.
    */
   overlay: (root, { onOpen, onClose, dismiss = true, portal = true } = {}) => {
     let opened = false;
     let prevFocus = null;
     let hideTimer = null;
-    // capture phase, so a handler that stops propagation cannot hide event
+    // capture phase, so a handler that stops propagation cannot hide the event
     const onDown = (e) => {
       if(root.contains(e.target)) return;
       if(dismiss === true || dismiss(e)) root.close();
@@ -133,7 +191,7 @@ const UI = {
    * Puts a `position: fixed` element next to `anchor`.
    * `pos` is a main side (top, bottom, left, right) with an optional alignment:
    * `-start`/`-end` for top and bottom, `-top`/`-bottom` for left and right, none centers.
-   * Main side flips when it does not fit, then result is clamped to viewport.
+   * The main side flips when it does not fit, then the result is clamped to the viewport.
    * Returns true when neither was needed.
    */
   place: (el, anchor, pos = "bottom", { gap = 4, margin = 8, dx = 0, dy = 0 } = {}) => {

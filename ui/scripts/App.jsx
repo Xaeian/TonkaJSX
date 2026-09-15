@@ -36,8 +36,10 @@ const App = () => {
     { key: "dock", icon: "dock_to_bottom", title: "Docks", el: <Docks /> },
     { key: "drop", icon: "upload_file", title: "FileDrops", el: <FileDrops /> },
     { key: "img", icon: "image", title: "Images", el: <Imgs /> },
+    { key: "code", icon: "code", title: "Code", el: <Codes /> },
     { key: "library", icon: "menu_book", title: "Documents", el: <Docs />, fullbleed: true },
     { key: "pickers", icon: "palette", title: "Color & Icon Pickers", el: <Pickers /> },
+    { key: "qr", icon: "qr_code_2", title: "QR", el: <Qrs /> },
   ];
   for(const p of panels) {
     p.nav = <SidebarBtn icon={p.icon} title={p.title} badge={p.badge}
@@ -83,9 +85,10 @@ const App = () => {
 
   // switch mirrors theme, whoever changes it
   const themeToggle = (
-    <Toggle value={Theme.current()} onChange={(v) => Theme.set(v)}>
-      <ToggleBtn value="light" icon="light_mode" label="Light" />
-      <ToggleBtn value="dark"  icon="dark_mode"  label="Dark" />
+    <Toggle value={Theme.choice()} onChange={(v) => Theme.set(v)}>
+      <ToggleBtn value="light"  icon="light_mode" label="Light" />
+      <ToggleBtn value="dark"   icon="dark_mode"  label="Dark" />
+      <ToggleBtn value="system" icon="contrast"   label="System" />
     </Toggle>
   );
   document.addEventListener("theme:change", (e) => { themeToggle.value = e.detail; });

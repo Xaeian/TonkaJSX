@@ -5,6 +5,8 @@ Kept short on purpose, humans can read it too.
 
 **Scope** is one project folder, one named.
 
+**Style** is `jsstyle.md`, read in full before editing any `.js` or `.jsx`.
+
 **Components** are global functions returning real DOM.
 No imports, no modules, no bundler, no virtual DOM, no hooks.
 

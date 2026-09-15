@@ -37,7 +37,7 @@ const Button = ({ variant, size, icon, title, class: className, children, ...res
 };
 
 /**
- * Square icon-only button; `title` is both tooltip and accessible name.
+ * Square icon-only button; `title` is both the tooltip and the accessible name.
  * @param {Object} props
  * @param {string} props.icon
  * @param {string} [props.title]

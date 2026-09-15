@@ -1,7 +1,7 @@
 // scripts/ui/IconPicker.jsx
 
 /**
- * Grid of icon tiles; app supplies `icons` list.
+ * Grid of icon tiles; the app supplies the `icons` list.
  *
  * Mutators: .value
  *

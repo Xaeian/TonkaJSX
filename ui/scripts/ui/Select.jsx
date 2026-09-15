@@ -1,7 +1,7 @@
 // scripts/ui/Select.jsx
 
 /**
- * Native `<select>` in control look; children are `<option>` elements.
+ * Native `<select>` in the control look; children are `<option>` elements.
  * @param {Object} props
  * @param {string} [props.value]
  * @param {"sm"|"lg"} [props.size]

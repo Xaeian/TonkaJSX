@@ -1,8 +1,14 @@
 /* styles/ui/shell.css */
 
 @layer components {
+  /* The shell is the window, so the page itself never scrolls: .content does.
+     Without this, anything that slips out of the shell drags a second scrollbar in behind it. */
+  html, body { overflow: hidden; }
+
   .shell {
+    /* dvh follows a phone's toolbars sliding in and out; vh is the older fallback */
     height: 100vh;
+    height: 100dvh;
     display: flex;
     overflow: hidden;
   }

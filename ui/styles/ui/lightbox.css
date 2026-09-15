@@ -18,12 +18,14 @@
   .lightbox.show { opacity: 1; }
   .lightbox-img {
     max-width: 92vw;
-    max-height: 92vh;
+    max-height: 92dvh;
     border-radius: var(--radius);
     cursor: default;
     display: block;
     object-fit: contain;
   }
+  /* the close button keeps its ring over the picture, hover included: a ghost button gives
+     up its edge on hover, and here there is no surface behind it to draw one back */
   .lightbox > .btn {
     position: absolute;
     top: var(--space-md);
@@ -32,5 +34,9 @@
     border-color: var(--border);
     color: var(--text);
   }
-  .lightbox > .btn:hover { background: var(--bg2); }
+  .lightbox > .btn:hover {
+    background: var(--bg2);
+    border-color: var(--border);
+    color: var(--text);
+  }
 }

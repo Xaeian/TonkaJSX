@@ -2,15 +2,15 @@
 
 /**
  * File input with click and drag-and-drop, drawn as an `Empty`.
- * Stateless: valid files go to `onFiles` and zone returns to idle; caller keeps them.
+ * Stateless: valid files go to `onFiles` and the zone returns to idle; the caller keeps them.
  *
  * Validation, in order: `accept` (extensions, MIME types, `image/*`), `maxSize`, `maxCount`.
- * First failure goes to `onError` and nothing reaches `onFiles`.
+ * The first failure goes to `onError` and nothing reaches `onFiles`.
  *
  * Mutators:
  *   .loading    spinner, no interaction
- *   .selected   File or {name, size?}: shows file, a click clears it (`onClear`)
- *   .input      native `<input type="file">`
+ *   .selected   File or {name, size?}: shows the file, a click clears it (`onClear`)
+ *   .input      the native `<input type="file">`
  *
  * @param {Object} props
  * @param {string} [props.accept]
@@ -47,7 +47,7 @@ const FileDrop = ({
   };
   const fmtBytes = (n) => {
     if(n < 1024) return n + "B";
-    if(n < 1048576) return (n / 1024).toFixed(1) + "KB";
+    if(n < 1048576) return (n / 1024).toFixed(1) + "kB";
     if(n < 1073741824) return (n / 1048576).toFixed(1) + "MB";
     return (n / 1073741824).toFixed(2) + "GB";
   };
@@ -86,7 +86,7 @@ const FileDrop = ({
     </Empty>
   );
 
-  // click and keyboard: clear selection when one is shown, else open picker
+  // click and keyboard: clear the selection when one is shown, else open the picker
   const activate = () => {
     if(zone.loading) return;
     if(zone.selected) { zone.selected = null; onClear?.(); }
@@ -97,7 +97,7 @@ const FileDrop = ({
     if(e.key === "Enter" || e.key === " ") { e.preventDefault(); activate(); }
   });
 
-  // dragenter/dragleave also fire on children; depth tells a real exit apart
+  // dragenter/dragleave also fire on children; the depth tells a real exit apart
   let depth = 0;
   zone.addEventListener("dragenter", (e) => {
     e.preventDefault();

@@ -3,14 +3,14 @@
 /**
  * Dashed placeholder for empty lists and results: icon, title, description, an action.
  *
- * Mutators: .icon, .title, .description (empty hides line).
+ * Mutators: .icon, .title, .description (empty hides the line).
  *
  * @param {Object} props
  * @param {string} [props.icon]
  * @param {string} [props.title]
  * @param {string} [props.description]
- * @param {JSX.Element} [props.action]   slot below description
- * @param {boolean} [props.fill]         take parent's free height
+ * @param {JSX.Element} [props.action]   slot below the description
+ * @param {boolean} [props.fill]         take the parent's free height
  * @param {string} [props.height]
  * @param {"sm"|"lg"} [props.size]
  */

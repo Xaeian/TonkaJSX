@@ -34,7 +34,12 @@
   .topbar.lg .topbar-logo { font-size: var(--text-base); gap: var(--space-sm); }
   .topbar.lg .topbar-logo img { width: 24px; height: 24px; }
 
-  /* Material glyphs sit a hair below text baseline; drop text to meet them */
+  /* Material glyphs sit a hair below the text baseline; drop text to meet them */
   .topbar span:not(.icon) { transform: translateY(1px); }
   .topbar.lg span:not(.icon) { transform: translateY(2px); }
+
+  /* narrow screens: controls wrap to a second line rather than push off the edge */
+  @media (max-width: 720px) {
+    .topbar { flex-wrap: wrap; }
+  }
 }

@@ -1,7 +1,7 @@
 // scripts/ui/Lightbox.jsx
 
 /**
- * Fullscreen image; a click outside picture, close button or Escape closes it.
+ * Fullscreen image; a click outside the picture, the close button or Escape closes it.
  *
  * Mutators: .open(), .close(), .toggle(), .opened, .src, .alt
  *

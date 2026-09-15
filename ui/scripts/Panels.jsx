@@ -121,6 +121,39 @@ const Panels = () => {
     </Panel>
   );
 
+  // A tab pane of a growing panel fills the body as the body fills the panel: a pane holding
+  // a surface of its own ends where the panel ends, not where its last line fell.
+  const LOG = [
+    ["INF", "blue", "server listening on :8080"],
+    ["WRN", "amber", "cache miss rate above 40%"],
+    ["ERR", "red", "upload rejected: bucket is read-only"],
+  ];
+  const tabbedGrow = (
+    <Panel ghost flush height="14rem">
+      <stack fill>
+        <Panel grow flush icon="receipt_long" title="Logs"
+          tabs={[
+            { key: "app",  icon: "deployed_code", label: "app.log" },
+            { key: "auth", icon: "shield",        label: "auth.log" },
+          ]}>
+          <TabPanel value="app">
+            <stack gap="no">
+              {LOG.map(([lv, color, msg]) => (
+                <Panel inline size="sm" ghost>
+                  <Badge variant="tint" size="sm" color={color} mono>{lv}</Badge>
+                  <span mono>{msg}</span>
+                </Panel>
+              ))}
+            </stack>
+          </TabPanel>
+          <TabPanel value="auth">
+            <Empty fill size="sm" icon="article" title="This file has no entries." />
+          </TabPanel>
+        </Panel>
+      </stack>
+    </Panel>
+  );
+
   //------------------------------------------------------------------------------------------ View
 
   return (
@@ -149,6 +182,11 @@ const Panels = () => {
       <Panel title="Fixed height" icon="unfold_less">
         <p>Inside a fixed height, <code>grow</code> panel scrolls its body.</p>
         {scrollPanel}
+        <p>
+          A <code>&lt;TabPanel&gt;</code> of one fills that body: the second tab holds nothing
+          and says so in the middle of the panel, not under the tab strip.
+        </p>
+        {tabbedGrow}
       </Panel>
 
       <Panel title="Looks" icon="palette">

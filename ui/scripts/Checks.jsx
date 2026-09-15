@@ -38,6 +38,12 @@ const Checks = () => {
         <Button size="sm" icon="remove_done" onClick={() => setAll(false)}>None</Button>
       </row>
 
+      <h4>Sizes</h4>
+      <row>
+        <Checkbox label="Default" checked />
+        <Checkbox size="lg" label="Large" checked />
+      </row>
+
       <h4>States</h4>
       <row>
         <Checkbox label="Unchecked" />

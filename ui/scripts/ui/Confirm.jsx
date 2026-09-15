@@ -2,8 +2,8 @@
 
 /**
  * Three-step click flow on `btn`: idle -> wait -> confirm -> `onConfirm`.
- * A click within `graceMs` of arming is ignored, confirm window closes after `windowMs`.
- * `show(step)` updates look, `onRevert` fires only when window closes unconfirmed.
+ * A click within `graceMs` of arming is ignored, the confirm window closes after `windowMs`.
+ * `show(step)` updates the look, `onRevert` fires only when the window closes unconfirmed.
  */
 const _confirmFlow = (btn, { graceMs, windowMs, show, onArm, onConfirm, onRevert }) => {
   let armed = false;
@@ -40,8 +40,8 @@ const _confirmFlow = (btn, { graceMs, windowMs, show, onArm, onConfirm, onRevert
 
 /**
  * Destructive button that asks for a second click.
- * Hidden copies of every step keep width constant.
- * Confirm step is tinted by `color`, default `err` (`ok` for primary variant).
+ * Hidden copies of every step keep the width constant.
+ * The confirm step is tinted by `color`, default `err` (`ok` for the primary variant).
  *
  * @param {Object} props
  * @param {string} [props.icon="delete"]

@@ -1,9 +1,9 @@
 // scripts/ui/Dock.jsx
 
 /**
- * Bar glued to one edge of its parent, bordered on content side.
+ * Bar glued to one edge of its parent, bordered on the content side.
  * Top and bottom docks are sticky rows; left and right docks are columns inside a `DockRow`.
- * Add `scroll` when dock should scroll on its own (needs a bounded parent).
+ * Add `scroll` when the dock should scroll on its own (needs a bounded parent).
  *
  * Mutators: .pos, .width, .hidden
  *

@@ -3,7 +3,7 @@
 /**
  * Small label or chip. `pos` pins it to a corner of a positioned parent.
  *
- * Mutators: .color, .text, .icon
+ * Mutators: .color, .text, .icon, .title
  *
  * @param {Object} props
  * @param {string} [props.color="neutral"]   semantic or palette name
@@ -30,5 +30,9 @@ const Badge = ({ color = "neutral", variant = "solid", size, mono, icon, pos,
   UI.prop(el, "color", () => el.getAttribute("color"), (v) => el.setAttribute("color", v));
   UI.text(el, "text", textEl);
   UI.text(el, "icon", iconEl);
+  // Without this, `badge.title = "..."` writes the native attribute and the browser draws
+  // its own grey box, while the same word passed in JSX goes to `data-tooltip` and gets the
+  // library's. One property, one tooltip, whichever way it is set.
+  UI.title(el);
   return el;
 };

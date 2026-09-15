@@ -2,8 +2,8 @@
 
 /**
  * Wraps a native field in `.input-group`.
- * Wrapper is what app holds: `.value`, `.title`, `.focus()`, `.input` (field).
- * `accessor` replaces value get/set.
+ * The wrapper is what the app holds: `.value`, `.title`, `.focus()`, `.input` (the field).
+ * `accessor` replaces the value get/set.
  */
 const _group = (field, { icon, trailing, size, ghost, title, accessor, class: className,
   ...rest }) => {
@@ -15,16 +15,18 @@ const _group = (field, { icon, trailing, size, ghost, title, accessor, class: cl
       {trailing}
     </div>
   );
+  // the trailing control reads the field, so it has to hear about a value set from code
+  const write = accessor?.set || ((v) => { field.value = v ?? ""; });
   UI.prop(wrap, "value",
     accessor?.get || (() => field.value),
-    accessor?.set || ((v) => { field.value = v ?? ""; }));
+    (v) => { write(v); trailing?.sync?.(); });
   UI.title(wrap);
   wrap.input = field;
   wrap.focus = () => field.focus();
   return wrap;
 };
 
-/** Keyboard wiring shared by text fields. */
+/** Keyboard wiring shared by the text fields. */
 const _keys = (field, { onChange, onEnter, onKeyDown }) => {
   if(onChange) field.addEventListener("input", (e) => onChange(field.value, e));
   if(onEnter) field.addEventListener("keydown", (e) => {
@@ -33,7 +35,7 @@ const _keys = (field, { onChange, onEnter, onKeyDown }) => {
   if(onKeyDown) field.addEventListener("keydown", onKeyDown);
 };
 
-/** Trailing X that wipes field; kept in layout so width never jumps. */
+/** Trailing X that wipes the field; kept in the layout so the width never jumps. */
 const _clearBtn = (field, onChange) => {
   const btn = <span class="icon input-group-btn" title="Clear">close</span>;
   btn.sync = () => { btn.style.visibility = field.value ? "visible" : "hidden"; };
@@ -76,13 +78,30 @@ const Input = ({ type = "text", placeholder, value, clear, disabled, name,
   );
   _keys(field, { onChange, onEnter, onKeyDown });
   if(!clear) return _group(field, rest);
-  // a programmatic `.value` keeps X in step with field
+  // a programmatic `.value` keeps the X in step with the field
   const btn = _clearBtn(field, onChange);
   return _group(field, { ...rest, trailing: btn, accessor: {
     get: () => field.value,
     set: (v) => { field.value = v ?? ""; btn.sync(); },
   } });
 };
+
+/**
+ * One line of a form: its name on the left, its controls on the right.
+ *
+ * A dozen settings packed several to a line is a wall; laid out as a sheet they read one at
+ * a time, which is the shape anything with more of them than a row can carry ends up in.
+ *
+ * @param {string} label
+ * @param {...(Element|null)} ctrl  a null does not appear, so a field that belongs to one
+ *   case only can be passed on every call
+ */
+const formRow = (label, ...ctrl) => (
+  <row>
+    <strong flex="2">{label}</strong>
+    <row flex="10">{ctrl}</row>
+  </row>
+);
 
 /**
  * Number input; `onChange` gets `null` for an empty field.
@@ -120,12 +139,14 @@ const PasswordInput = ({ placeholder, value, icon = "lock", disabled, name,
       disabled={disabled} />
   );
   _keys(field, { onChange, onEnter, onKeyDown });
-  const eye = <span class="icon input-group-btn" title="Show password">visibility</span>;
+  // the eye tells the state: crossed while the value hides, open while it shows;
+  // its tooltip names no "password", since the field holds a secret, a key or a token as often
+  const eye = <span class="icon input-group-btn" title="Show">visibility_off</span>;
   eye.addEventListener("click", () => {
     const show = field.type === "password";
     field.type = show ? "text" : "password";
-    eye.textContent = show ? "visibility_off" : "visibility";
-    eye.setAttribute("data-tooltip", show ? "Hide password" : "Show password");
+    eye.textContent = show ? "visibility" : "visibility_off";
+    eye.setAttribute("data-tooltip", show ? "Hide" : "Show");
   });
   return _group(field, { ...rest, icon, trailing: eye });
 };
@@ -142,7 +163,7 @@ const SearchInput = ({ placeholder = "Search...", onSearch, ...rest }) => (
 
 /**
  * Multiline field.
- * Fixed `rows` by default; `auto` grows with content between `minRows` and `maxRows`.
+ * Fixed `rows` by default; `auto` grows with the content between `minRows` and `maxRows`.
  * `onSubmit` fires on Ctrl+Enter / Cmd+Enter.
  *
  * @param {Object} props
@@ -167,11 +188,14 @@ const Textarea = ({ placeholder, value, rows = 3, auto, minRows, maxRows, disabl
   if(auto) {
     let border = 0;
     let ready = false;
+    // hidden or not yet mounted, a field has no layout: a grow now would pin 0px,
+    // so it waits for the observer to see it laid out
     const grow = () => {
+      if(!field.getClientRects().length) return;
       field.style.height = "auto";
       field.style.height = (field.scrollHeight + border) + "px";
     };
-    // metrics exist only once field is laid out; observer retries until then
+    // metrics exist only once the field is laid out; the observer retries until then
     const init = () => {
       if(!field.offsetHeight) return;
       ready = true;

@@ -22,7 +22,7 @@
     flex-direction: column;
     width: 100%;
     max-width: 560px;
-    max-height: calc(100vh - 2 * var(--space-md));
+    max-height: calc(100dvh - 2 * var(--space-md));
     background: var(--bg3);
     border: var(--bw) solid var(--border);
     border-radius: var(--radius);
@@ -34,6 +34,12 @@
   .modal.show .modal-dialog { transform: none; }
   .modal-dialog.sm { max-width: 360px; }
   .modal-dialog.lg { max-width: 880px; }
+  .modal-dialog.xl { max-width: 1280px; }
+  /* narrow screens: the dialog takes the width, a thin margin is all that is left around it */
+  @media (max-width: 720px) {
+    .modal { padding: var(--space-xs); }
+    .modal-dialog { max-height: calc(100dvh - 2 * var(--space-xs)); }
+  }
 
   .modal-head {
     display: flex;

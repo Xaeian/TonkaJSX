@@ -2,11 +2,11 @@
 
 /**
  * Login dropdown under a trigger Button. Two modes:
- *   standalone   app drives it through `onSubmit({user, pass})`, `onLogout()`
- *                and mutators `.logged(username)`, `.logout()`, `.error(msg)`
+ *   standalone   the app drives it through `onSubmit({user, pass})`, `onLogout()`
+ *                and the mutators `.logged(username)`, `.logout()`, `.error(msg)`
  *   session      `session` drives it: a manager with `login(user, pass)`, `logout()`
  *                and `onChange(fn)` reporting `{status, user, error}`;
- *                standalone props and mutators are ignored
+ *                the standalone props and mutators are ignored
  *
  * Both: .open(), .close(), .toggle(), .isLogged
  *
@@ -18,7 +18,7 @@
  * @param {"primary"|"danger"|"ghost"} [props.variant]
  * @param {"sm"|"lg"} [props.size]
  * @param {"left"|"center"|"right"} [props.align="right"]
- * @param {number} [props.offset=14]   px between trigger and panel
+ * @param {number} [props.offset=14]   px between the trigger and the panel
  * @param {({user:string, pass:string}) => void} [props.onSubmit]
  * @param {() => void} [props.onLogout]
  */

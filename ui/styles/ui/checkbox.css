@@ -37,6 +37,10 @@
     opacity: 0;
     transition: opacity var(--dur) var(--ease-out);
   }
+  /* lg: a box worth aiming at, for a row whose whole point is the tick */
+  .checkbox-lg .checkbox-box { width: 22px; height: 22px; }
+  .checkbox-lg .checkbox-box .icon { font-size: 19px; }
+
   .checkbox:hover .checkbox-box { border-color: var(--border2); }
   .checkbox-input:checked + .checkbox-box {
     background: var(--accent);

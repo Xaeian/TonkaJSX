@@ -1,24 +1,27 @@
 // scripts/ui/Modal.jsx
 
-// modals stack; body scroll is unlocked by last one to close
+// modals stack; the body scroll is unlocked by the last one to close
 let _modalCount = 0;
 
 /**
  * Dialog with a backdrop, focus trap and scroll lock.
- * Escape, backdrop and close button dismiss it unless `noClose` is set.
+ * Escape, the backdrop and the close button dismiss it unless `noClose` is set.
+ * `noClickAway` keeps the backdrop out of it and leaves the other two, for a dialog holding
+ * work that a stray click beside it must not throw away.
  *
  * Mutators: .open(), .close(), .toggle(), .opened
  *
  * @param {Object} props
  * @param {string} [props.title]
- * @param {"sm"|"lg"} [props.size]
+ * @param {"sm"|"lg"|"xl"} [props.size]
  * @param {boolean} [props.noClose]
- * @param {JSX.Element|JSX.Element[]} [props.actions]  head buttons, left of close button
+ * @param {boolean} [props.noClickAway]  a click outside leaves it open
+ * @param {JSX.Element|JSX.Element[]} [props.actions]  head buttons, left of the close button
  * @param {JSX.Element|JSX.Element[]} [props.footer]
  * @param {(opened:boolean) => void} [props.onChange]
  */
-const Modal = ({ title, size, noClose, actions, footer, onChange, class: className, children,
-  ...rest }) => {
+const Modal = ({ title, size, noClose, noClickAway, actions, footer, onChange,
+  class: className, children, ...rest }) => {
   const closeBtn = noClose ? null
     : <IconBtn icon="close" title="Close" onClick={() => root.close()} />;
   const dialog = (
@@ -36,7 +39,7 @@ const Modal = ({ title, size, noClose, actions, footer, onChange, class: classNa
   );
   const root = <div {...rest} class={["modal", className]} hidden>{dialog}</div>;
 
-  // Tab cycles inside dialog
+  // Tab cycles inside the dialog
   const focusable = () => UI.focusable(dialog);
   const trap = (e) => {
     if(e.key !== "Tab") return;
@@ -47,10 +50,13 @@ const Modal = ({ title, size, noClose, actions, footer, onChange, class: classNa
     if(e.shiftKey && active === first) { e.preventDefault(); last.focus(); }
     else if(!e.shiftKey && active === last) { e.preventDefault(); first.focus(); }
   };
-  root.addEventListener("click", (e) => { if(e.target === root && !noClose) root.close(); });
+  root.addEventListener("click", (e) => {
+    if(e.target === root && !noClose && !noClickAway) root.close();
+  });
 
   UI.overlay(root, {
-    dismiss: !noClose,
+    // a predicate still listens for Escape, and answers no to every pointer outside
+    dismiss: noClose ? false : noClickAway ? () => false : true,
     onOpen: () => {
       if(_modalCount++ === 0) document.body.classList.add("modal-locked");
       document.addEventListener("keydown", trap);

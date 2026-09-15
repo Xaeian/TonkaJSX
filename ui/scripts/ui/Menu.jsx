@@ -1,6 +1,6 @@
 // scripts/ui/Menu.jsx
 
-// auto placement tries these in order and takes first that fits
+// auto placement tries these in order and takes the first that fits
 const _MENU_PLACES = ["bottom-start", "top-start", "right-top", "left-top"];
 
 /**
@@ -13,7 +13,7 @@ const _MENU_PLACES = ["bottom-start", "top-start", "right-top", "left-top"];
  * @param {Object} props
  * @param {string} [props.title]
  * @param {string} [props.pos="auto"]   see `UI.place`; "auto" tries `_MENU_PLACES` in order
- * @param {string} [props.width]        CSS width, default fits content
+ * @param {string} [props.width]        CSS width, default fits the content
  * @param {string} [props.maxWidth]
  * @param {number} [props.offsetX=0]    px nudge after placement
  * @param {number} [props.offsetY=0]
@@ -34,7 +34,7 @@ const Menu = ({ title, pos = "auto", width, maxWidth, offsetX = 0, offsetY = 0, 
     if(pos !== "auto") { UI.place(root, anchor, pos, opts); return; }
     for(const p of _MENU_PLACES) if(UI.place(root, anchor, p, opts)) return;
   };
-  // menu is fixed, so scrolling under it moves anchor away
+  // the menu is fixed, so scrolling under it moves the anchor away
   const follow = () => place();
 
   UI.overlay(root, {
@@ -55,7 +55,7 @@ const Menu = ({ title, pos = "auto", width, maxWidth, offsetX = 0, offsetY = 0, 
       onChange?.(false);
     },
   });
-  // open() on an open menu moves it to new anchor
+  // open() on an open menu moves it to the new anchor
   const open = root.open;
   root.open = (anchorEl) => {
     if(!root.opened) open(anchorEl);

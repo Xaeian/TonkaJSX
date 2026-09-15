@@ -4,7 +4,7 @@ const STATES = ["selected", "armed", "confirm", "moved", "danger", null];
 
 const Cards = () => {
 
-  //------------------------------------------------------------------------ Click cycles state
+  //---------------------------------------------------------------------------- Click cycles state
 
   const stateTag = <Badge variant="tint" mono>state: none</Badge>;
   const cycler = (
