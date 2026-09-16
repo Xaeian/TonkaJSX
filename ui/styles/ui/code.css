@@ -63,6 +63,7 @@
   .code .cd-type    { color: var(--type); }
   .code .cd-meta    { color: var(--entity); }
   .code .cd-comment { color: var(--text4); font-style: italic; }
+  .code .cd-err     { color: var(--err); }
 
   /* a column takes its colour from its place in the row, so the eye can follow one down the
      page; the order alternates warm and cool, so neighbours never blur together */

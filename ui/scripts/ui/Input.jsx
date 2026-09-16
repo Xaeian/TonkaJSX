@@ -127,24 +127,38 @@ const NumberInput = ({ value, min, max, step = 1, placeholder, disabled, name,
   return _group(field, rest);
 };
 
+// A browser offers to save whatever a `type="password"` field held
+// the moment it leaves the page or hides, and `autocomplete="off"` does not stop it.
+// A text field masked by CSS is nothing to a password manager, so where the property exists
+// the field is one; elsewhere it is a password field and the offer is the browser's to make.
+const _MASK_CSS = CSS.supports("-webkit-text-security", "disc");
+
 /**
- * Password input with a show/hide eye.
+ * Password input with a show/hide eye. The browser is never asked to remember the value.
  * @param {Object} props
  * @param {string} [props.icon="lock"]
  */
 const PasswordInput = ({ placeholder, value, icon = "lock", disabled, name,
   onChange, onEnter, onKeyDown, ...rest }) => {
   const field = (
-    <input type="password" placeholder={placeholder} value={value ?? ""} name={name}
-      disabled={disabled} />
+    <input type={_MASK_CSS ? "text" : "password"} class={_MASK_CSS && "masked"}
+      placeholder={placeholder} value={value ?? ""} name={name} disabled={disabled}
+      autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck={false} />
   );
   _keys(field, { onChange, onEnter, onKeyDown });
+  const hidden = () => _MASK_CSS
+    ? field.classList.contains("masked")
+    : field.type === "password";
+  const mask = (on) => {
+    if(_MASK_CSS) field.classList.toggle("masked", on);
+    else field.type = on ? "password" : "text";
+  };
   // the eye tells the state: crossed while the value hides, open while it shows;
   // its tooltip names no "password", since the field holds a secret, a key or a token as often
   const eye = <span class="icon input-group-btn" title="Show">visibility_off</span>;
   eye.addEventListener("click", () => {
-    const show = field.type === "password";
-    field.type = show ? "text" : "password";
+    const show = hidden();
+    mask(!show);
     eye.textContent = show ? "visibility" : "visibility_off";
     eye.setAttribute("data-tooltip", show ? "Hide" : "Show");
   });

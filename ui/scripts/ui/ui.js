@@ -72,8 +72,44 @@ const UI = {
 
   /** `text` as children: every http(s) address in it a `[link]` that opens in a new tab. */
   linkify: (text) => String(text ?? "").split(/(https?:\/\/[^\s]+)/).map((part, i) => i % 2
-    ? JSX.createElement("a", { link: true, href: part, target: "_blank", rel: "noopener" }, part)
+    ? UI._link(part)
     : part),
+
+  /**
+   * `text` as children with its inline marks live: `**bold**`, `*italic*` or `_italic_`,
+   * `` `code` `` shown as it is, and every http(s) address a `[link]` in a new tab.
+   * The marks are Markdown's, so a note reads the same here and in a file it is exported to.
+   * A mark inside a word (`snake_case`, `2*3*4`) or a span left open is plain text.
+   */
+  markup: (text) => {
+    const src = String(text ?? "");
+    const out = [];
+    let at = 0;
+    for(const m of src.matchAll(UI._MARKS)) {
+      const [, code, url, bold, , italic] = m;
+      if(m.index > at) out.push(src.slice(at, m.index));
+      at = m.index + m[0].length;
+      if(code) out.push(JSX.createElement("code", {}, code));
+      else if(url) out.push(UI._link(url));
+      else if(bold) out.push(JSX.createElement("strong", {}, bold));
+      else out.push(JSX.createElement("em", {}, italic));
+    }
+    if(at < src.length) out.push(src.slice(at));
+    return out;
+  },
+
+  // Code is taken first, so a mark or an address inside a span stays text.
+  // A span is one line, starts and ends on a character that is not a space or a mark,
+  // and an italic mark has no letter, digit or mark on its outer side.
+  _MARKS: new RegExp([
+    "`([^`\\n]+)`",
+    "(https?://[^\\s]+)",
+    "\\*\\*([^\\s*](?:[^\\n]*?[^\\s*])??)\\*\\*",
+    "(?<![\\w*_])([*_])([^\\s*_](?:[^\\n]*?[^\\s*_])??)\\4(?![\\w*_])",
+  ].join("|"), "g"),
+
+  _link: (url) =>
+    JSX.createElement("a", { link: true, href: url, target: "_blank", rel: "noopener" }, url),
 
   /** `.title`: the tooltip text, mirrored to aria-label when the element carries one. */
   title: (el) => UI.prop(el, "title",

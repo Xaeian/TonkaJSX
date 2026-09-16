@@ -621,20 +621,37 @@ async function build()
     if(t == null) throw new Error(`Missing: scripts/${f}`)
     return t.trimEnd()
   }).join("\n;\n") : ""
-  const rawJS = [String(remoteJs || "").trimEnd(), localJS].filter(Boolean).join("\n;\n")
-  let jsBundle = ""
-  if(rawJS) {
-    const src = replaceVars(rawJS, vars)
+  // Remote scripts arrive built, so only the project's own go through Babel.
+  // Past 500KB of input Babel drops to a compact generator and says so on the console,
+  // and one inlined crypto library is enough to get there.
+  const remote = replaceVars(String(remoteJs || "").trimEnd(), vars)
+  const local = replaceVars(localJS, vars)
+  let compiled = ""
+  if(local) {
     const { transformSync, jsxPlugin } = await loadBabel()
     Log.ok("Babel: JSX → JS")
-    const out = transformSync(src, { babelrc: false, configFile: false, sourceType: "unambiguous", comments: false, plugins: [[jsxPlugin, { runtime: "classic", pragma: "JSX.createElement", pragmaFrag: "JSX.Fragment", throwIfNamespace: false }]] })
-    jsBundle = out?.code || ""
-    if(jsBundle){
-      const b0 = bytes(jsBundle)
-      jsBundle = await minifyJs(jsBundle)
-      Log.ok(`JS min: ${b0} → ${bytes(jsBundle)}`)
-    }
-    else Log.warn("Babel returned empty output")
+    const jsx = [jsxPlugin, {
+      runtime: "classic",
+      pragma: "JSX.createElement",
+      pragmaFrag: "JSX.Fragment",
+      throwIfNamespace: false,
+    }]
+    const out = transformSync(local, {
+      filename: "scripts.jsx",
+      babelrc: false,
+      configFile: false,
+      sourceType: "unambiguous",
+      comments: false,
+      plugins: [jsx],
+    })
+    compiled = out?.code || ""
+    if(!compiled) Log.warn("Babel returned empty output")
+  }
+  let jsBundle = [remote, compiled].filter(Boolean).join("\n;\n")
+  if(jsBundle) {
+    const b0 = bytes(jsBundle)
+    jsBundle = await minifyJs(jsBundle)
+    Log.ok(`JS min: ${b0} → ${bytes(jsBundle)}`)
   }
   else Log.warn("JS bundle empty")
   if(svgMax !== null && jsBundle) jsBundle = await inlineSvgs(jsBundle, PATH, svgMax)

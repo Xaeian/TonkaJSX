@@ -37,6 +37,11 @@ ORDER BY name;`,
   log: `2026-04-18 09:12:04 INFO  ready on :8000
 2026-04-18 09:12:31 WARN  slow query, 840ms
 2026-04-18 09:13:02 ERROR upstream refused`,
+  dump: `# Intel HEX: 1 segment, 32B, entry 0x08000199
+! line 5: bad checksum E3, expected E1
+@ 08000000-0800001f  32 B
+08000000  00 50 00 20 99 01 00 08  6d 0d 00 08 71 0d 00 08  |.P. ....m...q...|
+08000010  54 6f 6e 6b 61 4a 53 58  00 00 00 00 ff ff ff ff  |TonkaJSX........|`,
 };
 
 const Codes = () => {

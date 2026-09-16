@@ -28,8 +28,7 @@ const Syntax = (() => {
 
   /** The language a file name spells, or `txt` when it spells none. */
   function lang(name) {
-    const dot = String(name).lastIndexOf(".");
-    return (dot > 0 && BY_EXT[String(name).slice(dot + 1).toLowerCase()]) || "txt";
+    return BY_EXT[fileExt(name)] || "txt";
   }
 
   /** A bare value carries its own kind, and prose keeps the colour of prose. */
@@ -201,9 +200,26 @@ const Syntax = (() => {
       : fields(line, delim).map((f, i) => mark("c" + (i % RAINBOW), f)).join(sep));
   };
 
+  //------------------------------------------------------------------------------------------ Dump
+
+  // The lines `dump.js` writes: a note, a fault, a segment,
+  // or an offset, the bytes and the same bytes as text.
+  // A zero byte is dimmed, so what is written stands out from what is not.
+  const DUMP_RE = /^([0-9a-f]{8})(  )([0-9a-f ]{48})(  \|)(.*)(\|)$/;
+
+  const dump = (src) => lines(src, (line) => {
+    if(line.startsWith("#")) return mark("comment", line);
+    if(line.startsWith("!")) return mark("err", line);
+    if(line.startsWith("@")) return mark("kw", line);
+    const m = line.match(DUMP_RE);
+    if(!m) return esc(line);
+    const bytes = m[3].replace(/\b00\b/g, (z) => tag("sep", z));
+    return mark("meta", m[1]) + m[2] + bytes + m[4] + mark("str", m[5]) + m[6];
+  });
+
   //----------------------------------------------------------------------------------------- Paint
 
-  const PAINTERS = { json, ini, yaml, sql, md, log, csv };
+  const PAINTERS = { json, ini, yaml, sql, md, log, csv, dump };
 
   /**
    * Source to HTML carrying `cd-*` classes. A language nothing paints comes back escaped,

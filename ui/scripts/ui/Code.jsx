@@ -106,13 +106,14 @@ const Code = ({ value = "", lang, height, readOnly, wrap, numbers, onChange,
  * @param {string} text
  * @param {Object} [opts]
  * @param {(text:string) => (void|Promise)} [opts.onSave]
+ * @param {string} [opts.lang]  a painter's own id, when the name would pick the wrong one
  * @returns {HTMLElement} the dialog, already open
  */
-Code.open = (name, text, { onSave } = {}) => {
+Code.open = (name, text, { onSave, lang } = {}) => {
   let dirty = false;
 
   const box = (
-    <Code height="lg" wrap numbers value={text} lang={name} readOnly={!onSave}
+    <Code height="lg" wrap numbers value={text} lang={lang || name} readOnly={!onSave}
       onChange={() => { if(!dirty) hold(); }} />
   );
 
@@ -145,11 +146,10 @@ Code.open = (name, text, { onSave } = {}) => {
     close();
   }
 
-  const title = (
-    <span>
-      {name} <Badge variant="tint" color="neutral" size="sm" mono>{Syntax.lang(name)}</Badge>
-    </span>
+  const badge = (
+    <Badge variant="tint" color="neutral" size="sm" mono>{lang || Syntax.lang(name)}</Badge>
   );
+  const title = <span>{name} {badge}</span>;
   const modal = (
     <Modal title={title} size="xl" noClickAway footer={<>{closeBtn}{dropBtn}{saveBtn}</>}
       onChange={(opened) => {

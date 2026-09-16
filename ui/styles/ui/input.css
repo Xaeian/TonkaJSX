@@ -37,6 +37,9 @@
     margin: 0;
   }
 
+  /* password: a text field the eye masks, so no password manager takes an interest */
+  .input-group input.masked { -webkit-text-security: disc; }
+
   /* ghost: borderless, inline */
   .input-group-ghost {
     border-color: transparent;

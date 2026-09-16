@@ -32,6 +32,7 @@ const FILE_ICONS = {
   py: "code", c: "code", h: "code", cpp: "code", rs: "code", go: "code",
   sh: "terminal", bat: "terminal", ps1: "terminal",
   sql: "database", db: "database",
+  hex: "memory", bin: "memory", elf: "memory", uf2: "memory", dfu: "memory",
   mp3: "audio_file", wav: "audio_file", ogg: "audio_file", flac: "audio_file", m4a: "audio_file",
   mp4: "video_file", mov: "video_file", mkv: "video_file", webm: "video_file", avi: "video_file",
   ttf: "font_download", otf: "font_download", woff: "font_download", woff2: "font_download",
@@ -43,7 +44,7 @@ const ICON_COLORS = {
   text_snippet: "gray",
   csv: "green", table_chart: "green", slideshow: "pink", folder_zip: "orange",
   data_object: "amber", settings: "purple", html: "orange", css: "blue",
-  javascript: "amber", code: "purple", terminal: "purple", database: "teal",
+  javascript: "amber", code: "purple", terminal: "purple", database: "teal", memory: "purple",
   audio_file: "teal", video_file: "pink", font_download: "gray",
 };
 
@@ -51,15 +52,27 @@ const ICON_COLORS = {
 // decides instead. Two extensions do not spell their own type.
 const IMAGE_TYPE = { jpg: "jpeg", jfif: "jpeg", svg: "svg+xml", ico: "x-icon" };
 
-/** The bit after the last dot, lowercased; empty for a name that has none. */
+// A suffix a copy wears says nothing about the file, so every question here looks past it:
+// `passwords.ini.bak` is an INI that happens to be a copy.
+const COPY_SUFFIX = /\.(bak|old|orig)$/i;
+
+/** The name without a copy's suffix, or as it is. */
+const plainName = (name) => String(name).replace(COPY_SUFFIX, "");
+
+/** The bit after the last dot, lowercased, a copy's suffix looked past; empty for none. */
 function fileExt(name) {
-  const dot = String(name).lastIndexOf(".");
-  return dot > 0 ? name.slice(dot + 1).toLowerCase() : "";
+  const plain = plainName(name);
+  const dot = plain.lastIndexOf(".");
+  return dot > 0 ? plain.slice(dot + 1).toLowerCase() : "";
 }
 
 const isImage = (name) => IMAGE_EXT.includes(fileExt(name));
 const isText = (name) => TEXT_EXT.includes(fileExt(name));
 const isPdf = (name) => fileExt(name) === "pdf";
+const isGzip = (name) => fileExt(name) === "gz";
+
+/** What a gzip holds, by name: `index.html.gz` holds `index.html`. */
+const gunzipName = (name) => plainName(name).replace(/\.gz$/i, "");
 
 const imageType = (name) => {
   const ext = fileExt(name);
