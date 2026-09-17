@@ -17,10 +17,10 @@ const Comparison = () => (
           <th></th><th>Tonka</th><th>Vanilla</th><th>Bootstrap</th><th>Tw+Alpine</th><th>Preact</th><th>Astro</th>
         </tr></thead>
         <tbody>
-          <Row label="Fast start" scores={[3,3,3,1,2,2]} />
-          <Row label="Low dependency" scores={[2,3,2,2,1,2]} />
+          <Row label="Fast start" scores={[3,3,3,2,2,1]} />
+          <Row label="Low dependency" scores={[2,3,2,2,3,1]} />
           <Row label="Custom look" scores={[3,3,1,3,3,3]} />
-          <Row label="Ready components" scores={[1,1,3,1,2,2]} />
+          <Row label="Ready components" scores={[2,1,3,1,2,2]} />
           <Row label="Browser debug" scores={[3,3,3,2,2,1]} />
           <Row label="Code structure" scores={[3,1,1,2,3,3]} />
           <Row label="Scaling" scores={[1,1,1,2,3,3]} />

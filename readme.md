@@ -120,10 +120,10 @@ Subjective comparison with other technologies commonly used for similar small-si
 
 |Metric _(small sites & tools)_|TonkaJSX|Vanilla JS|Bootstrap|Tw+Alpine|Preact|Astro|
 |:----|:---:|:---:|:---:|:---:|:---:|:---:|
-|Fast start _(from zero to working)_|⭐⭐⭐|⭐⭐⭐|⭐⭐⭐|⭐|⭐⭐|⭐⭐|
-|Low dependency _(low mental overhead)_|⭐⭐|⭐⭐⭐|⭐⭐|⭐⭐|⭐|⭐⭐|
+|Fast start _(from zero to working)_|⭐⭐⭐|⭐⭐⭐|⭐⭐⭐|⭐⭐|⭐⭐|⭐|
+|Low dependency _(low mental overhead)_|⭐⭐|⭐⭐⭐|⭐⭐|⭐⭐|⭐⭐⭐|⭐|
 |Custom look _(no template vibe)_|⭐⭐⭐|⭐⭐⭐|⭐|⭐⭐⭐|⭐⭐⭐|⭐⭐⭐|
-|Ready-made components _(nav / modal etc.)_|⭐|⭐|⭐⭐⭐|⭐|⭐⭐|⭐⭐|
+|Ready-made components _(nav / modal etc.)_|⭐⭐|⭐|⭐⭐⭐|⭐|⭐⭐|⭐⭐|
 |Browser-level debugging _(no bundler magic)_|⭐⭐⭐|⭐⭐⭐|⭐⭐⭐|⭐⭐|⭐⭐|⭐|
 |Code structure _(components / reuse)_|⭐⭐⭐|⭐|⭐|⭐⭐|⭐⭐⭐|⭐⭐⭐|
 |Scaling & maintenance as project grows|⭐|⭐|⭐|⭐⭐|⭐⭐⭐|⭐⭐⭐|
