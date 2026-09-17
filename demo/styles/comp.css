@@ -52,7 +52,7 @@
 .code-block code[class*="language-"],
 .code-block[class*="language-"] { background: var(--srf); }
 
-.table-wrap { overflow-x: auto; margin-top: 12px; }
+.table-wrap { overflow-x: auto; margin: 12px 0 20px; }
 table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
 th, td { padding: 6px 10px; border-bottom: 1px solid var(--brd); text-align: center; }
 th { color: var(--dim); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.04em; }

@@ -2,7 +2,7 @@
 
 Lightweight _(and probably a bit unfinished)_ **frontend framework**.
 It doesn't use ~~**modules**~~ because they make browser debugging harder, but it does support **JSX** because it's great.
-Files land in browser **1:1**, so DevTools shows your file, not a bundle.
+Files land in browser `1:1`, so DevTools shows your file, not a bundle.
 Script-first, not for huge apps. Zero config, fast setup, for small sites, prototypes, and quick internal tools.
 
 Workspace contains main scripts `serve.js` and `build.js`, plus usual **Node.js** stuff.
