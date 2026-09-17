@@ -34,10 +34,11 @@ const Structure = () => (
       Structure is partly opinionated, but not too strict.
     </p>
     <div class="tree">
-      <Branch pre="├─" name="tonka.js" note="CLI entry: tonka serve / tonka build" cls="accent" />
+      <Branch pre="├─" name="tonka.js" note="CLI entry: tonka serve / tonka build / tonka deploy" cls="accent" />
       <Branch pre="├─" name="build.js" note="packs project into production index.html" />
       <Branch pre="├─" name="serve.js" note="dev server; serves index.html or app.html + injected links" />
-      <Branch pre="├─" name="utils.js" note="shared helpers for build.js + serve.js" />
+      <Branch pre="├─" name="deploy.js" note="puts built index.html on a Cloudflare Worker" />
+      <Branch pre="├─" name="utils.js" note="shared helpers for build.js, serve.js + deploy.js" />
       <Branch pre="├─" name="package.json" note="npm config + bin for CLI" />
       <Folder pre="└─" name="<project>/" note="one of many projects inside workspace" open={true}>
         <Branch pre="   ├─" name="app.html" note="required entry for dev" cls="accent" />

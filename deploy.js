@@ -13,7 +13,7 @@
 // The account and the token come from the environment, `CLOUDFLARE_ACCOUNT`
 // and `CLOUDFLARE_TOKEN`, or from a `.env` beside this file, `NAME=value` per line.
 //
-//   node deploy.js <project> [-w <key>] [--dry] [-r]
+//   tonka deploy <project> [-w <key>] [--dry] [-r]
 
 import fs from "fs";
 import os from "os";
@@ -36,9 +36,13 @@ const ENV = {
   CLOUDFLARE_TOKEN: "CLOUDFLARE_API_TOKEN",
 };
 
-// A path the page reaches for: quoted or in `url()`, with an extension, the query and
-// the hash left off. What it matches is a candidate; being a file in the project decides.
-const PATH_RE = /["'(]([^"'()<>\s]+\.[a-z0-9]{1,5})(?:[?#][^"'()<>\s]*)?["')]/gi;
+// A path where the page resolves one: an attribute (`src="…"`, `href="…"`), the same as
+// a prop in compiled JSX (`src:"…"`), or CSS `url(…)`. A path anywhere else is words:
+// a page that talks about `app.ini` does not reach for it. Being a file here decides the rest.
+const REF_RE = new RegExp([
+  String.raw`\b(?:src|href|poster)\s*[=:]\s*["']([^"'\s<>]+)["']`,
+  String.raw`url\(\s*["']?([^"'()\s]+)["']?\s*\)`,
+].join("|"), "gi");
 
 const kb = (n) => `${(n / 1024).toFixed(1)}kB`;
 
@@ -49,10 +53,9 @@ const kb = (n) => `${(n / 1024).toFixed(1)}kB`;
  * @param {Record<string, string>} deploy the `[deploy]` section
  * @returns {{ key: string, name: string }}
  */
-function pickWorker(deploy) {
+function pickTarget(deploy) {
   const keys = Object.keys(deploy).filter(k => !RESERVED.includes(k));
   if(!keys.length) throw new Error("app.ini has no [deploy] section naming a Worker");
-  // `-w` names it; otherwise `main`, or the one key there is
   const key = getFlagValues("--worker", "-w")[0] || (keys.length === 1 ? keys[0] : "main");
   if(!deploy[key] || RESERVED.includes(key)) {
     throw new Error(`[deploy] has no "${key}", it has: ${keys.join(", ")}`);
@@ -81,7 +84,8 @@ function checkEnv() {
 function newest(rel) {
   const at = path.join(PATH, rel);
   if(!fs.existsSync(at)) return 0;
-  if(fs.statSync(at).isFile()) return fs.statSync(at).mtimeMs;
+  const stat = fs.statSync(at);
+  if(stat.isFile()) return stat.mtimeMs;
   return Math.max(0, ...fileList(at).map(f => fs.statSync(path.join(at, f)).mtimeMs));
 }
 
@@ -100,15 +104,15 @@ function isProjectFile(rel) {
 }
 
 /**
- * Every file the page reaches for, by the addresses in it. Local ones only: a remote
- * address names no file here, and a data URL none at all.
+ * Every file the page reaches for, by the addresses in it, the query and the hash left off.
+ * Local ones only: a remote address names no file here, and a data URL none at all.
  * @param {string} html
  * @returns {string[]} relative paths, each once, in the order found
  */
 function referenced(html) {
   const found = new Set();
-  for(const [, hit] of html.matchAll(PATH_RE)) {
-    const rel = hit.replace(/^\.?\//, "");
+  for(const [, attr, css] of html.matchAll(REF_RE)) {
+    const rel = (attr || css).split(/[?#]/)[0].replace(/^\.?\//, "");
     if(rel !== "index.html" && isProjectFile(rel)) found.add(rel);
   }
   return [...found];
@@ -156,7 +160,7 @@ function stage(name, files) {
 async function deploy() {
   Log.head(`Deploy ${c.grey}${PATH}${c.reset}`);
   const settings = loadSection("deploy");
-  const { key, name } = pickWorker(settings);
+  const { key, name } = pickTarget(settings);
   const folder = isFolder(name) ? path.resolve(PATH, name) : null;
   const dry = hasFlag("--dry");
   if(!dry && !folder) checkEnv();
@@ -166,10 +170,9 @@ async function deploy() {
     process.exit(1);
   }
 
-  const html = fs.existsSync(path.join(PATH, "index.html"))
-    ? fs.readFileSync(path.join(PATH, "index.html"), "utf8")
-    : null;
-  if(html === null) throw new Error("index.html not found: run tonka build first");
+  const index = path.join(PATH, "index.html");
+  if(!fs.existsSync(index)) throw new Error("index.html not found: run tonka build first");
+  const html = fs.readFileSync(index, "utf8");
   checkFresh();
 
   const files = [...new Set(["index.html", ...referenced(html), ...included(settings.include)])];
@@ -201,16 +204,24 @@ async function deploy() {
         return;
       }
       Log.run("wrangler deploy");
-      const run = spawnSync(process.execPath, args, { stdio: "inherit" });
+      // wrangler keeps its scratch under `.wrangler` wherever it runs from, so it runs from
+      // the stage and the scratch leaves with it
+      const run = spawnSync(process.execPath, args, { stdio: "inherit", cwd: dir });
       if(run.status !== 0) throw new Error(`wrangler exited with ${run.status}`);
       Log.ok(`Deployed ${name}`);
     }
     finally { fs.rmSync(dir, { recursive: true, force: true }); }
   }
-  // the page is out, so the folder goes back to the app being edited, as `serve -r` does
+  // the page is out, so the folder goes back to the app being edited, as `serve -r` does,
+  // and a `.wrangler` an earlier run left in the workspace goes with it
   if(hasFlag("-r", "--remove")) {
     fs.unlinkSync(path.join(PATH, "index.html"));
     Log.ok(`Deleted ${c.orange}index.html${c.reset}`);
+    const scratch = path.join(ROOT, ".wrangler");
+    if(fs.existsSync(scratch)) {
+      fs.rmSync(scratch, { recursive: true, force: true });
+      Log.ok(`Deleted ${c.orange}.wrangler${c.reset}`);
+    }
   }
 }
 
