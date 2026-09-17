@@ -14,6 +14,18 @@ export const COLOR = {
   orange: "\x1b[38;5;173m"
 };
 
+const c = COLOR
+
+/** One voice for every script here: a glyph, a colour, a line. */
+export class Log {
+  static head(s) { console.log(`${c.blue}✦${c.reset} ${s}`) }
+  static ok(s)   { console.log(`${c.green}✔${c.reset} ${s}`) }
+  static warn(s) { console.log(`${c.yellow}!${c.reset} ${s}`) }
+  static err(s)  { console.log(`${c.red}✖${c.reset} ${s}`) }
+  static info(s) { console.log(`${c.grey}${s}${c.reset}`) }
+  static run(s)  { console.log(`${c.cyan}▶${c.reset} ${s}`) }
+}
+
 /**
  * Get port number from CLI args.
  * Looks for a port option in `argv`:
@@ -47,7 +59,7 @@ export function getPort(def = 3000, argv = process.argv.slice(2)) {
   return def
 }
 
-const OPTS_WITH_VALUE = new Set(["-p", "--port" /*, "--host", "--root", ... */])
+const OPTS_WITH_VALUE = new Set(["-p", "--port", "-w", "--worker"])
 
 /**
  * Get target directory.
@@ -170,6 +182,45 @@ function builtinVars() {
 }
 
 /**
+ * app.ini as sections: the lines above any header under "", the rest under their header,
+ * lowercased. A value loses its quotes; a line starting with ; or # is a comment.
+ * @param {string} raw
+ * @returns {Record<string, Record<string, string>>}
+ */
+export function parseIni(raw) {
+  const sections = { "": {} }
+  let current = ""
+  for(const line of String(raw || "").split(/\r?\n/)) {
+    const t = line.trim()
+    if(!t || t[0] === ";" || t[0] === "#") continue
+    const sm = t.match(/^\[(.+?)\]$/)
+    if(sm) {
+      current = sm[1].trim().toLowerCase()
+      sections[current] ??= {}
+      continue
+    }
+    const eq = t.indexOf("=")
+    if(eq < 0) continue
+    const k = t.slice(0, eq).trim()
+    let v = t.slice(eq + 1).trim()
+    if((v[0] === '"' && v.at(-1) === '"') || (v[0] === "'" && v.at(-1) === "'"))
+      v = v.slice(1, -1)
+    if(k) sections[current][k] = v
+  }
+  return sections
+}
+
+/**
+ * One section of app.ini on its own, nothing from the top level mixed in.
+ * Missing file or section → empty.
+ * @param {string} section
+ * @returns {Record<string, string>}
+ */
+export function loadSection(section) {
+  return parseIni(readFile(VARS_FILE))[section.toLowerCase()] || {}
+}
+
+/**
  * Parse app.ini: built-ins, then top-level vars, then [section] overrides.
  * Values may reference other vars (e.g. `foot = Build {{date}}`), resolved
  * one level deep. Missing file → built-ins only.
@@ -177,25 +228,9 @@ function builtinVars() {
  * @returns {Record<string, string>}
  */
 export function loadVars(section) {
-  const vars = builtinVars()
-  const raw = readFile(VARS_FILE)
-  if(!raw) return vars
-  let current = null
-  for(const line of raw.split(/\r?\n/)) {
-    const t = line.trim()
-    if(!t || t[0] === ";" || t[0] === "#") continue
-    const sm = t.match(/^\[(.+?)\]$/)
-    if(sm) { current = sm[1].trim().toLowerCase(); continue }
-    const eq = t.indexOf("=")
-    if(eq < 0) continue
-    const k = t.slice(0, eq).trim()
-    let v = t.slice(eq + 1).trim()
-    if((v[0] === '"' && v.at(-1) === '"') || (v[0] === "'" && v.at(-1) === "'"))
-      v = v.slice(1, -1)
-    if(!k) continue
-    if(current === null || current === section?.toLowerCase())
-      vars[k] = v
-  }
+  const all = parseIni(readFile(VARS_FILE))
+  const own = section ? all[section.toLowerCase()] || {} : {}
+  const vars = { ...builtinVars(), ...all[""], ...own }
   for(const k of Object.keys(vars))
     vars[k] = vars[k].replace(/\{\{(\w+)\}\}/g, (m, n) => n in vars ? vars[n] : m)
   return vars
@@ -224,18 +259,18 @@ export function getFlagValues(...flags) {
 }
 
 /**
- * Size limit carried by a flag (e.g. `-f 800KB`, `--svg=100KB`).
+ * Size limit carried by a flag (e.g. `-f 800kB`, `--svg=100kB`).
  * A bare flag means no limit, a missing flag means the flag was not used at all.
  * @param {...string} flags Flag names (e.g. "--fonts", "-f").
  * @returns {number|null} Bytes, `Infinity` for a bare flag, `null` when absent.
- * @throws {Error} When the value carries no KB or MB suffix.
+ * @throws {Error} When the value carries no kB or MB suffix.
  */
 export function flagLimit(...flags) {
   if(!hasFlag(...flags)) return null
   const [value] = getFlagValues(...flags)
   if(!value) return Infinity
-  const m = value.match(/^(\d+(?:\.\d+)?)(KB|MB)$/i)
-  if(!m) throw new Error(`${flags[flags.length - 1]}: size needs a KB or MB suffix, got "${value}"`)
+  const m = value.match(/^(\d+(?:\.\d+)?)(kB|MB)$/i)
+  if(!m) throw new Error(`${flags[flags.length - 1]}: size needs a kB or MB suffix, got "${value}"`)
   return Number(m[1]) * (m[2].toLowerCase() === "mb" ? 1048576 : 1024)
 }
 

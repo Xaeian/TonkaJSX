@@ -1,5 +1,10 @@
 ## Changes 🌰TonkaJSX
 
+### `1.2.3` Deploy:
+
+- `deploy` puts built page on a Cloudflare Worker _(`[deploy]` in `app.ini`)_
+- `build` runs Babel on JSX only
+
 ### `1.2.2` Limits + libs:
 
 - `-i` `-f` `-s` take a size _(`-f 800kB`)_

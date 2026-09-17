@@ -3,22 +3,13 @@ import path from "path"
 import http from "http"
 import https from "https"
 import { PATH, readFile, fileList, loadVars, replaceVars, hasFlag, getFlagValues, flagLimit,
-  COLOR as c } from "./utils.js"
-
-class Log {
-  static head(s) { console.log(`${c.blue}✦${c.reset} ${s}`) }
-  static ok(s)   { console.log(`${c.green}✔${c.reset} ${s}`) }
-  static warn(s) { console.log(`${c.yellow}!${c.reset} ${s}`) }
-  static err(s)  { console.log(`${c.red}✖${c.reset} ${s}`) }
-  static info(s) { console.log(`${c.grey}${s}${c.reset}`) }
-  static run(s)  { console.log(`${c.cyan}▶${c.reset} ${s}`) }
-}
+  COLOR as c, Log } from "./utils.js"
 
 const bytes = (s) => Buffer.byteLength(String(s || ""), "utf8")
 
 const kb = (n) => (n / 1024).toFixed(1)
 
-const size = (n) => n === Infinity ? "no limit" : `${kb(n)}KB`
+const size = (n) => n === Infinity ? "no limit" : `${kb(n)}kB`
 
 // a file over its ceiling stays where it was, so the page reaches for it by address
 const external = []
@@ -308,7 +299,7 @@ async function fontBytes(ref, index) {
   const name = path.basename(ref.replace(/[?#].*$/, ""))
   try {
     const buf = await fetchBytes(ref)
-    Log.info(`  fetched: ${name} (${kb(buf.length)}KB)`)
+    Log.info(`  fetched: ${name} (${kb(buf.length)}kB)`)
     return { buf, name }
   }
   catch(e) {
@@ -429,7 +420,7 @@ async function processFonts(css, projectDir, subsetText, subsetLigature, srcDir,
         try {
           buf = await subsetFn(buf, text, { targetFormat: "woff2" })
           subsetted = true
-          Log.info(`  subset: ${name} ${kb(before)}KB → ${kb(buf.length)}KB`)
+          Log.info(`  subset: ${name} ${kb(before)}kB → ${kb(buf.length)}kB`)
         }
         catch(e) { Log.warn(`  subset failed: ${name} (${e?.message || e})`) }
       }
@@ -444,7 +435,7 @@ async function processFonts(css, projectDir, subsetText, subsetLigature, srcDir,
     // follows the url have to name what the data now is
     const ext = subsetted ? "woff2" : name.split(".").pop().toLowerCase()
     const mime = { woff2: "font/woff2", woff: "font/woff", otf: "font/otf" }[ext] || "font/ttf"
-    Log.info(`  inline: ${name} (${kb(buf.length)}KB)`)
+    Log.info(`  inline: ${name} (${kb(buf.length)}kB)`)
     let face = block.replace(srcMatch[0], `url(data:${mime};base64,${buf.toString("base64")})`)
     if(subsetted) face = face.replace(/format\(\s*["']?[\w-]+["']?\s*\)/i, `format("woff2")`)
     inlined.push(face)
@@ -501,7 +492,7 @@ async function precompress(filePath) {
     [constants.BROTLI_PARAM_SIZE_HINT]: input.length,
   }})
   fs.writeFileSync(filePath + ".br", brotlied)
-  const fmt = (b) => (b / 1024).toFixed(1) + "KB"
+  const fmt = (b) => (b / 1024).toFixed(1) + "kB"
   Log.ok(`Compress: ${fmt(input.length)} → gz:${fmt(gzipped.length)} br:${fmt(brotlied.length)}`)
 }
 
@@ -615,17 +606,18 @@ async function build()
   Log.ok(`JS:${jsList.length} JSX:${jsxList.length} BODY:${add.length}`)
   for(const f of jsList) Log.info(`+ scripts/${f}`)
   for(const f of jsxList) Log.info(`+ scripts/${f}`)
-  const allScripts = [...jsList, ...jsxList]
-  const localJS = allScripts.length ? allScripts.map(f => {
+  const joined = (files) => files.map(f => {
     const t = readFile(path.join(jsDir, ...String(f).split(/[\\/]+/)))
     if(t == null) throw new Error(`Missing: scripts/${f}`)
     return t.trimEnd()
-  }).join("\n;\n") : ""
-  // Remote scripts arrive built, so only the project's own go through Babel.
-  // Past 500KB of input Babel drops to a compact generator and says so on the console,
+  }).join("\n;\n")
+  // Only the JSX goes through Babel, as one piece: a .js has nothing for it to turn into
+  // calls, and a remote script arrives built. The bundle keeps the load order, .js first.
+  // Past 500kB of input Babel drops to a compact generator and says so on the console,
   // and one inlined crypto library is enough to get there.
   const remote = replaceVars(String(remoteJs || "").trimEnd(), vars)
-  const local = replaceVars(localJS, vars)
+  const plain = replaceVars(joined(jsList), vars)
+  const local = replaceVars(joined(jsxList), vars)
   let compiled = ""
   if(local) {
     const { transformSync, jsxPlugin } = await loadBabel()
@@ -647,7 +639,7 @@ async function build()
     compiled = out?.code || ""
     if(!compiled) Log.warn("Babel returned empty output")
   }
-  let jsBundle = [remote, compiled].filter(Boolean).join("\n;\n")
+  let jsBundle = [remote, plain, compiled].filter(Boolean).join("\n;\n")
   if(jsBundle) {
     const b0 = bytes(jsBundle)
     jsBundle = await minifyJs(jsBundle)
@@ -675,7 +667,8 @@ async function build()
   html = replaceVars(html, vars)
   const outPath = path.join(PATH, "index.html")
   fs.writeFileSync(outPath, html, "utf8")
-  Log.ok(`Wrote ${c.grey}${outPath}${c.reset} (${size(fs.statSync(outPath).size)})`)
+  const shown = `${c.grey}${PATH}${path.sep}${c.orange}index.html${c.reset}`
+  Log.ok(`Wrote ${shown} (${size(fs.statSync(outPath).size)})`)
   if(external.length) {
     Log.warn(`Left external:${external.length}`)
     for(const line of external) Log.info(`  ${line}`)

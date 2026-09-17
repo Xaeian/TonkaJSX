@@ -1,6 +1,6 @@
 {
   "name": "tonka",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "type": "module",
   "bin": {
     "tonka": "./tonka.js"
@@ -15,6 +15,7 @@
     "subset-font": "^2.5.0",
     "svgo": "^4.1.0",
     "tailwindcss": "^4.3.3",
-    "terser": "^5.50.0"
+    "terser": "^5.50.0",
+    "wrangler": "^4.133.0"
   }
 }
