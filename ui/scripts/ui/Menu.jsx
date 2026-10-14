@@ -30,10 +30,10 @@ const Menu = ({ title, pos = "auto", width, maxWidth, offsetX = 0, offsetY = 0, 
   );
   let anchor = null;
   const opts = { dx: offsetX, dy: offsetY };
-  const place = () => {
+  function place() {
     if(pos !== "auto") { UI.place(root, anchor, pos, opts); return; }
     for(const p of _MENU_PLACES) if(UI.place(root, anchor, p, opts)) return;
-  };
+  }
   // the menu is fixed, so scrolling under it moves the anchor away
   const follow = () => place();
 

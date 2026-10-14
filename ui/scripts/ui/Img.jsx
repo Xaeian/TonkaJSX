@@ -31,7 +31,7 @@
 const Img = ({ src, alt, height, width, maxWidth, fit = "contain", minSquare, rounded, circle,
   border, fallbackIcon, fallbackText, onClick, class: className, ...rest }) => {
   const img = <img class="image-inner" alt={alt || ""} loading="lazy" />;
-  const iconEl = <span class="icon"></span>;
+  const iconEl = <span class="icon" translate={false}></span>;
   const el = (
     <div {...rest} onClick={onClick}
       class={["image", "image-fit-" + fit, className, {
@@ -48,10 +48,10 @@ const Img = ({ src, alt, height, width, maxWidth, fit = "contain", minSquare, ro
   );
 
   const PRESET = { sm: "40px", md: "80px", lg: "160px" };
-  const css = (v) => {
+  function css(v) {
     if(v == null || v === "") return null;
     return PRESET[v] || (typeof v === "number" ? v + "px" : String(v));
-  };
+  }
   const h = css(height), w = css(width);
   if(h) el.style.height = h;
   if(w) el.style.width = w;
@@ -75,11 +75,11 @@ const Img = ({ src, alt, height, width, maxWidth, fit = "contain", minSquare, ro
   }
 
   let _src = "";
-  const setState = (state) => {
+  function setState(state) {
     el.classList.remove("image-ok", "image-error", "image-empty");
     el.classList.add("image-" + state);
     iconEl.textContent = fallbackIcon || (state === "error" ? "broken_image" : "image");
-  };
+  }
   img.addEventListener("load", () => { if(_src) setState("ok"); });
   img.addEventListener("error", () => { if(_src) setState("error"); });
   UI.prop(el, "src", () => _src, (v) => {

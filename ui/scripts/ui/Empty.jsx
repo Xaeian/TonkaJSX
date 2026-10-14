@@ -16,7 +16,7 @@
  */
 const Empty = ({ icon, title, description, action, fill, height, size, class: className,
   children, ...rest }) => {
-  const iconEl = <span class="icon empty-icon" hidden={!icon}>{icon}</span>;
+  const iconEl = <span class="icon empty-icon" translate={false} hidden={!icon}>{icon}</span>;
   const titleEl = <h4 class="empty-title" hidden={!title}>{title}</h4>;
   const descEl = <p class="empty-desc" hidden={!description}>{description}</p>;
   const el = (
@@ -28,9 +28,11 @@ const Empty = ({ icon, title, description, action, fill, height, size, class: cl
       {children}
     </div>
   );
-  const line = (name, target) => UI.prop(el, name,
-    () => target.textContent,
-    (v) => { target.textContent = v || ""; target.hidden = !v; });
+  function line(name, target) {
+    return UI.prop(el, name,
+      () => target.textContent,
+      (v) => { target.textContent = v || ""; target.hidden = !v; });
+  }
   line("icon", iconEl);
   line("title", titleEl);
   line("description", descEl);

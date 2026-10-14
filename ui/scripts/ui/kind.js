@@ -1,8 +1,9 @@
 // scripts/ui/kind.js
 //
 // What a file name says about its file: the glyph it wears, the colour that glyph carries,
-// and whether the app can open it as a picture or as text. Names out of the kit's own
-// vocabulary, so a row drawn from these needs nothing else to look like every other row.
+// and whether the app can open it as a picture or as text.
+// Names out of the kit's own vocabulary,
+// so a row drawn from these needs nothing else to look like every other row.
 //
 // Every app that lists files asks the same questions of a name, and a table that lives in
 // one of them answers "draft" and "neutral" in the next.
@@ -10,8 +11,9 @@
 /** Extensions shown as a picture rather than as a glyph. */
 const IMAGE_EXT = ["png", "jpg", "jpeg", "jfif", "gif", "webp", "avif", "bmp", "svg", "ico"];
 
-// What opens as text. `Syntax` colours the ones it knows and escapes the rest, which is all
-// a plain file needs. Anything not listed is bytes, and bytes only download.
+// What opens as text.
+// `Syntax` colours the ones it knows and escapes the rest, which is all a plain file needs.
+// Anything not listed is bytes, and bytes only download.
 const TEXT_EXT = ["txt", "md", "markdown", "csv", "tsv", "json", "ini", "toml", "cfg", "conf",
   "env", "properties", "yaml", "yml", "sql", "log", "xml", "html", "css", "js", "ts", "py",
   "sh", "svg"];
@@ -48,8 +50,8 @@ const ICON_COLORS = {
   audio_file: "teal", video_file: "pink", font_download: "gray",
 };
 
-// An object url with no type is served as bytes, and an img tag will not take it. The name
-// decides instead. Two extensions do not spell their own type.
+// An object url with no type is served as bytes, and an img tag will not take it.
+// The name decides instead. Two extensions do not spell their own type.
 const IMAGE_TYPE = { jpg: "jpeg", jfif: "jpeg", svg: "svg+xml", ico: "x-icon" };
 
 // A suffix a copy wears says nothing about the file, so every question here looks past it:
@@ -66,20 +68,31 @@ function fileExt(name) {
   return dot > 0 ? plain.slice(dot + 1).toLowerCase() : "";
 }
 
+/** Whether the name is a picture a browser shows. */
 const isImage = (name) => IMAGE_EXT.includes(fileExt(name));
+
+/** Whether the name opens as text. */
 const isText = (name) => TEXT_EXT.includes(fileExt(name));
+
+/** Whether the name is a PDF. */
 const isPdf = (name) => fileExt(name) === "pdf";
+
+/** Whether the name is a gzip. */
 const isGzip = (name) => fileExt(name) === "gz";
 
 /** What a gzip holds, by name: `index.html.gz` holds `index.html`. */
 const gunzipName = (name) => plainName(name).replace(/\.gz$/i, "");
 
-const imageType = (name) => {
+/** The MIME type a picture is served as, by its name. */
+function imageType(name) {
   const ext = fileExt(name);
   return `image/${IMAGE_TYPE[ext] || ext}`;
-};
+}
 
+/** The glyph a file wears: a picture's own, anything else by its kind, `draft` for none. */
 const fileIcon = (name) => isImage(name) ? "image" : FILE_ICONS[fileExt(name)] || "draft";
+
+/** The colour of the glyph a file wears. */
 const fileColor = (name) => ICON_COLORS[fileIcon(name)] || "neutral";
 
 /** Bytes as a person reads them: `860B`, `1.4kB`, `2.3MB`. */

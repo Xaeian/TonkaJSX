@@ -10,26 +10,26 @@ const Buttons = ({ onClicks, onItems }) => {
   let items = 3;
   const clicksTag = <Badge variant="outline" mono>0 clicks</Badge>;
   const itemsTag = <Badge variant="outline" mono>3 items</Badge>;
-  const click = () => {
+  function click() {
     clicks++;
     clicksTag.text = `${clicks} clicks`;
     onClicks?.(clicks);
-  };
-  const setItems = (n) => {
+  }
+  function setItems(n) {
     items = Math.max(0, n);
     itemsTag.text = `${items} items`;
     onItems?.(items);
-  };
+  }
   onClicks?.(clicks);
   onItems?.(items);
 
   //--------------------------------------------------------------------------------------- Loading
 
   // a fake request: button spins and stays disabled until it resolves
-  const busy = (btn, ms) => {
+  function busy(btn, ms) {
     btn.loading = true;
     setTimeout(() => { btn.loading = false; Alert.ok("Done"); }, ms);
-  };
+  }
   const saveBtn = (
     <Button variant="primary" icon="save" onClick={() => busy(saveBtn, 1500)}>Save</Button>
   );

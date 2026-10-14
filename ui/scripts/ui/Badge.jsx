@@ -17,7 +17,7 @@
  */
 const Badge = ({ color = "neutral", variant = "solid", size, mono, icon, pos,
   class: className, children, ...rest }) => {
-  const iconEl = icon ? <span class="icon">{icon}</span> : null;
+  const iconEl = icon ? <span class="icon" translate={false}>{icon}</span> : null;
   const textEl = <span class="badge-text">{children}</span>;
   const el = (
     <span {...rest} color={color}
@@ -30,9 +30,10 @@ const Badge = ({ color = "neutral", variant = "solid", size, mono, icon, pos,
   UI.prop(el, "color", () => el.getAttribute("color"), (v) => el.setAttribute("color", v));
   UI.text(el, "text", textEl);
   UI.text(el, "icon", iconEl);
-  // Without this, `badge.title = "..."` writes the native attribute and the browser draws
-  // its own grey box, while the same word passed in JSX goes to `data-tooltip` and gets the
-  // library's. One property, one tooltip, whichever way it is set.
+  // Without this, `badge.title = "..."` writes the native attribute,
+  // and the browser draws its own grey box,
+  // while the same word passed in JSX goes to `data-tooltip` and gets the library's.
+  // One property, one tooltip, whichever way it is set.
   UI.title(el);
   return el;
 };

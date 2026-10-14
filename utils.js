@@ -182,8 +182,10 @@ function builtinVars() {
 }
 
 /**
- * app.ini as sections: the lines above any header under "", the rest under their header,
- * lowercased. A value loses its quotes; a line starting with ; or # is a comment.
+ * app.ini as sections, read as xaeian `INI` reads a file.
+ * The lines above any header go under "", the rest under their header, its name lowercased.
+ * A `;` or `#` starts a comment, at the start of a line or after a value.
+ * A value holding either is quoted, `accent = "#d8a57f"`, a quote inside it escaped as `\"`.
  * @param {string} raw
  * @returns {Record<string, Record<string, string>>}
  */
@@ -193,31 +195,36 @@ export function parseIni(raw) {
   for(const line of String(raw || "").split(/\r?\n/)) {
     const t = line.trim()
     if(!t || t[0] === ";" || t[0] === "#") continue
-    const sm = t.match(/^\[(.+?)\]$/)
-    if(sm) {
-      current = sm[1].trim().toLowerCase()
+    if(t[0] === "[" && t.includes("]")) {
+      current = t.slice(1, t.indexOf("]")).trim().toLowerCase()
       sections[current] ??= {}
       continue
     }
     const eq = t.indexOf("=")
     if(eq < 0) continue
     const k = t.slice(0, eq).trim()
-    let v = t.slice(eq + 1).trim()
-    if((v[0] === '"' && v.at(-1) === '"') || (v[0] === "'" && v.at(-1) === "'"))
-      v = v.slice(1, -1)
-    if(k) sections[current][k] = v
+    if(k) sections[current][k] = iniValue(t.slice(eq + 1).trim())
   }
   return sections
 }
 
-/**
- * One section of app.ini on its own, nothing from the top level mixed in.
- * Missing file or section → empty.
- * @param {string} section
- * @returns {Record<string, string>}
- */
-export function loadSection(section) {
-  return parseIni(readFile(VARS_FILE))[section.toLowerCase()] || {}
+// one value: a quoted one ends at its closing quote and unescapes `\"` and `\\`,
+// any other ends before a `;` or `#` comment
+function iniValue(text) {
+  const quote = text[0]
+  if(quote !== '"' && quote !== "'") return text.split(/[;#]/)[0].trimEnd()
+  let value = ""
+  for(let i = 1; i < text.length; i++) {
+    if(text[i] === quote) break
+    if(text[i] === "\\" && (text[i + 1] === quote || text[i + 1] === "\\")) i++
+    value += text[i]
+  }
+  return value
+}
+
+/** The project's app.ini as `parseIni` reads it, empty when there is none. */
+export function loadIni() {
+  return parseIni(readFile(VARS_FILE))
 }
 
 /**
@@ -228,12 +235,38 @@ export function loadSection(section) {
  * @returns {Record<string, string>}
  */
 export function loadVars(section) {
-  const all = parseIni(readFile(VARS_FILE))
+  const all = loadIni()
   const own = section ? all[section.toLowerCase()] || {} : {}
   const vars = { ...builtinVars(), ...all[""], ...own }
   for(const k of Object.keys(vars))
     vars[k] = vars[k].replace(/\{\{(\w+)\}\}/g, (m, n) => n in vars ? vars[n] : m)
   return vars
+}
+
+// kinds of target `[deploy]` names its default by
+const DEPLOY_KINDS = ["worker", "folder"]
+
+/**
+ * Where a project goes, as its app.ini says: first the target `[deploy]` names by its kind,
+ * the default, under key "", then each Worker of `[worker]` under its own key.
+ * A key `[deploy]` does not take throws, and so does a worker beside a folder.
+ * @param {Record<string, Record<string, string>>} ini app.ini as `parseIni` reads it
+ * @returns {{ key: string, kind: "worker"|"folder", name: string }[]}
+ */
+export function deployTargets(ini) {
+  const deploy = ini.deploy || {}
+  const unknown = Object.keys(deploy).find(k => !DEPLOY_KINDS.includes(k) && k !== "include")
+  if(unknown) {
+    throw new Error(`app.ini [deploy] takes worker, folder and include, not ${unknown};`
+      + " another Worker goes under [worker]")
+  }
+  const kinds = DEPLOY_KINDS.filter(kind => Object.hasOwn(deploy, kind))
+  if(kinds.length > 1) throw new Error("app.ini [deploy] names a worker and a folder: keep one")
+  const workers = Object.entries(ini.worker || {})
+  return [
+    ...kinds.map(kind => ({ key: "", kind, name: deploy[kind] })),
+    ...workers.map(([key, name]) => ({ key, kind: "worker", name })),
+  ]
 }
 
 /**

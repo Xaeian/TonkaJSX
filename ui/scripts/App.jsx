@@ -15,11 +15,11 @@ const App = () => {
     }} />
   );
   const onClicks = (n) => clicksTag.textContent = n + " clicks";
-  const onItems = (n) => {
+  function onItems(n) {
     itemsTag.textContent = n + " items";
     itemsBadge.text = n;
     itemsBadge.hidden = n === 0;
-  };
+  }
   const panels = [
     { key: "hero", icon: "home", title: "Welcome", el: <Hero /> },
     { key: "input", icon: "edit", title: "Inputs & Select", el: <Inputs /> },
@@ -58,8 +58,8 @@ const App = () => {
   }
   show("hero");
 
-  // shortcuts to every panel plus theme toggle, anchored to rail
-  // rail insets its button, so 6px moves placement gap out to sidebar line
+  // Shortcuts to every panel plus the theme toggle, anchored to the rail.
+  // The rail insets its button, so 6px moves the placement gap out to the sidebar line.
   const quickMenu = (
     <Menu title="Quick actions" pos="right-top" offsetX={6} width="220px">
       <stack gap="xs">
@@ -67,14 +67,14 @@ const App = () => {
         {panels.map(p => (
           <Panel inline ghost glow pointer
             onClick={() => { show(p.key); quickMenu.close(); }}>
-            <span class="icon">{p.icon}</span>
+            <span class="icon" translate={false}>{p.icon}</span>
             <span>{p.title}</span>
           </Panel>
         ))}
         <sep blank />
         <Panel inline ghost glow pointer
           onClick={() => { Theme.toggle(); quickMenu.close(); }}>
-          <span class="icon">contrast</span>
+          <span class="icon" translate={false}>contrast</span>
           <span>Toggle theme</span>
         </Panel>
       </stack>
@@ -116,7 +116,7 @@ const App = () => {
         <Footer
           left={sectionTag}
           center={<>
-            <span>2026 <span class="icon">copyright</span>
+            <span>2026 <span class="icon" translate={false}>copyright</span>
               <a href="https://ui.tonkajsx.com" target="_blank">{{title}}</a> {{ver}}</span>
             <sep />
             <span>

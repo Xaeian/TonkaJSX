@@ -1,7 +1,7 @@
 // scripts/ui/ui.js
 // Glue shared by the components: property mutators, overlay lifecycle, anchored placement.
 
-// `title` in JSX is the library tooltip (Tooltip.jsx), never the native one
+// `title` in JSX is the library tooltip, `Tooltip`, never the native one
 JSX.TitleAttr = "data-tooltip";
 
 const UI = {
@@ -19,26 +19,47 @@ const UI = {
 
   /**
    * Copies `text` and flashes a check on `btn` (an icon button), then its `icon` is back.
-   * `clearAfter` seconds later the copy is taken back, for a secret that should not sit in
-   * the clipboard until the next copy.
+   * `text` may be a promise of one, for words still on their way: the button spins meanwhile.
+   * `clearAfter` seconds later the copy is taken back,
+   * for a secret that should not sit in the clipboard until the next copy.
+   * @returns {Promise<void>} settles once the clipboard holds it, rejects when it refused
    */
   copy: (btn, text, { icon = "content_copy", clearAfter = 0 } = {}) => {
-    navigator.clipboard.writeText(text);
-    btn.icon = "check";
-    setTimeout(() => { btn.icon = icon; }, 1200);
-    if(clearAfter > 0) UI.uncopy(text, clearAfter);
+    const later = typeof text !== "string";
+    const asBlob = (t) => new Blob([t], { type: "text/plain" });
+    const written = later
+      ? UI._clip("text/plain", Promise.resolve(text).then(asBlob))
+      : navigator.clipboard.writeText(text);
+    UI._copied(btn, icon, written, later);
+    if(clearAfter > 0 && !later) UI.uncopy(text, clearAfter);
+    return written;
+  },
+
+  /**
+   * Copies a picture, `btn` flashing as for `copy`.
+   * Any format goes in and a PNG comes out, the one picture every clipboard takes.
+   * @param {Element} btn
+   * @param {Blob|Promise<Blob>} picture  a promise spins the button while it loads
+   * @returns {Promise<void>} settles once the clipboard holds it, rejects when it refused
+   */
+  copyPicture: (btn, picture, { icon = "content_copy" } = {}) => {
+    const written = UI._clip("image/png", Promise.resolve(picture).then(UI._png));
+    UI._copied(btn, icon, written, picture instanceof Promise);
+    return written;
   },
 
   /**
    * Takes `text` off the clipboard after `sec`, replacing whatever wipe was pending.
-   * A page without focus may not write the clipboard, so a wipe that falls due then waits
-   * for the tab to come back. Where the clipboard may be read without asking for it (a
-   * granted permission) the wipe lands only while the text is still there; elsewhere it
-   * lands blind, since a password left behind costs more than someone else's line of text.
+   * A page without focus may not write the clipboard,
+   * so a wipe that falls due then waits for the tab to come back.
+   * Where the clipboard may be read without asking for it (a granted permission)
+   * the wipe lands only while the text is still there;
+   * elsewhere it lands blind,
+   * since a password left behind costs more than someone else's line of text.
    */
   uncopy: (text, sec) => {
     clearTimeout(UI._wipeTimer);
-    const wipe = async () => {
+    async function wipe() {
       if(UI._wipe !== wipe) return; // a newer copy owns the clipboard now
       if(!document.hasFocus()) { addEventListener("focus", wipe, { once: true }); return; }
       UI._wipe = null;
@@ -47,8 +68,9 @@ const UI = {
         if(can?.state === "granted" && await navigator.clipboard.readText() !== text) return;
       }
       catch {} // no way to ask and no way to read: wipe anyway
-      try { await navigator.clipboard.writeText(""); } catch {}
-    };
+      try { await navigator.clipboard.writeText(""); }
+      catch {} // refused as well: the text stays, and nothing here can take it
+    }
     UI._wipe = wipe;
     UI._wipeTimer = setTimeout(wipe, sec * 1000);
   },
@@ -58,6 +80,50 @@ const UI = {
 
   _wipe: null,
   _wipeTimer: null,
+
+  // `data`, a promise of a Blob of `type`, goes to the clipboard now, inside the click:
+  // Safari refuses a clipboard asked for after an await, and a promise is how bytes come later
+  _clip: (type, data) => {
+    if(typeof ClipboardItem !== "undefined") {
+      return navigator.clipboard.write([new ClipboardItem({ [type]: data })]);
+    }
+    if(type === "text/plain") {
+      return data.then(b => b.text()).then(t => navigator.clipboard.writeText(t));
+    }
+    return Promise.reject(new Error("This browser copies text and nothing else"));
+  },
+
+  // the spinner while a promise loads, then the check;
+  // the spinner puts its glyph back on the way out, so the check goes on after it
+  _copied: (btn, icon, written, waiting) => {
+    if(waiting) btn.loading = true;
+    written
+      .finally(() => { if(waiting) btn.loading = false; })
+      .then(() => {
+        btn.icon = "check";
+        setTimeout(() => { btn.icon = icon; }, 1200);
+      }, () => {}); // a refusal is the caller's to say, on the promise handed back
+  },
+
+  // a picture as PNG, drawn once at its own size; one already PNG goes as it is
+  _png: async (blob) => {
+    if(blob.type === "image/png") return blob;
+    const url = URL.createObjectURL(blob);
+    try {
+      const img = new Image();
+      img.src = url;
+      await img.decode();
+      const cv = document.createElement("canvas");
+      // an SVG with no size of its own lands on 512px square
+      cv.width = img.naturalWidth || 512;
+      cv.height = img.naturalHeight || 512;
+      cv.getContext("2d").drawImage(img, 0, 0, cv.width, cv.height);
+      const png = await new Promise(resolve => cv.toBlob(resolve, "image/png"));
+      if(!png) throw new Error("This picture would not turn into a PNG");
+      return png;
+    }
+    finally { URL.revokeObjectURL(url); }
+  },
 
   /** Loads a script once, with SRI when given; the same `src` again resolves at once. */
   script: (src, integrity) => UI._scripts[src] ??= new Promise((resolve, reject) => {
@@ -148,6 +214,7 @@ const UI = {
         else {
           iconEl = document.createElement("span");
           iconEl.className = "icon";
+          iconEl.translate = false;
           el.prepend(iconEl);
           own = true;
         }
@@ -187,10 +254,10 @@ const UI = {
     let prevFocus = null;
     let hideTimer = null;
     // capture phase, so a handler that stops propagation cannot hide the event
-    const onDown = (e) => {
+    function onDown(e) {
       if(root.contains(e.target)) return;
       if(dismiss === true || dismiss(e)) root.close();
-    };
+    }
     const onKey = (e) => { if(e.key === "Escape") root.close(); };
     root.open = (...args) => {
       if(opened) return;

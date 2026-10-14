@@ -16,10 +16,10 @@ const Checks = () => {
     summary.color = on.length ? "ok" : "neutral";
   }
   sync();
-  const setAll = (v) => {
+  function setAll(v) {
     for(const c of channels) c.box.checked = v;
     sync();
-  };
+  }
 
   return (
     <Panel title="Checkboxes">

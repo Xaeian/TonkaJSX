@@ -27,13 +27,13 @@ const Login = ({
   onSubmit, onLogout, class: className, ...rest
 }) => {
   let logged = false;
-  const submit = () => {
+  function submit() {
     const user = userIn.value.trim();
     const pass = passIn.value;
     if(!user || !pass) return;
     if(session) session.login(user, pass);
     else onSubmit?.({ user, pass });
-  };
+  }
   const userIn = (
     <Input ghost size="sm" icon="person" placeholder="Username"
       onEnter={() => passIn.focus()} />
@@ -46,7 +46,9 @@ const Login = ({
     <div class={["login-panel", "login-" + align]} hidden
       style={{ "--login-offset": offset + "px" }}>
       <stack gap="no" class="login-fields">{userIn}{passIn}{errorEl}</stack>
-      <button class="login-submit" onClick={submit}><span class="icon">login</span></button>
+      <button class="login-submit" onClick={submit}>
+        <span class="icon" translate={false}>login</span>
+      </button>
     </div>
   );
   const btn = (
@@ -63,7 +65,7 @@ const Login = ({
     dismiss: (e) => !btn.contains(e.target),
     onOpen: () => (userIn.value ? passIn : userIn).focus(),
   });
-  const showLogged = (username) => {
+  function showLogged(username) {
     logged = true;
     panel.close();
     btn.icon = "person";
@@ -73,15 +75,15 @@ const Login = ({
     userIn.value = "";
     passIn.value = "";
     errorEl.textContent = "";
-  };
-  const showAnon = () => {
+  }
+  function showAnon() {
     logged = false;
     btn.icon = icon;
     btn.label = label;
     btn.title = title ?? null;
     btn.classList.remove("login-logged");
     errorEl.textContent = "";
-  };
+  }
   if(session) session.onChange((state) => {
     if(state.status === "auth") showLogged(state.user.username);
     else if(state.status === "anon") showAnon();

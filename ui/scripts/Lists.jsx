@@ -20,7 +20,7 @@ const Lists = () => {
     <Empty icon="check" title="All done" description="Add a task to start over." />
   );
   const count = <Badge variant="tint" size="sm" mono>3</Badge>;
-  const render = () => {
+  function render() {
     list.replaceChildren(...tasks.map(([color, icon, text], i) => (
       <Panel inline stripe color={color} icon={icon}
         actions={<IconConfirmBtn variant="ghost"
@@ -31,11 +31,11 @@ const Lists = () => {
     list.hidden = !tasks.length;
     empty.hidden = !!tasks.length;
     count.text = tasks.length;
-  };
-  const add = () => {
+  }
+  function add() {
     tasks.push(TASKS[added++ % TASKS.length]);
     render();
-  };
+  }
   render();
 
   //------------------------------------------------------------------------------------------ View

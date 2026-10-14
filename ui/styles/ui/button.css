@@ -20,8 +20,6 @@
   }
   .btn.btn-icon { width: var(--ctrl-h); padding: 0; }
 
-  /* variants: two classes, so they beat the control base whatever order the files load in
-     (control.css comes after this file and sets the same background, border and padding) */
   .btn.btn-primary {
     border-color: transparent;
     background: var(--accent-dim);
@@ -45,8 +43,6 @@
     border-color: transparent;
   }
 
-  /* confirm flow: idle -> wait -> confirm, tinted by the `color` attribute */
-  /* the rail the sidebar stands its buttons in; two classes, like every variant above */
   .btn.btn-rail {
     width: var(--sidebar-btn);
     height: var(--sidebar-btn);
@@ -80,7 +76,6 @@
     justify-content: center;
     gap: var(--space-xs);
   }
-  /* hidden copies of every state reserve the widest width, so the button never resizes */
   .btn-confirm .confirm-ghost { visibility: hidden; pointer-events: none; }
   .btn-confirm.wait, .btn-confirm.wait:hover {
     color: var(--text4);

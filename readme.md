@@ -14,7 +14,7 @@ ROOT/                  (your workspace folder; name doesn't matter)
 ├─ tonka.js            (CLI entry: `tonka serve` / `tonka build` / `tonka deploy`)
 ├─ build.js            (packs project into production `index.html`)
 ├─ serve.js            (dev server; serves `index.html` if exists else `app.html` + injected links)
-├─ deploy.js           (puts built `index.html` on a Cloudflare Worker)
+├─ deploy.js           (puts built `index.html` on a Cloudflare Worker or in a folder)
 ├─ utils.js            (shared helpers for `build.js`, `serve.js` + `deploy.js`)
 ├─ package.json        (npm config + `bin` for CLI)
 └─ <project-name>/     (one of many projects inside workspace)
@@ -44,11 +44,12 @@ npm install
 npm link
 ```
 
-Framework consists of two scripts: a development **server** and a **build** tool.
+Framework consists of three scripts: a development **server**, a **build** tool and **deploy**.
 
 ```sh
 tonka serve [<project-name>] [--port|-p <port>] [--remove|-r]  # start development server
 tonka build [<project-name>] [options] # build deploy version of project
+tonka deploy [<project-name>] [--worker|-w <key>] [--dry] [--remove|-r] # put built page where it runs
 ```
 
 Build supports optional optimization flags:
@@ -73,10 +74,12 @@ Build then prints how big `index.html` came out and what stayed outside.
 Server and build work on chosen project. If you don't pass a project name, it picks the first one _(useful when you only have one)_.
 If project contains `app.ini`, variables defined there are replaced in all JS/JSX/CSS/HTML files using `{{key}}` syntax. Top-level values are shared; `[serve]` and `[build]` sections override per mode.
 Built-in `{{date}}` and `{{time}}` are always available, and values may reference other vars, e.g. `foot = Build {{date}}`.
+A `#` or `;` after a value starts a comment, so a value holding one is quoted.
+`[deploy]` and `[worker]` say where `tonka deploy` puts built page, see [deploy.md](deploy.md).
 
 ```ini
 title = TonkaJSX
-accent = #d8a57f
+accent = "#d8a57f"
 [serve]
 foot = Serve
 [build]

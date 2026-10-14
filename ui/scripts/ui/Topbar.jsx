@@ -6,8 +6,8 @@ const Topbar = ({ size, class: className, children, ...rest }) => (
 );
 
 /**
- * Brand link at the start of the topbar: a mark of its own, an image, a glyph or any of them
- * together, plus a label.
+ * Brand link at the start of the topbar:
+ * a mark of its own, an image, a glyph or any of them together, plus a label.
  *
  * Mutators: .img (the picture source, a no-op when the logo has no picture)
  *
@@ -26,7 +26,7 @@ const TopbarLogo = ({ mark, img, alt = "", icon, class: className, children, ...
     <a {...rest} class={["topbar-logo", className]}>
       {mark}
       {imgEl}
-      {icon ? <span class="icon">{icon}</span> : null}
+      {icon ? <span class="icon" translate={false}>{icon}</span> : null}
       {children ? <span>{children}</span> : null}
     </a>
   );

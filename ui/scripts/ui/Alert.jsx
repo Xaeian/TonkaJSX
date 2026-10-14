@@ -19,41 +19,44 @@ const Alert = (() => {
   let _stack = null;
   let _askId = 0;
 
-  const mount = (key, el) => {
+  function mount(key, el) {
     if(!_stack) document.body.appendChild(_stack = <div class="alerts"></div>);
     _stack.appendChild(el);
     _open.set(key, { el, timer: null });
     while(_open.size > _max) close(_open.keys().next().value);
     requestAnimationFrame(() => el.classList.add("show"));
-  };
-  const close = (key) => {
+  }
+  function close(key) {
     const entry = _open.get(key);
     if(!entry) return;
     clearTimeout(entry.timer);
     _open.delete(key);
     entry.el.classList.remove("show");
     setTimeout(() => entry.el.remove(), UI.duration(entry.el));
-  };
-  const arm = (key, ms) => {
+  }
+  function arm(key, ms) {
     const entry = _open.get(key);
     if(!entry) return;
     clearTimeout(entry.timer);
     if(ms) entry.timer = setTimeout(() => close(key), ms);
-  };
-  const toast = (type, msg, buttons) => (
-    <div class={["alert", "alert-" + type]} color={type}>
-      <span class="alert-icon icon">{ICON[type] || "info"}</span>
-      <span class="alert-msg">{msg}</span>
-      {buttons}
-    </div>
-  );
+  }
+  function toast(type, msg, buttons) {
+    return (
+      <div class={["alert", "alert-" + type]} color={type}>
+        <span class="alert-icon icon" translate={false}>{ICON[type] || "info"}</span>
+        <span class="alert-msg">{msg}</span>
+        {buttons}
+      </div>
+    );
+  }
 
-  const show = (type, msg, ms = _defaultMs[type] || 3000) => {
+  /** A toast of one type; `ms` 0 keeps it until it is dismissed. */
+  function show(type, msg, ms = _defaultMs[type] || 3000) {
     const key = type + "|" + msg;
     if(!_open.has(key)) {
       const el = toast(type, msg,
         <button class="alert-close" aria-label="Dismiss" onClick={() => close(key)}>
-          <span class="icon">close</span>
+          <span class="icon" translate={false}>close</span>
         </button>);
       const loud = type === "err" || type === "wrn";
       el.setAttribute("role", loud ? "alert" : "status");
@@ -61,40 +64,52 @@ const Alert = (() => {
       mount(key, el);
     }
     arm(key, ms);
-  };
-  const ask = (type, msg, opts = {}) => new Promise((resolve) => {
-    const { ok = "check", cancel = "close" } = opts;
-    const key = "ask" + (++_askId);
-    const prev = document.activeElement;
-    const finish = (answer) => {
-      document.removeEventListener("keydown", onKey);
-      close(key);
-      if(prev?.isConnected) prev.focus?.();
-      resolve(answer);
-    };
-    const onKey = (e) => { if(e.key === "Escape") { e.preventDefault(); finish(false); } };
-    const okBtn = (
-      <button class="alert-confirm" aria-label="Confirm" onClick={() => finish(true)}>
-        <span class="icon">{ok}</span>
-      </button>
-    );
-    const el = toast(type, msg, <>
-      {okBtn}
-      <button class="alert-close" aria-label="Cancel" onClick={() => finish(false)}>
-        <span class="icon">{cancel}</span>
-      </button>
-    </>);
-    el.setAttribute("role", "alertdialog");
-    el.setAttribute("aria-label", msg);
-    mount(key, el);
-    document.addEventListener("keydown", onKey);
-    okBtn.focus();
-  });
+  }
+
+  /**
+   * A toast asking yes or no, answered by its two buttons, or by Escape, which says no.
+   * @param {object} [opts] `ok` and `cancel` name the two buttons' icons
+   * @returns {Promise<boolean>}
+   */
+  function ask(type, msg, opts = {}) {
+    return new Promise((resolve) => {
+      const { ok = "check", cancel = "close" } = opts;
+      const key = "ask" + (++_askId);
+      const prev = document.activeElement;
+      function finish(answer) {
+        document.removeEventListener("keydown", onKey);
+        close(key);
+        if(prev?.isConnected) prev.focus?.();
+        resolve(answer);
+      }
+      const onKey = (e) => { if(e.key === "Escape") { e.preventDefault(); finish(false); } };
+      const okBtn = (
+        <button class="alert-confirm" aria-label="Confirm" onClick={() => finish(true)}>
+          <span class="icon" translate={false}>{ok}</span>
+        </button>
+      );
+      const el = toast(type, msg, <>
+        {okBtn}
+        <button class="alert-close" aria-label="Cancel" onClick={() => finish(false)}>
+          <span class="icon" translate={false}>{cancel}</span>
+        </button>
+      </>);
+      el.setAttribute("role", "alertdialog");
+      el.setAttribute("aria-label", msg);
+      mount(key, el);
+      document.addEventListener("keydown", onKey);
+      okBtn.focus();
+    });
+  }
+
+  /** Every toast gone at once. */
   const clear = () => { for(const key of [..._open.keys()]) close(key); };
-  const config = ({ max, defaultMs } = {}) => {
+
+  /** How many toasts stand at once, `max`, and how long each type stays, `defaultMs`. */
+  function config({ max, defaultMs } = {}) {
     if(max != null) _max = max;
     if(defaultMs) _defaultMs = { ..._defaultMs, ...defaultMs };
-  };
+  }
   return {
     show, ask, clear, config,
     inf: (msg, ms) => show("inf", msg, ms),

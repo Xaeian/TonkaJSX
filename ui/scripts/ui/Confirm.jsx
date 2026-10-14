@@ -1,23 +1,21 @@
 // scripts/ui/Confirm.jsx
 
-/**
- * Three-step click flow on `btn`: idle -> wait -> confirm -> `onConfirm`.
- * A click within `graceMs` of arming is ignored, the confirm window closes after `windowMs`.
- * `show(step)` updates the look, `onRevert` fires only when the window closes unconfirmed.
- */
-const _confirmFlow = (btn, { graceMs, windowMs, show, onArm, onConfirm, onRevert }) => {
+// Three-step click flow on `btn`: idle -> wait -> confirm -> `onConfirm`.
+// A click within `graceMs` of arming is ignored, the confirm window closes after `windowMs`.
+// `show(step)` updates the look, `onRevert` fires only when the window closes unconfirmed.
+function _confirmFlow(btn, { graceMs, windowMs, show, onArm, onConfirm, onRevert }) {
   let armed = false;
   let armedAt = 0;
   let graceTimer = null;
   let windowTimer = null;
-  const revert = (confirmed) => {
+  function revert(confirmed) {
     armed = false;
     clearTimeout(graceTimer);
     clearTimeout(windowTimer);
     btn.classList.remove("wait", "confirm");
     show("idle");
     if(!confirmed) onRevert?.();
-  };
+  }
   btn.addEventListener("click", () => {
     if(armed) {
       if(Date.now() - armedAt < graceMs) return;
@@ -36,7 +34,7 @@ const _confirmFlow = (btn, { graceMs, windowMs, show, onArm, onConfirm, onRevert
     }, graceMs);
     windowTimer = setTimeout(() => revert(false), windowMs);
   });
-};
+}
 
 /**
  * Destructive button that asks for a second click.
@@ -73,7 +71,7 @@ const ConfirmBtn = ({
     wait:    [waitIcon, waitLabel],
     confirm: [confirmIcon, confirmLabel],
   };
-  const iconEl = <span class="icon">{icon}</span>;
+  const iconEl = <span class="icon" translate={false}>{icon}</span>;
   const labelEl = <span>{label}</span>;
   const btn = (
     <button {...rest} title={title}
@@ -81,7 +79,10 @@ const ConfirmBtn = ({
       color={color || (variant === "primary" ? "ok" : "err")}>
       <span>{iconEl}{labelEl}</span>
       {Object.values(steps).map(([ic, lb]) => (
-        <span class="confirm-ghost"><span class="icon">{ic}</span><span>{lb}</span></span>
+        <span class="confirm-ghost">
+          <span class="icon" translate={false}>{ic}</span>
+          <span>{lb}</span>
+        </span>
       ))}
     </button>
   );

@@ -17,9 +17,9 @@ const Toggle = ({ value, size, title, onChange, class: className, children, ...r
     <div {...rest} class={["toggle", size, className]} title={title}>{children}</div>
   );
   let current = value;
-  const sync = () => {
+  function sync() {
     for(const btn of wrap.children) btn.active = btn.dataset.value === current;
-  };
+  }
   wrap.addEventListener("click", (e) => {
     const btn = e.target.closest("[data-value]");
     if(!btn || btn.disabled || btn.dataset.value === current) return;

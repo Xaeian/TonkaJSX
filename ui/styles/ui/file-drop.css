@@ -1,7 +1,5 @@
 /* styles/ui/file-drop.css */
 
-/* interaction states on top of the Empty look */
-
 @layer components {
   .file-drop {
     cursor: pointer;

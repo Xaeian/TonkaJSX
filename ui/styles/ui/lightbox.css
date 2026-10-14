@@ -24,8 +24,6 @@
     display: block;
     object-fit: contain;
   }
-  /* the close button keeps its ring over the picture, hover included: a ghost button gives
-     up its edge on hover, and here there is no surface behind it to draw one back */
   .lightbox > .btn {
     position: absolute;
     top: var(--space-md);

@@ -4,7 +4,6 @@
   .login { position: relative; }
   .login-logged { color: var(--accent); }
 
-  /* dropdown panel under the trigger; the fields are ghost Inputs */
   .login-panel {
     --login-offset: 0px;
     position: absolute;

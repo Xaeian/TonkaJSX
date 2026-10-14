@@ -1,16 +1,18 @@
 // deploy.js
 //
-// A built page onto a Cloudflare Worker, as static assets.
-// `build` made `index.html`; this takes it and what it reaches for, stages them in a temp
-// folder beside the config wrangler needs, and runs `wrangler deploy`.
+// A built page onto a Cloudflare Worker, as static assets, or into a folder on this machine.
+// `build` made `index.html`; this takes it and what it reaches for.
+// For a Worker it stages them in a temp folder beside the config wrangler needs
+// and runs `wrangler deploy`, for a folder it copies them.
 // It never builds and never touches git.
 //
-// `app.ini` names the Workers a project may go to, one per key, `main` being the default:
+// `app.ini` names the default target in `[deploy]` by its kind, and more Workers in `[worker]`:
 //   [deploy]
-//   main = noti
-//   alfa = alfa-noti
-//   include = images   ; folders the page reaches for at runtime, with no path in the HTML
-// The account and the token come from the environment, `CLOUDFLARE_ACCOUNT`
+//   worker = noti # or `folder = C:/www/noti`, never both
+//   include = images, logo.svg # what the page reaches for at runtime, no path in the HTML
+//   [worker]
+//   alfa = noti-alfa # picked with `-w alfa`
+// A Worker's account and token come from the environment, `CLOUDFLARE_ACCOUNT`
 // and `CLOUDFLARE_TOKEN`, or from a `.env` beside this file, `NAME=value` per line.
 //
 //   tonka deploy <project> [-w <key>] [--dry] [-r]
@@ -20,16 +22,16 @@ import os from "os";
 import path from "path";
 import url from "url";
 import { spawnSync } from "child_process";
-import { PATH, Log, loadSection, fileList, hasFlag, getFlagValues, COLOR as c }
+import { PATH, Log, loadIni, deployTargets, fileList, hasFlag, getFlagValues, COLOR as c }
   from "./utils.js";
 
 const ROOT = path.dirname(url.fileURLToPath(import.meta.url));
 const WRANGLER = path.join(ROOT, "node_modules", "wrangler", "bin", "wrangler.js");
 
-// keys of `[deploy]` that name no Worker
-const RESERVED = ["include"];
 // what `build` reads; an `index.html` older than any of it is not the page on disk
 const SOURCES = ["app.html", "app.jsx", "app.ini", "scripts", "styles"];
+// a Worker name as Cloudflare takes it
+const WORKER_NAME = /^[a-z0-9-]+$/;
 // our name -> the one wrangler reads
 const ENV = {
   CLOUDFLARE_ACCOUNT: "CLOUDFLARE_ACCOUNT_ID",
@@ -49,22 +51,32 @@ const kb = (n) => `${(n / 1024).toFixed(1)}kB`;
 //------------------------------------------------------------------------------------------ Choice
 
 /**
- * The target to go to: the key `-w` names, else `main`, else the one key there is.
- * @param {Record<string, string>} deploy the `[deploy]` section
- * @returns {{ key: string, name: string }}
+ * The target to go to: the `[worker]` entry `-w` names, else the one `[deploy]` names.
+ * @param {Record<string, Record<string, string>>} ini app.ini
+ * @returns {{ key: string, kind: string, name: string }}
  */
-function pickTarget(deploy) {
-  const keys = Object.keys(deploy).filter(k => !RESERVED.includes(k));
-  if(!keys.length) throw new Error("app.ini has no [deploy] section naming a Worker");
-  const key = getFlagValues("--worker", "-w")[0] || (keys.length === 1 ? keys[0] : "main");
-  if(!deploy[key] || RESERVED.includes(key)) {
-    throw new Error(`[deploy] has no "${key}", it has: ${keys.join(", ")}`);
-  }
-  return { key, name: deploy[key] };
+function pickTarget(ini) {
+  const targets = deployTargets(ini);
+  const key = getFlagValues("--worker", "-w")[0] || "";
+  const target = targets.find(t => t.key === key);
+  if(target) return target;
+  if(!key) throw new Error("app.ini [deploy] names no worker and no folder");
+  const keys = targets.filter(t => t.key).map(t => t.key);
+  throw new Error(`app.ini [worker] has no "${key}", it has: ${keys.join(", ") || "none"}`);
 }
 
-// a target with a path separator is a folder on this machine, filled instead of a Worker
-const isFolder = (target) => /[\\/]/.test(target);
+/**
+ * The folder a `folder` target names, a relative path resolved from the project.
+ * It has to exist: a path gone stale stops here instead of making a new folder.
+ */
+function folderOf(name) {
+  const full = path.resolve(PATH, name);
+  if(full === PATH) throw new Error(`folder "${name}" is the project itself`);
+  if(!fs.existsSync(full) || !fs.statSync(full).isDirectory()) {
+    throw new Error(`folder not found: ${full}`);
+  }
+  return full;
+}
 
 /**
  * The environment wrangler needs, `.env` read first, what is still missing named.
@@ -118,10 +130,15 @@ function referenced(html) {
   return [...found];
 }
 
-/** Every file under the folders `include` names. */
+/** Every entry of `include`: a file as it is, a folder with everything under it. */
 function included(include) {
-  const folders = String(include || "").split(",").map(s => s.trim()).filter(Boolean);
-  return folders.flatMap(dir => fileList(path.join(PATH, dir)).map(f => `${dir}/${f}`));
+  const names = String(include || "").split(",").map(s => s.trim()).filter(Boolean);
+  return names.flatMap((name) => {
+    if(isProjectFile(name)) return [name];
+    const files = fileList(path.join(PATH, name)).map(f => `${name}/${f}`);
+    if(!files.length) Log.warn(`include: no file at ${name}`);
+    return files;
+  });
 }
 
 //------------------------------------------------------------------------------------------- Stage
@@ -159,9 +176,12 @@ function stage(name, files) {
 
 async function deploy() {
   Log.head(`Deploy ${c.grey}${PATH}${c.reset}`);
-  const settings = loadSection("deploy");
-  const { key, name } = pickTarget(settings);
-  const folder = isFolder(name) ? path.resolve(PATH, name) : null;
+  const ini = loadIni();
+  const { kind, name } = pickTarget(ini);
+  const folder = kind === "folder" ? folderOf(name) : null;
+  if(!folder && !WORKER_NAME.test(name)) {
+    throw new Error(`Worker name "${name}" takes a-z, 0-9 and - only`);
+  }
   const dry = hasFlag("--dry");
   if(!dry && !folder) checkEnv();
   if(!folder && !fs.existsSync(WRANGLER)) {
@@ -175,7 +195,8 @@ async function deploy() {
   const html = fs.readFileSync(index, "utf8");
   checkFresh();
 
-  const files = [...new Set(["index.html", ...referenced(html), ...included(settings.include)])];
+  const include = included(ini.deploy?.include);
+  const files = [...new Set(["index.html", ...referenced(html), ...include])];
   // a folder is opened by people too, so the readme goes along
   if(folder && fs.existsSync(path.join(PATH, "readme.md"))) files.push("readme.md");
   let total = 0;
@@ -187,7 +208,7 @@ async function deploy() {
   const where = folder
     ? `folder ${c.green}${folder}${c.reset}`
     : `Worker ${c.green}${name}${c.reset}`;
-  Log.ok(`${files.length} files, ${kb(total)} → ${where} (${key})`);
+  Log.ok(`${files.length} files, ${kb(total)} → ${where}`);
 
   if(folder) {
     if(dry) { Log.warn("Dry run, nothing copied."); return; }

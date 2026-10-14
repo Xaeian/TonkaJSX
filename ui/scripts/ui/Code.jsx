@@ -1,5 +1,13 @@
 // scripts/ui/Code.jsx
 
+const _HEIGHT = { sm: "12rem", md: "20rem", lg: "min(70vh, 44rem)" };
+
+// Painting rebuilds the whole document and hands it to the parser.
+// A short file can afford that on every keystroke;
+// past this many characters it cannot, so its colours land once the typing has settled instead.
+const _PAINT_ALL = 40000;
+const _PAINT_MS = 120;
+
 /**
  * Source in its own colours, to read or to write.
  * A transparent field lies over a painted copy of the same text, so the caret, the selection
@@ -19,14 +27,6 @@
  *   the column holds three digits and the count starts over past them, so it never widens
  * @param {(text:string) => void} [props.onChange]
  */
-const _HEIGHT = { sm: "12rem", md: "20rem", lg: "min(70vh, 44rem)" };
-
-// Painting rebuilds the whole document and hands it to the parser. A short file can afford
-// that on every keystroke; past this many characters it cannot, so its colours land once the
-// typing has settled instead.
-const _PAINT_ALL = 40000;
-const _PAINT_MS = 120;
-
 const Code = ({ value = "", lang, height, readOnly, wrap, numbers, onChange,
   class: className, ...rest }) => {
   const paint = <pre class="code-paint" aria-hidden="true"></pre>;
@@ -42,22 +42,20 @@ const Code = ({ value = "", lang, height, readOnly, wrap, numbers, onChange,
   );
 
   let _lang = lang;
-  // The painted copy carries a closing newline the field does not, so the last line of a file
-  // that ends in one still has a line to stand on.
   let _soon = null;
-  // A number wider than the column would push the text of that one line out of line with the
-  // field, so the count wraps instead of the column growing.
+  // A number wider than the column would push the text of that one line out of line
+  // with the field, so the count wraps instead of the column growing.
   const no = numbers ? (i) => `<span class="code-no">${(i + 1) % 1000}</span>` : () => "";
-  const repaint = () => {
+  function repaint() {
     clearTimeout(_soon);
     paint.innerHTML = Syntax.paintLines(field.value, _lang)
       .map((r, i) => `<div class="code-line">${no(i)}${r}</div>`).join("");
-  };
-  const repaintSoon = () => {
+  }
+  function repaintSoon() {
     if(field.value.length < _PAINT_ALL) { repaint(); return; }
     clearTimeout(_soon);
     _soon = setTimeout(repaint, _PAINT_MS);
-  };
+  }
 
   field.value = value ?? "";
   field.wrap = wrap ? "soft" : "off";
@@ -99,8 +97,9 @@ const Code = ({ value = "", lang, height, readOnly, wrap, numbers, onChange,
 
 /**
  * The same box in a dialog, titled by the file it holds.
- * `onSave` is what makes it writable: given one, the footer gains a Save and closing with
- * unsaved text asks first. It may return a promise, and the button waits on it.
+ * `onSave` is what makes it writable:
+ * given one, the footer gains a Save, and closing with unsaved text asks first.
+ * It may return a promise, and the button waits on it.
  *
  * @param {string} name
  * @param {string} text
@@ -129,7 +128,7 @@ Code.open = (name, text, { onSave, lang } = {}) => {
         onConfirm={() => close()} />
     : null;
 
-  /** The first change swaps the plain way out for the one that asks. */
+  // The first change swaps the plain way out for the one that asks
   function hold() {
     dirty = true;
     saveBtn.disabled = false;

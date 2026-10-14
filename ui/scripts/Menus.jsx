@@ -76,14 +76,16 @@ const Menus = () => {
 
   //------------------------------------------------------------------------------------- Placement
 
-  const placed = (pos) => (
-    <Menu title={pos} pos={pos}>
-      <span>
-        Anchored <code>{pos}</code>.
-        It flips to the other side when viewport ends.
-      </span>
-    </Menu>
-  );
+  function placed(pos) {
+    return (
+      <Menu title={pos} pos={pos}>
+        <span>
+          Anchored <code>{pos}</code>.
+          It flips to the other side when viewport ends.
+        </span>
+      </Menu>
+    );
+  }
   const shared = (
     <Menu title="Shared">
       <span>One menu, two anchors: it moves to whichever button opened it.</span>
@@ -91,10 +93,10 @@ const Menus = () => {
   );
 
   // button opens menu against itself
-  const trigger = (btn, menu) => {
+  function trigger(btn, menu) {
     btn.addEventListener("click", () => menu.toggle(btn));
     return btn;
-  };
+  }
 
   //------------------------------------------------------------------------------------------ View
 

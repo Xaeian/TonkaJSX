@@ -9,7 +9,7 @@ const Docks = () => {
       <Panel title="Four edges" icon="dock_to_bottom" flush height="240px">
         <Dock pos="top">
           <row gap="sm">
-            <span class="icon">north</span>
+            <span class="icon" translate={false}>north</span>
             <strong>top</strong>
             <span tone="meta">toolbar</span>
           </row>
@@ -31,7 +31,7 @@ const Docks = () => {
         </DockRow>
         <Dock pos="bottom" tint>
           <row gap="sm">
-            <span class="icon">south</span>
+            <span class="icon" translate={false}>south</span>
             <strong>bottom</strong>
             <span tone="meta">status</span>
           </row>
@@ -41,7 +41,10 @@ const Docks = () => {
       <Panel title="Navigation and content" icon="view_sidebar" flush height="300px">
         <Dock pos="top">
           <row justify="between">
-            <row gap="sm"><span class="icon">settings</span><strong>Settings</strong></row>
+            <row gap="sm">
+              <span class="icon" translate={false}>settings</span>
+              <strong>Settings</strong>
+            </row>
             <Button variant="primary" icon="save" size="sm" onClick={() => Alert.ok("Saved")}>
               Save
             </Button>

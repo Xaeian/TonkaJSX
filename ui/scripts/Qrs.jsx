@@ -1,7 +1,7 @@
 // scripts/Qrs.jsx
 
-// A camera reads a code with the browser's own `BarcodeDetector` where there is one; jsQR
-// stands in elsewhere (Windows, iOS) and is fetched on the first scan, not before.
+// A camera reads a code with the browser's own `BarcodeDetector` where there is one;
+// jsQR stands in elsewhere (Windows, iOS) and is fetched on the first scan, not before.
 const JSQR_SRC = "https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js";
 const JSQR_SRI = "sha384-b5Ya4Bq3qCyz39m2ISh+4DxjAIljdeFwK/BsXLuj9gugaNwAcj/ia15fxNZL9Nlx";
 

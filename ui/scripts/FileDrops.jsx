@@ -1,23 +1,26 @@
 // scripts/FileDrops.jsx
 
 const FileDrops = () => {
-  const fmtSize = (n) =>
-    n < 1048576 ? (n / 1024).toFixed(1) + "kB" : (n / 1048576).toFixed(1) + "MB";
+  function fmtSize(n) {
+    return n < 1048576 ? (n / 1024).toFixed(1) + "kB" : (n / 1048576).toFixed(1) + "MB";
+  }
 
   //---------------------------------------------------------------------------------------- Avatar
 
   const avatarSlot = <div></div>;
   const showDrop = () => avatarSlot.replaceChildren(avatarDrop);
-  const showImage = (file) => avatarSlot.replaceChildren(
-    <Panel inline stripe color="ok"
-      actions={<IconBtn icon="close" variant="ghost" title="Remove" onClick={showDrop} />}>
-      <Img src={URL.createObjectURL(file)} height="lg" rounded border />
-      <stack gap="no">
-        <strong>{file.name}</strong>
-        <span tone="meta">{fmtSize(file.size)} · {file.type}</span>
-      </stack>
-    </Panel>
-  );
+  function showImage(file) {
+    return avatarSlot.replaceChildren(
+      <Panel inline stripe color="ok"
+        actions={<IconBtn icon="close" variant="ghost" title="Remove" onClick={showDrop} />}>
+        <Img src={URL.createObjectURL(file)} height="lg" rounded border />
+        <stack gap="no">
+          <strong>{file.name}</strong>
+          <span tone="meta">{fmtSize(file.size)} · {file.type}</span>
+        </stack>
+      </Panel>
+    );
+  }
   const avatarDrop = (
     <FileDrop accept="image/*" maxSize={2 * 1024 * 1024} icon="account_circle"
       title="Choose your avatar" description="PNG, JPG or SVG up to 2MB"
@@ -30,7 +33,7 @@ const FileDrops = () => {
   const files = [];
   const fileList = <stack gap="xs"></stack>;
   const fileEmpty = <span tone="meta">Nothing attached yet.</span>;
-  const renderFiles = () => {
+  function renderFiles() {
     fileList.replaceChildren(...files.map((f, i) => (
       <Panel inline stripe color="blue" icon="draft" size="sm"
         actions={<IconBtn icon="close" variant="ghost" size="sm" title="Remove"
@@ -40,7 +43,7 @@ const FileDrops = () => {
       </Panel>
     )));
     fileEmpty.hidden = !!files.length;
-  };
+  }
   renderFiles();
   const attachDrop = (
     <FileDrop multiple maxCount={5} maxSize={10 * 1024 * 1024} icon="attach_file" size="sm"

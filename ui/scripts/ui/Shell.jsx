@@ -36,14 +36,15 @@ const Content = ({ fullbleed, children, ...rest }) => {
     (v) => el.classList.toggle("content-fullbleed", !!v));
   el.fullbleed = !!fullbleed;
 
-  // `scrollbar-gutter: stable` reserves a strip inside this box, so every panel ends a
-  // scrollbar short of the window. Anything fixed to the window, the alerts above all, has
-  // no way to know that and would stand that much wider than the rows it hangs over.
+  // `scrollbar-gutter: stable` reserves a strip inside this box,
+  // so every panel ends a scrollbar short of the window.
+  // Anything fixed to the window, the alerts above all, has no way to know that,
+  // and would stand that much wider than the rows it hangs over.
   // Measured here, where the scrollbar is, and published for whoever has to line up with it.
-  const gauge = () => {
+  function gauge() {
     const px = el.fullbleed ? 0 : el.offsetWidth - el.clientWidth;
     document.documentElement.style.setProperty("--scrollbar-w", `${px}px`);
-  };
+  }
   new ResizeObserver(gauge).observe(el);
   return el;
 };

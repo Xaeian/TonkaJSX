@@ -29,8 +29,6 @@
     text-overflow: ellipsis;
     font-family: var(--font-body);
   }
-  /* the center goes before the footer wraps to two rows, but only if a side slot needs the room:
-     a footer that is its center alone keeps it, trimmed by the ellipsis */
   @container (max-width: 700px) {
     .footer:not(.footer-status):has(.footer-left > *, .footer-right > *) .footer-center {
       display: none;

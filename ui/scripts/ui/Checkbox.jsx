@@ -23,7 +23,7 @@ const Checkbox = ({ checked, size, label, disabled, name, onChange, class: class
   const wrap = (
     <label {...rest} class={["checkbox", size && `checkbox-${size}`, className]}>
       {input}
-      <span class="checkbox-box"><span class="icon">check</span></span>
+      <span class="checkbox-box"><span class="icon" translate={false}>check</span></span>
       {label ? <span class="checkbox-label">{label}</span> : null}
     </label>
   );

@@ -121,7 +121,7 @@ A text field returns a wrapper with `.value`, `.title`, `.focus()` and native `.
 
 A file name answers for itself: `fileIcon(name)` `fileColor(name)` `isImage(name)` `isText(name)` `isPdf(name)` `imageType(name)` `fileExt(name)`, and `sizeText(bytes)` gives `860B`, `1.4kB`, `2.3MB`. One table for every app that lists files, so the same extension never wears two glyphs.
 
-Helpers: `UI.copy(btn, text, {icon, clearAfter})` copies and flashes a check on an icon button, `clearAfter` seconds later taking the copy back (`UI.uncopyNow()` does it at once); `UI.linkify(text)` gives text as children with every http(s) address a `[link]`; `UI.script(src, sri)` loads a script once, on demand; `<TopbarLogo mark={canvas}>` takes any element as the brand mark.
+Helpers: `UI.copy(btn, text, {icon, clearAfter})` copies and flashes a check on an icon button, `clearAfter` seconds later taking the copy back (`UI.uncopyNow()` does it at once), and takes a promise of text the button spins over; `UI.copyPicture(btn, blob)` copies a picture in any format as PNG, a promise of a Blob spinning the same way; `UI.linkify(text)` gives text as children with every http(s) address a `[link]`; `UI.script(src, sri)` loads a script once, on demand; `<TopbarLogo mark={canvas}>` takes any element as the brand mark.
 
 **Feedback and overlays**
 

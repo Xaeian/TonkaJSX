@@ -1,14 +1,9 @@
 /* styles/ui/layout.css */
 
-/* Layout tags and their attributes, whole layout vocabulary of an app:
-   <row gap="sm" justify="end">, <stack fill>, <span flex="2">, <span color="red">. */
-
 @layer utilities {
 
-  /* hidden wins over any display a component sets */
   [hidden] { display: none !important; }
 
-  /* containers */
   row {
     display: flex;
     flex-wrap: wrap;
@@ -17,7 +12,6 @@
     width: 100%;
   }
   row > :is(h1, h2, h3, h4, h5, h6, p, hr) { flex-basis: 100%; }
-  /* a row inside a row is a group, not a full line */
   row > row { width: auto; }
   stack {
     display: flex;
@@ -30,7 +24,6 @@
     align-items: center;
     gap: var(--space-xs);
   }
-  /* list: dense bordered column, dividers between children */
   list {
     display: flex;
     flex-direction: column;
@@ -43,7 +36,6 @@
   list > * + * { border-top: var(--bw) solid var(--border); }
   list > .panel-stripe { border-right-width: 3px; }
 
-  /* flex tuning, on container */
   [gap="no"] { gap: 0; }
   [gap="xs"] { gap: var(--space-xs); }
   [gap="sm"] { gap: var(--space-sm); }
@@ -60,21 +52,17 @@
   [nowrap] { flex-wrap: nowrap; }
   [split] > * { flex: 1 1 0; min-width: 0; min-height: 0; }
 
-  /* flex tuning, on child */
   [grow] { flex: 1 1 auto; min-width: 0; min-height: 0; }
   [stretch] { align-self: stretch; }
-  /* gutter stays reserved, as in `.content`: a view must not jump when its scrollbar appears */
   [scroll] { overflow: auto; scrollbar-gutter: stable; min-width: 0; min-height: 0; }
   [pointer] { cursor: pointer; }
-  /* fill: take parent's height; [grow] child is the one that scrolls */
   stack[fill] { height: 100%; overflow: hidden; }
   stack[fill] > * { flex-shrink: 0; }
   stack[fill] > [grow] { flex: 1 1 auto; }
 
-  /* column weights 1-12 or a fixed basis; text-like children truncate with an ellipsis */
   [flex] { width: 0; min-width: 0; }
   :is(span, strong, code, b, i, small, p):is([flex], [basis]) {
-    overflow: hidden;
+    overflow-x: clip;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
@@ -90,21 +78,18 @@
   [flex="10"] { flex: 10 1 0; }
   [flex="11"] { flex: 11 1 0; }
   [flex="12"] { flex: 12 1 0; }
-  /* fixed columns */
   [basis="xs"] { flex: 0 0 4rem;  min-width: 0; }
   [basis="sm"] { flex: 0 0 6rem;  min-width: 0; }
   [basis="md"] { flex: 0 0 8rem;  min-width: 0; }
   [basis="lg"] { flex: 0 0 12rem; min-width: 0; }
   [basis="xl"] { flex: 0 0 16rem; min-width: 0; }
 
-  /* spacing */
   [pad="no"] { padding: 0; }
   [pad="xs"] { padding: var(--space-xs); }
   [pad="sm"] { padding: var(--space-sm); }
   [pad="md"] { padding: var(--space-md); }
   [pad="lg"] { padding: var(--space-lg); }
 
-  /* sep: bullet between inline items, rule between stack children; [blank] = invisible */
   sep {
     display: inline-flex;
     align-items: center;
@@ -125,16 +110,13 @@
   }
   stack > sep::before { content: none; }
   stack > sep[blank] { border-top: none; }
-  /* spacer: pushes following items to the far edge */
   spacer { flex: 1 1 0; }
 
-  /* text */
   [mono] { font-family: var(--font-mono); }
   [text="center"] { text-align: center; }
   [text="right"]  { text-align: right; }
   [wrap] { white-space: pre-wrap; word-break: break-word; }
   [quoted] { color: var(--text3); font-style: italic; }
-  /* a link inside running text: underlined in a quiet color, brighter under the pointer */
   [link] {
     color: var(--text3);
     text-decoration: underline;
@@ -156,21 +138,15 @@
     white-space: pre-wrap;
     word-break: break-word;
   }
-  /* narrow screens: what does not fit beside each other goes under each other;
-     `hide-narrow` leaves, `only-narrow` is the control that stands in for it there */
   @media (min-width: 721px) {
     [only-narrow] { display: none; }
   }
   @media (max-width: 720px) {
     [hide-narrow] { display: none; }
-    /* weighted columns of a row become lines: a column squeezed to a word each reads as nothing;
-       a `nowrap` row is one the author wants whole, a field beside its button */
     row:not([nowrap]) > [flex] { flex-basis: 100%; }
-    /* lines of one entry sit close, as lines of text do; the column gap was for columns */
     row:not([nowrap]):has(> [flex]) { row-gap: var(--space-xs); }
   }
 
-  /* color: one dictionary for every component, read as --c (strong) and --c2 (tinted) */
   [color="neutral"] { --c: var(--neutral); --c2: var(--neutral2); }
   [color="inf"] { --c: var(--inf); --c2: var(--inf2); }
   [color="ok"]  { --c: var(--ok);  --c2: var(--ok2); }

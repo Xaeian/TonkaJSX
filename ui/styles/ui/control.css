@@ -1,7 +1,5 @@
 /* styles/ui/control.css */
 
-/* shared base of every form control: Button, Select, Input, Toggle */
-
 @layer components {
   .btn, .select, .input-group, .toggle {
     height: var(--ctrl-h);

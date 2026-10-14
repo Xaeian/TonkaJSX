@@ -18,11 +18,11 @@ const Tooltip = (() => {
   let _current = null;
   let _raf = null;
 
-  const show = (target) => {
+  function show(target) {
     const text = target.getAttribute("data-tooltip");
     if(!text) return;
     if(!_el) document.body.appendChild(_el = <div class="tooltip" role="tooltip"></div>);
-    const run = () => {
+    function run() {
       const cs = getComputedStyle(target);
       _el.textContent = text;
       _el.style.visibility = "hidden";
@@ -34,44 +34,51 @@ const Tooltip = (() => {
       });
       _el.style.visibility = "";
       watch();
-    };
+    }
     clearTimeout(_timer);
     // moving between triggers shows the next one at once
     if(_el.classList.contains("show")) run();
     else _timer = setTimeout(run, _delay);
-  };
+  }
   // the trigger may vanish without a pointer event (re-render, hidden): drop with it
-  const watch = () => {
+  function watch() {
     _raf = requestAnimationFrame(() => {
       if(!_el.classList.contains("show")) return;
       if(!_current?.isConnected || !_current.getClientRects().length) { hide(); return; }
       watch();
     });
-  };
-  const hide = () => {
+  }
+
+  /** The tooltip gone, whatever was pointing at it. */
+  function hide() {
     clearTimeout(_timer);
     cancelAnimationFrame(_raf);
     _el?.classList.remove("show");
     _current = null;
-  };
+  }
   // a tap fires over with no out to follow, so the tooltip would stay until the next tap
   const hovers = (e) => e.pointerType !== "touch";
-  const over = (e) => {
+  function over(e) {
     if(!hovers(e)) return;
     const t = e.target.closest("[data-tooltip]");
     if(!t || t === _current) return;
     _current = t;
     show(t);
-  };
-  const out = (e) => {
+  }
+  function out(e) {
     if(!hovers(e)) return;
     if(_current && !(e.relatedTarget && _current.contains(e.relatedTarget))) hide();
-  };
-  const config = ({ delay, gap, margin } = {}) => {
+  }
+
+  /**
+   * The tooltip's timing and room: `delay` before it shows,
+   * `gap` from its trigger and `margin` from the window's edge, in ms and px.
+   */
+  function config({ delay, gap, margin } = {}) {
     if(delay != null) _delay = delay;
     if(gap != null) _gap = gap;
     if(margin != null) _margin = margin;
-  };
+  }
   document.addEventListener("pointerover", over);
   document.addEventListener("pointerout", out);
   document.addEventListener("scroll", hide, true);

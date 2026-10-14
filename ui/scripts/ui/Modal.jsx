@@ -6,8 +6,8 @@ let _modalCount = 0;
 /**
  * Dialog with a backdrop, focus trap and scroll lock.
  * Escape, the backdrop and the close button dismiss it unless `noClose` is set.
- * `noClickAway` keeps the backdrop out of it and leaves the other two, for a dialog holding
- * work that a stray click beside it must not throw away.
+ * `noClickAway` keeps the backdrop out of it and leaves the other two,
+ * for a dialog holding work that a stray click beside it must not throw away.
  *
  * Mutators: .open(), .close(), .toggle(), .opened
  *
@@ -41,7 +41,7 @@ const Modal = ({ title, size, noClose, noClickAway, actions, footer, onChange,
 
   // Tab cycles inside the dialog
   const focusable = () => UI.focusable(dialog);
-  const trap = (e) => {
+  function trap(e) {
     if(e.key !== "Tab") return;
     const list = focusable();
     if(!list.length) { e.preventDefault(); return; }
@@ -49,7 +49,7 @@ const Modal = ({ title, size, noClose, noClickAway, actions, footer, onChange,
     const active = document.activeElement;
     if(e.shiftKey && active === first) { e.preventDefault(); last.focus(); }
     else if(!e.shiftKey && active === last) { e.preventDefault(); first.focus(); }
-  };
+  }
   root.addEventListener("click", (e) => {
     if(e.target === root && !noClose && !noClickAway) root.close();
   });

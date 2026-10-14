@@ -63,7 +63,7 @@ const Panels = () => {
   ];
   const people = <list></list>;
   const nobody = <Empty icon="search_off" title="No match" size="sm" />;
-  const renderPeople = (q) => {
+  function renderPeople(q) {
     const needle = q.toLowerCase();
     const hits = PEOPLE.filter(([name, team]) => (name + team).toLowerCase().includes(needle));
     people.replaceChildren(...hits.map(([name, team]) => (
@@ -74,7 +74,7 @@ const Panels = () => {
     )));
     people.hidden = !hits.length;
     nobody.hidden = !!hits.length;
-  };
+  }
   renderPeople("");
   const filter = (
     <Input icon="search" clear placeholder="Filter people..." onChange={renderPeople} />
@@ -121,8 +121,8 @@ const Panels = () => {
     </Panel>
   );
 
-  // A tab pane of a growing panel fills the body as the body fills the panel: a pane holding
-  // a surface of its own ends where the panel ends, not where its last line fell.
+  // A tab pane of a growing panel fills the body as the body fills the panel:
+  // a pane holding a surface of its own ends where the panel ends, not where its last line fell.
   const LOG = [
     ["INF", "blue", "server listening on :8080"],
     ["WRN", "amber", "cache miss rate above 40%"],

@@ -17,20 +17,22 @@ const Progress = ({ value, max = 100, color = "inf", size, label, class: classNa
   ...rest }) => {
   let _value = value ?? null;
   let _max = max;
-  const text = () => _value == null ? "…"
-    : _max === 100 ? _value + "%" : _value + "/" + _max;
+  function text() {
+    return _value == null ? "…"
+      : _max === 100 ? _value + "%" : _value + "/" + _max;
+  }
   const fill = <span class="progress-fill"></span>;
   const bar = <span class="progress-bar">{fill}</span>;
   const badge = label ? <Badge color={color} variant="tint" mono>{text()}</Badge> : null;
   const el = (
     <span {...rest} class={["progress", size, className]} color={color}>{bar}{badge}</span>
   );
-  const sync = () => {
+  function sync() {
     const pct = Math.max(0, Math.min(100, _value / _max * 100));
     bar.classList.toggle("progress-indeterminate", _value == null);
     fill.style.width = _value == null ? "" : pct + "%";
     if(badge) badge.text = text();
-  };
+  }
   sync();
   UI.prop(el, "value", () => _value, (v) => {
     _value = v == null ? null : Math.max(0, Math.min(_max, v));

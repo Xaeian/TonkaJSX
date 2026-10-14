@@ -1,10 +1,10 @@
 // scripts/ui/Qr.jsx
 
 /**
- * QR code of `text` as inline SVG on a white card (styles/ui/qr.css), so it scans in both
- * themes. Needs `qrcode` (qrcode-generator) on the page; without it the card stays empty.
- * Text that is digits and upper-case letters goes in the alphanumeric mode, 5.5 bits a
- * character against 8 for bytes, so such a code stays sparse.
+ * QR code of `text` as inline SVG on a white card, so it scans in both themes.
+ * Needs `qrcode` (qrcode-generator) on the page; without it the card stays empty.
+ * Text that is digits and upper-case letters goes in the alphanumeric mode,
+ * 5.5 bits a character against 8 for bytes, so such a code stays sparse.
  *
  * Mutators: .text, .svg (read-only: the code as a standalone SVG file, with a quiet zone)
  *
@@ -52,7 +52,7 @@ const QrScan = ({ onScan, onError }) => {
   let timer = 0;
 
   // one frame to text or null, by whatever decoder the page has
-  const decoder = () => {
+  function decoder() {
     if("BarcodeDetector" in window) {
       const detector = new BarcodeDetector({ formats: ["qr_code"] });
       return async () => (await detector.detect(video))[0]?.rawValue ?? null;
@@ -70,7 +70,7 @@ const QrScan = ({ onScan, onError }) => {
       };
     }
     return null;
-  };
+  }
 
   async function start() {
     const decode = decoder();
@@ -84,12 +84,13 @@ const QrScan = ({ onScan, onError }) => {
     }
     video.srcObject = stream;
     await video.play();
-    const tick = async () => {
+    async function tick() {
       let text = null;
-      try { text = await decode(); } catch {} // a frame that fails to decode is just skipped
+      try { text = await decode(); }
+      catch {} // a frame that fails to decode is skipped
       if(text) { stop(); onScan(text); return; }
       timer = setTimeout(tick, 250);
-    };
+    }
     tick();
   }
 

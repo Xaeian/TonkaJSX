@@ -43,6 +43,7 @@ const DOCS = [
 ];
 
 const ME = "Ada Lovelace";
+/** A test a document passes when it stands at status `s`. */
 const status = (s) => (d) => d.status === s;
 const BUCKETS = [
   { key: "all", label: "All", icon: "inbox", test: () => true },
@@ -122,17 +123,17 @@ const Docs = () => {
       <span tone="note">{d.info}</span>,
       <stack gap="xs">
         <row gap="sm" tone="meta">
-          <span class="icon">person</span>
+          <span class="icon" translate={false}>person</span>
           <span flex="1">Author</span>
           <span>{d.author}</span>
         </row>
         <row gap="sm" tone="meta">
-          <span class="icon">business</span>
+          <span class="icon" translate={false}>business</span>
           <span flex="1">Entity</span>
           <span>{d.entity}</span>
         </row>
         <row gap="sm" tone="meta">
-          <span class="icon">schedule</span>
+          <span class="icon" translate={false}>schedule</span>
           <span flex="1">Updated</span>
           <span>{d.updated}</span>
         </row>
@@ -152,7 +153,7 @@ const Docs = () => {
 
   function renderStatus() {
     statusBar.replaceChildren(
-      <span class="icon">filter_list</span>,
+      <span class="icon" translate={false}>filter_list</span>,
       <span>{bucket.label}</span>,
       <sep />,
       <span>{visible().length} of {DOCS.length} documents</span>,
@@ -179,7 +180,7 @@ const Docs = () => {
           <row gap="sm">
             <IconBtn icon="menu_open" title="Toggle filters" variant="ghost"
               onClick={() => { navDock.hidden = !navDock.hidden; }} />
-            <span class="icon">menu_book</span>
+            <span class="icon" translate={false}>menu_book</span>
             <strong>Documents</strong>
           </row>
           <row gap="sm">

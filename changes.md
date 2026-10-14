@@ -1,5 +1,11 @@
 ## Changes 🌰TonkaJSX
 
+### `1.2.4` Targets:
+
+- `[deploy]` takes `worker` or `folder`, more Workers in `[worker]` _(`-w alfa`)_
+- `include` lists files and folders that go along
+- `app.ini` value may end with a `#` or `;` comment
+
 ### `1.2.3` Deploy:
 
 - `deploy` puts built page on a Cloudflare Worker _(`[deploy]` in `app.ini`)_

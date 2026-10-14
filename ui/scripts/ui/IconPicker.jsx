@@ -15,17 +15,17 @@
 const IconPicker = ({ icons, value, onChange, size, class: className, ...rest }) => {
   let current = icons.includes(value) ? value : icons[0];
   const el = <div {...rest} class={["icon-picker", size, className]} role="radiogroup"></div>;
-  const select = (name) => {
+  function select(name) {
     if(name === current) return;
     current = name;
     for(const tile of el.children) tile.classList.toggle("active", tile.dataset.icon === name);
     onChange?.(name);
-  };
+  }
   for(const ic of icons) {
     el.appendChild(
       <button type="button" class={["icon-tile", ic === current && "active"]} data-icon={ic}
         aria-label={ic} title={ic} onClick={() => select(ic)}>
-        <span class="icon">{ic}</span>
+        <span class="icon" translate={false}>{ic}</span>
       </button>
     );
   }

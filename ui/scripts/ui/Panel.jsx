@@ -41,14 +41,14 @@ const Panel = ({
     "panel-pointer": pointer, "panel-compact": compact, "panel-flush": flush,
     "panel-grow": grow, "panel-fill": fill, "panel-cap": maxWidth,
   }];
-  const iconEl = icon ? <span class="icon panel-icon">{icon}</span> : null;
+  const iconEl = icon ? <span class="icon panel-icon" translate={false}>{icon}</span> : null;
   const actionsEl = actions ? <div class="panel-actions">{actions}</div> : null;
   const attrs = {
     class: cls, style: { height, maxWidth, maxHeight },
     color, tint, grow: grow || fill, state: state || (selected ? "selected" : null),
   };
 
-  const attach = (el) => {
+  function attach(el) {
     UI.text(el, "icon", iconEl);
     UI.prop(el, "color",
       () => el.getAttribute("color"),
@@ -60,7 +60,7 @@ const Panel = ({
       () => el.state === "selected",
       (v) => { el.state = v ? "selected" : null; });
     return el;
-  };
+  }
 
   if(inline) {
     return attach(
@@ -100,14 +100,14 @@ const Panel = ({
 
   // tabs: buttons in the head, panes (`[data-tab]`) in the body
   let current = hasTabs ? (value || tabs[0].key) : null;
-  const sync = () => {
+  function sync() {
     for(const pane of body.querySelectorAll("[data-tab]")) {
       pane.hidden = pane.dataset.tab !== current;
     }
     for(const btn of tabBar.children) {
       btn.classList.toggle("active", btn.dataset.value === current);
     }
-  };
+  }
   if(hasTabs) {
     for(const t of tabs) {
       tabBar.appendChild(
@@ -117,7 +117,7 @@ const Panel = ({
           sync();
           onChange?.(current);
         }}>
-          {t.icon ? <span class="icon">{t.icon}</span> : null}
+          {t.icon ? <span class="icon" translate={false}>{t.icon}</span> : null}
           {t.label}
         </button>
       );

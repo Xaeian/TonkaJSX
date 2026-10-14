@@ -18,14 +18,14 @@ const ColorPicker = ({ value, gray, onChange, size, class: className, ...rest })
   const colors = gray ? [..._PALETTE, "gray"] : _PALETTE;
   let current = colors.includes(value) ? value : colors[0];
   const el = <div {...rest} class={["color-picker", size, className]} role="radiogroup"></div>;
-  const select = (name) => {
+  function select(name) {
     if(name === current) return;
     current = name;
     for(const dot of el.children) {
       dot.classList.toggle("active", dot.getAttribute("color") === name);
     }
     onChange?.(name);
-  };
+  }
   for(const c of colors) {
     el.appendChild(
       <button type="button" class={["color-dot", c === current && "active"]} color={c}

@@ -1,16 +1,14 @@
 // scripts/ui/Input.jsx
 
-/**
- * Wraps a native field in `.input-group`.
- * The wrapper is what the app holds: `.value`, `.title`, `.focus()`, `.input` (the field).
- * `accessor` replaces the value get/set.
- */
-const _group = (field, { icon, trailing, size, ghost, title, accessor, class: className,
-  ...rest }) => {
+// Wraps a native field in `.input-group`.
+// The wrapper is what the app holds: `.value`, `.title`, `.focus()`, `.input` (the field).
+// `accessor` replaces the value get/set.
+function _group(field, { icon, trailing, size, ghost, title, accessor, class: className,
+  ...rest }) {
   const wrap = (
     <div {...rest} class={["input-group", size, ghost && "input-group-ghost", className]}
       title={title}>
-      {icon ? <span class="icon">{icon}</span> : null}
+      {icon ? <span class="icon" translate={false}>{icon}</span> : null}
       {field}
       {trailing}
     </div>
@@ -24,20 +22,20 @@ const _group = (field, { icon, trailing, size, ghost, title, accessor, class: cl
   wrap.input = field;
   wrap.focus = () => field.focus();
   return wrap;
-};
+}
 
-/** Keyboard wiring shared by the text fields. */
-const _keys = (field, { onChange, onEnter, onKeyDown }) => {
+// Keyboard wiring shared by the text fields
+function _keys(field, { onChange, onEnter, onKeyDown }) {
   if(onChange) field.addEventListener("input", (e) => onChange(field.value, e));
   if(onEnter) field.addEventListener("keydown", (e) => {
     if(e.key === "Enter") onEnter(field.value, e);
   });
   if(onKeyDown) field.addEventListener("keydown", onKeyDown);
-};
+}
 
-/** Trailing X that wipes the field; kept in the layout so the width never jumps. */
-const _clearBtn = (field, onChange) => {
-  const btn = <span class="icon input-group-btn" title="Clear">close</span>;
+// Trailing X that wipes the field; kept in the layout so the width never jumps
+function _clearBtn(field, onChange) {
+  const btn = <span class="icon input-group-btn" translate={false} title="Clear">close</span>;
   btn.sync = () => { btn.style.visibility = field.value ? "visible" : "hidden"; };
   field.addEventListener("input", btn.sync);
   btn.addEventListener("click", () => {
@@ -48,12 +46,25 @@ const _clearBtn = (field, onChange) => {
   });
   btn.sync();
   return btn;
-};
+}
+
+// Values offered while typing: a native datalist the field names by id.
+// It draws nothing, so the wrapper can hold it; `.suggest` swaps what it offers.
+function _suggest(wrap, id, values) {
+  const list = <datalist id={id}></datalist>;
+  wrap.appendChild(list);
+  let offered = [];
+  UI.prop(wrap, "suggest", () => offered, (v) => {
+    offered = v || [];
+    list.replaceChildren(...offered.map(x => <option value={x} />));
+  });
+  wrap.suggest = values;
+}
 
 /**
  * Text input.
  *
- * Mutators: .value, .title, .focus(), .input
+ * Mutators: .value, .title, .focus(), .input, .suggest
  *
  * @param {Object} props
  * @param {string} [props.type="text"]
@@ -63,6 +74,7 @@ const _clearBtn = (field, onChange) => {
  * @param {"sm"|"lg"} [props.size]
  * @param {boolean} [props.ghost]     borderless
  * @param {boolean} [props.clear]     trailing X
+ * @param {string[]} [props.suggest]  offered while typing, anything else still goes
  * @param {boolean} [props.disabled]
  * @param {string} [props.name]
  * @param {(value:string, e:Event|null) => void} [props.onChange]   e is null after Clear
@@ -70,38 +82,44 @@ const _clearBtn = (field, onChange) => {
  * @param {(e:KeyboardEvent) => void} [props.onKeyDown]
  * @param {string} [props.title]
  */
-const Input = ({ type = "text", placeholder, value, clear, disabled, name,
+const Input = ({ type = "text", placeholder, value, clear, suggest, disabled, name,
   onChange, onEnter, onKeyDown, ...rest }) => {
+  const listId = suggest && `input-suggest-${Math.random().toString(36).slice(2)}`;
   const field = (
     <input type={type} placeholder={placeholder} value={value ?? ""}
-      name={name} disabled={disabled} />
+      name={name} disabled={disabled} list={listId} />
   );
   _keys(field, { onChange, onEnter, onKeyDown });
-  if(!clear) return _group(field, rest);
+  const btn = clear && _clearBtn(field, onChange);
   // a programmatic `.value` keeps the X in step with the field
-  const btn = _clearBtn(field, onChange);
-  return _group(field, { ...rest, trailing: btn, accessor: {
+  const accessor = btn && {
     get: () => field.value,
     set: (v) => { field.value = v ?? ""; btn.sync(); },
-  } });
+  };
+  const wrap = _group(field, { ...rest, trailing: btn, accessor });
+  if(suggest) _suggest(wrap, listId, suggest);
+  return wrap;
 };
 
 /**
  * One line of a form: its name on the left, its controls on the right.
  *
- * A dozen settings packed several to a line is a wall; laid out as a sheet they read one at
- * a time, which is the shape anything with more of them than a row can carry ends up in.
+ * A dozen settings packed several to a line is a wall;
+ * laid out as a sheet they read one at a time,
+ * which is the shape anything with more of them than a row can carry ends up in.
  *
  * @param {string} label
  * @param {...(Element|null)} ctrl  a null does not appear, so a field that belongs to one
  *   case only can be passed on every call
  */
-const formRow = (label, ...ctrl) => (
-  <row>
-    <strong flex="2">{label}</strong>
-    <row flex="10">{ctrl}</row>
-  </row>
-);
+function formRow(label, ...ctrl) {
+  return (
+    <row>
+      <strong flex="2">{label}</strong>
+      <row flex="10">{ctrl}</row>
+    </row>
+  );
+}
 
 /**
  * Number input; `onChange` gets `null` for an empty field.
@@ -127,10 +145,11 @@ const NumberInput = ({ value, min, max, step = 1, placeholder, disabled, name,
   return _group(field, rest);
 };
 
-// A browser offers to save whatever a `type="password"` field held
+// A browser offers to save whatever a `type="password"` field held,
 // the moment it leaves the page or hides, and `autocomplete="off"` does not stop it.
-// A text field masked by CSS is nothing to a password manager, so where the property exists
-// the field is one; elsewhere it is a password field and the offer is the browser's to make.
+// A text field masked by CSS is nothing to a password manager,
+// so where the property exists the field is one;
+// elsewhere it is a password field and the offer is the browser's to make.
 const _MASK_CSS = CSS.supports("-webkit-text-security", "disc");
 
 /**
@@ -146,16 +165,20 @@ const PasswordInput = ({ placeholder, value, icon = "lock", disabled, name,
       autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck={false} />
   );
   _keys(field, { onChange, onEnter, onKeyDown });
-  const hidden = () => _MASK_CSS
-    ? field.classList.contains("masked")
-    : field.type === "password";
-  const mask = (on) => {
+  function hidden() {
+    return _MASK_CSS
+      ? field.classList.contains("masked")
+      : field.type === "password";
+  }
+  function mask(on) {
     if(_MASK_CSS) field.classList.toggle("masked", on);
     else field.type = on ? "password" : "text";
-  };
+  }
   // the eye tells the state: crossed while the value hides, open while it shows;
   // its tooltip names no "password", since the field holds a secret, a key or a token as often
-  const eye = <span class="icon input-group-btn" title="Show">visibility_off</span>;
+  const eye = (
+    <span class="icon input-group-btn" translate={false} title="Show">visibility_off</span>
+  );
   eye.addEventListener("click", () => {
     const show = hidden();
     mask(!show);

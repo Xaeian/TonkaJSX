@@ -13,7 +13,6 @@
     border-right: var(--bw) solid var(--border);
     user-select: none;
     --ctrl-icon: var(--text-xl);
-    /* tooltips sit beside the rail, not over the icon */
     --tt-x: -4px;
     --tt-y: 8px;
   }

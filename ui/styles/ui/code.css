@@ -2,7 +2,6 @@
 
 @layer components {
   .code {
-    /* three digits and the space after them, so the column stands still */
     --code-gutter: 4ch;
     position: relative;
     background: var(--bg2);
@@ -10,7 +9,6 @@
     border-radius: var(--radius);
     overflow: hidden;
   }
-  /* one box, two layers: the painted copy under a field that shows only its caret */
   .code-paint,
   .code-field {
     margin: 0;
@@ -40,8 +38,6 @@
   }
   .code-read .code-field { caret-color: transparent; }
 
-  /* one box per source line: a fold keeps the line it belongs to, and the number sits at the
-     top of that box rather than beside every fold of it */
   .code-line { min-height: 1lh; }
   .code-num .code-line { position: relative; padding-left: var(--code-gutter); }
   .code-no {
@@ -51,7 +47,6 @@
     text-align: right;
     color: var(--text4);
   }
-  /* the field carries the same gutter as padding, so the caret lands where the text is */
   .code-num .code-field { padding-left: calc(var(--space-md) + var(--code-gutter)); }
   .code-wrap .code-paint,
   .code-wrap .code-field { white-space: pre-wrap; word-break: break-word; }
@@ -65,8 +60,6 @@
   .code .cd-comment { color: var(--text4); font-style: italic; }
   .code .cd-err     { color: var(--err); }
 
-  /* a column takes its colour from its place in the row, so the eye can follow one down the
-     page; the order alternates warm and cool, so neighbours never blur together */
   .code .cd-sep { color: var(--text4); }
   .code .cd-c0 { color: var(--blue); }
   .code .cd-c1 { color: var(--amber); }

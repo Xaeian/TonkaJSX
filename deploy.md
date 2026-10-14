@@ -9,25 +9,26 @@ tonka deploy [<project-name>] [--worker|-w <key>] [--dry] [--remove|-r]
 
 ## Targets
 
-Project's `app.ini` names targets in `[deploy]`, one per key.
-A value is a Cloudflare Worker name or a folder on this machine.
+Project's `app.ini` names its default target in `[deploy]`, by kind: `worker` is a Cloudflare Worker, `folder` a folder on this machine.
+More Workers stand in `[worker]`, one per key.
 
 ```ini
 [deploy]
-main = editest
-alfa = editest-alfa
+worker = editest
 include = images
+[worker]
+alfa = editest-alfa
 ```
 
-- `main` is the default, any other key is picked with `-w alfa`
-- a section with one key needs no `-w`, whatever the key is called
-- `include` names folders copied whole, see [What goes in](#what-goes-in)
+- `[deploy]` target needs no flag, `-w alfa` goes to `editest-alfa` instead
+- `[deploy]` takes `worker` or `folder`, never both, and `include`; any other key stops deploy
+- `include` names files and folders that go along, see [What goes in](#what-goes-in)
 
 `tonka -h` lists projects with their targets: `editest (editest, alfa:editest-alfa)`.
 
 ### Worker
 
-A Worker name goes to Cloudflare as static assets.
+Page goes to Cloudflare as static assets of the Worker, named with `a-z`, `0-9` and `-` only.
 One page answers every path, the way `serve` does it.
 
 Wrangler needs `CLOUDFLARE_ACCOUNT` and `CLOUDFLARE_TOKEN`, from the environment or from `.env` in workspace root.
@@ -44,23 +45,26 @@ The S3 keys printed beside it belong to R2 and do nothing here.
 
 ### Folder
 
-A value with a path separator is a folder, and files are copied there instead.
+Files are copied into `folder` instead.
+A relative path starts from project folder.
+Folder has to exist, so a path gone stale stops deploy instead of making a new folder.
 Nothing is deleted: a file with the same name is replaced, the rest of folder stays.
 Project's `readme.md` goes along when it exists, because a folder is opened by people too.
 
 ```ini
 [deploy]
-copy = D:/www/app
+folder = D:/www/app
 ```
 
 ## What goes in
 
-Deploy reads addresses out of `index.html` and takes every one that is a file in project: `href="favicon.ico"`, `url(fonts/inter.woff2)`, `"logo.svg"` inside a script.
+Deploy reads addresses out of `index.html` and takes every one that is a file in project: `href="favicon.ico"`, `url(fonts/inter.woff2)`, `<img src="logo.svg">` in JSX.
 Remote and `data:` addresses name no file here, so they are skipped.
 After `build -f` and `-s` fonts and SVGs sit inline, and nothing is left to copy.
 
 A path built at runtime, like `"img/" + name + ".png"`, is invisible to it.
-Put that folder in `include`.
+Put it in `include`: a file as it is, a folder with everything under it.
+An entry that matches no file is reported.
 
 ## Dry run and cleanup
 
@@ -73,5 +77,5 @@ The folder is back to the app you edit, and nothing stale waits for the next `se
 ```
 + index.html 274.1kB
 + xaeian.svg 1.2kB
-✔ 2 files, 275.3kB -> Worker noti (main)
+✔ 2 files, 275.3kB → Worker noti
 ```

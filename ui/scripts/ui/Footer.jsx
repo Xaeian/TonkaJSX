@@ -1,8 +1,9 @@
 // scripts/ui/Footer.jsx
 
 /**
- * Status bar with `left`, `center` and `right` slots. On a narrow bar the center gives way to
- * whichever side slot has something to say, and a footer that is its center alone keeps it.
+ * Status bar with `left`, `center` and `right` slots.
+ * On a narrow bar the center gives way to whichever side slot has something to say,
+ * and a footer that is its center alone keeps it.
  * Mutate the slot elements for live content.
  *
  * @param {Object} props

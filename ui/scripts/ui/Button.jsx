@@ -19,7 +19,7 @@
  * @param {JSX.Element|JSX.Element[]|string} [props.children]
  */
 const Button = ({ variant, size, icon, title, class: className, children, ...rest }) => {
-  const iconEl = icon ? <span class="icon">{icon}</span> : null;
+  const iconEl = icon ? <span class="icon" translate={false}>{icon}</span> : null;
   const labelEl = <span class="btn-label">{children}</span>;
   const btn = (
     <button {...rest} title={title}

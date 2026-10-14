@@ -14,7 +14,8 @@ const Spinner = ({ color, size, text, class: className, ...rest }) => {
   // alone, the glyph is the element and takes the attributes; with `text`, the wrap does
   const alone = text == null;
   const glyph = (
-    <span {...(alone ? rest : {})} class={["spinner", "icon", size, className]} color={color}>
+    <span {...(alone ? rest : {})} translate={false}
+      class={["spinner", "icon", size, className]} color={color}>
       progress_activity
     </span>
   );

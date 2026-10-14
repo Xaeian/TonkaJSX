@@ -38,20 +38,20 @@ const FileDrop = ({
   const exts = rules.filter(r => r.startsWith(".")).map(r => r.toLowerCase());
   const mimes = rules.filter(r => !r.startsWith("."));
 
-  const accepts = (file) => {
+  function accepts(file) {
     if(!rules.length) return true;
     const name = (file.name || "").toLowerCase();
     if(exts.some(e => name.endsWith(e))) return true;
     const type = file.type || "";
     return mimes.some(m => m.endsWith("/*") ? type.startsWith(m.slice(0, -1)) : type === m);
-  };
-  const fmtBytes = (n) => {
+  }
+  function fmtBytes(n) {
     if(n < 1024) return n + "B";
     if(n < 1048576) return (n / 1024).toFixed(1) + "kB";
     if(n < 1073741824) return (n / 1048576).toFixed(1) + "MB";
     return (n / 1073741824).toFixed(2) + "GB";
-  };
-  const validate = (files) => {
+  }
+  function validate(files) {
     if(!files.length) return "No files selected";
     if(!multiple && files.length > 1) return "Only one file allowed";
     if(maxCount && files.length > maxCount) {
@@ -64,14 +64,14 @@ const FileDrop = ({
       }
     }
     return null;
-  };
-  const handle = (list) => {
+  }
+  function handle(list) {
     if(zone.loading) return;
     const files = Array.from(list);
     const err = validate(files);
     if(err) onError?.(err);
     else onFiles(files);
-  };
+  }
 
   const input = (
     <input type="file" accept={accept} multiple={!!multiple} hidden onChange={(e) => {
@@ -87,11 +87,11 @@ const FileDrop = ({
   );
 
   // click and keyboard: clear the selection when one is shown, else open the picker
-  const activate = () => {
+  function activate() {
     if(zone.loading) return;
     if(zone.selected) { zone.selected = null; onClear?.(); }
     else input.click();
-  };
+  }
   zone.addEventListener("click", (e) => { if(e.target !== input) activate(); });
   zone.addEventListener("keydown", (e) => {
     if(e.key === "Enter" || e.key === " ") { e.preventDefault(); activate(); }
@@ -123,10 +123,10 @@ const FileDrop = ({
   let loading = false;
   let selected = null;
   const iconEl = zone.firstChild;
-  const showIcon = () => {
+  function showIcon() {
     zone.icon = loading ? "progress_activity" : selected ? selectedIcon : icon;
     iconEl.classList.toggle("spinner", loading);
-  };
+  }
   UI.prop(zone, "loading", () => loading, (v) => {
     loading = !!v;
     zone.classList.toggle("file-drop-loading", loading);

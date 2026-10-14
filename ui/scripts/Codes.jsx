@@ -82,7 +82,7 @@ const Codes = () => {
       </p>
       <row>
         <Code height="sm" lang="table.csv" readOnly
-          value={'name,note,size\n"Ada, Lovelace",first,98\nKai,"a ""quoted"" note",71'} />
+          value={`name,note,size\n"Ada, Lovelace",first,98\nKai,"a ""quoted"" note",71`} />
       </row>
 
       <h4>Reading and writing</h4>

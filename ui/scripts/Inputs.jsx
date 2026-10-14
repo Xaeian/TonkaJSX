@@ -28,6 +28,9 @@ const Inputs = () => {
         <Input ghost placeholder="Ghost: no border" />
         <Input disabled value="Disabled" />
       </row>
+      <row>
+        <Input icon="list" suggest={FRUITS} placeholder="Fruit (suggested while typing)" />
+      </row>
 
       <h4>Number, password, search</h4>
       <row>

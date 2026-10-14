@@ -27,17 +27,19 @@ const DatePicker = ({ format = "%Y-%m-%d %H:%M", value, min, max, placeholder, d
     : (hasSec ? "%Y-%m-%dT%H:%M:%S" : "%Y-%m-%dT%H:%M");
 
   const pad = (n) => String(n).padStart(2, "0");
-  const parts = (d) => utc
-    ? { Y: d.getUTCFullYear(), m: d.getUTCMonth() + 1, d: d.getUTCDate(),
-        H: d.getUTCHours(), M: d.getUTCMinutes(), S: d.getUTCSeconds() }
-    : { Y: d.getFullYear(), m: d.getMonth() + 1, d: d.getDate(),
-        H: d.getHours(), M: d.getMinutes(), S: d.getSeconds() };
-  const fmt = (date, f) => {
+  function parts(d) {
+    return utc
+      ? { Y: d.getUTCFullYear(), m: d.getUTCMonth() + 1, d: d.getUTCDate(),
+          H: d.getUTCHours(), M: d.getUTCMinutes(), S: d.getUTCSeconds() }
+      : { Y: d.getFullYear(), m: d.getMonth() + 1, d: d.getDate(),
+          H: d.getHours(), M: d.getMinutes(), S: d.getSeconds() };
+  }
+  function fmt(date, f) {
     if(!date || isNaN(date.getTime())) return null;
     const p = parts(date);
     return f.replace(/%([YmdHMS])/g, (_, t) => t === "Y" ? p.Y : pad(p[t]));
-  };
-  const parse = (str, f) => {
+  }
+  function parse(str, f) {
     if(!str) return null;
     const tokens = [];
     const escaped = f.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -56,7 +58,7 @@ const DatePicker = ({ format = "%Y-%m-%d %H:%M", value, min, max, placeholder, d
     // Feb 30 would silently become Mar 2; reject it instead
     if(p.Y !== v.Y || p.m !== v.m || p.d !== v.d) return null;
     return date;
-  };
+  }
   const toNative = (s) => fmt(parse(s, format), nativeFormat);
   const fromNative = () => field.value ? fmt(parse(field.value, nativeFormat), format) : null;
 
