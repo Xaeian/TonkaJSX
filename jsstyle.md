@@ -1,7 +1,6 @@
 # JavaScript Style
 
-The single authority for JavaScript and JSX in a TonkaJSX workspace:
-every app, Tonka UI and the library served from `lib.tonkajsx.com`.
+The single authority for JavaScript and JSX in a TonkaJSX workspace.
 Read it before editing.
 
 **Tonka UI** is the component kit: `ui/` holds it, its demo is the manual,
@@ -22,7 +21,7 @@ Three more, in the order they win when they collide:
 Every rule below is a default; the sentence above wins where they disagree.
 
 Every code block below is an invented example.
-The names are toys: `Widget`, `load`, `items`, `Api.things`, never a real component or route,
+The names are toys: `Widget`, `load`, `items`, `Api.things`, never an app's own view or route,
 so nothing here can be mistaken for a call to copy.
 Two sections are the exception, because there the rule *is* which name to reach for:
 [Globals](#globals) and [Layers](#layers).
@@ -37,7 +36,7 @@ Two sections are the exception, because there the rule *is* which name to reach 
 
 **Shaping a project** · [Files](#files) · [Globals](#globals) · [Layers](#layers) ·
 [Library first](#library-first) · [No over-abstraction](#no-over-abstraction) ·
-[Repeated state](#repeated-state) · [Public surface](#public-surface)
+[Repeated state](#repeated-state)
 
 **Behaviour** · [Errors](#errors) · [Async](#async) · [State](#state) · [Config](#config) ·
 [Proof](#proof)
@@ -201,12 +200,14 @@ It holds through a neighbour without a comment and ends at a blank line or anoth
 const limit    = 1000;
 const retries  = 3;
 count = count + 1;    // per item
+
 expect: 0,   // one word, so the floor is the whole budget
 
 // YES
 const limit = 1000;
 const retries = 3;
 count = count + 1; // per item
+
 expect: 0, // one word, so the floor is the whole budget
 
 const LATENCY = 20;   // s before a first token
@@ -289,7 +290,7 @@ and two mechanisms in one file leave the reader guessing which one means more.
 camelCase       variables, functions, methods, props, files of logic (`sync.js`)
 PascalCase      components, classes, namespace objects, files of views (`Files.jsx`)
 UPPER_CASE      constants and tables
-_name           private: shared inside the kit or one library file, never used by an app
+_name           private: inside the kit or one file, or a hook a view offers its shell (`_onShow`)
 timeout_ms      unit suffix wherever the name can carry it
 ```
 
@@ -328,7 +329,8 @@ catch(e) { showError(e); }
 
 ## Functions
 
-- `function` for anything named at file or factory scope; an arrow for a callback or a one-liner
+- `function` for anything named at file or factory scope;
+  an arrow for a component, a callback or a one-liner
 - One thing per function; a name that needs "and" is two functions
 - An options object, usually once there are more than three parameters,
   and whenever call sites keep passing the same ones together
@@ -397,6 +399,7 @@ In JSX prose a line break between text and a tag loses the space, so break only 
 
 A false child is no child, a false `title` is no title, a false `value` is an absence:
 `{cond && <Hint />}` needs no ternary.
+`0` is falsy but a child: `{items.length && <Hint />}` prints `0`, so a count tests `> 0`.
 
 A component naming itself inside its own body shadows the global; the inner one is `_Name`.
 
@@ -591,22 +594,16 @@ A counterfactual is fine when it explains why a line must stay
 ("mask it first, a pending event would fire otherwise").
 A history of the repository is not.
 
-A released major of the library is a clean start:
-no shim reading the previous layout, no alias for a previous name.
-
 ---
 
 # Shaping a project
 
 ## Files
 
-The first line of every file is its path as a comment.
-An app file names its path in the project, a library file the path it is served at,
-a stylesheet likewise:
+The first line of every file is its path in the project as a comment, a stylesheet's too:
 
 ```js
 // scripts/ui/Panel.jsx
-// lib.tonkajsx.com/1.0.0/http.js
 /* styles/ui/panel.css */
 ```
 
@@ -615,7 +612,8 @@ then the sections.
 
 - One concern per file, split by responsibility and not by size:
   a view file holds one view, a domain file one domain, a client file one backend
-- Scripts load as plain tags, deeper folders first, `.js` before `.jsx`, alphabetical inside;
+- Scripts load as plain tags: all `.js` before any `.jsx`,
+  and within either, deeper folders first, alphabetical inside;
   a helper many files use lives deeper or in a `.js`.
   `Name is not defined` means the file is missing or loads too late
 - `index.html` is a build artifact and never a source; `{{key}}` is filled from `app.ini`
@@ -627,13 +625,12 @@ then the sections.
 
 There are no modules and no bundler: every top-level `const`, `function` and `class` is a
 global for every file after it.
-Four kinds exist, and an app defines none of the first three:
+Four kinds exist, and an app defines none of the first two:
 
 - `JSX.*`, the runtime
 - `UI.*`, the kit glue: `UI.prop`, `UI.text`, `UI.title`, `UI.active`, `UI.loading`
-- components and clients, PascalCase: `Panel`, `Crypt`, `CSV`, `createStash`
-- `_name`, a helper shared between the files of the kit or of one library file,
-  never reached for from an app
+- components and namespaces, PascalCase: `Panel`, `Badge`, `Alert`
+- `_name`, a helper shared between the files of the kit, never reached for from an app
 
 A `window.X = X` in app code is a load-order workaround of the person who wrote it,
 not a bug in the component; the fix is the file's place, not the component.
@@ -641,16 +638,6 @@ not a bug in the component; the fix is the file's place, not the component.
 ## Layers
 
 **Strong separation.** Dependencies point one way, and a file never reaches around a layer.
-
-The library:
-
-```
-cache  ->  http  ->  fastapi | openrouter | github  ->  session, stash
-jsx, files, string, crc, protobuf, crypt, fuzzy, store, router: each stands alone
-```
-
-A library file knows nothing of any app, of the kit, or of a sibling's privates.
-Anything it needs from another file is that file's public surface.
 
 The kit knows the runtime and itself: never an app, never a server, never a route.
 
@@ -672,8 +659,7 @@ When one piece would need two of these, it is two pieces.
 Words for a human are made where the error is understood, in the domain,
 and shown where the human is, in the view.
 
-What two apps share is one folder copied byte-identical (`scripts/ui`, `scripts/admin`)
-or a library file.
+What two apps share is one folder copied byte-identical (`scripts/ui`, `scripts/admin`).
 Never a third half-copy.
 
 ## Library first
@@ -757,18 +743,6 @@ The same for a compound answer: one function decides what a run needs
 (`budget(cfg, model, chars)` gives both the estimate and the limit),
 and every caller reads the same decision.
 
-## Public surface
-
-- A library file's public API is the return object of its factory and the names its header
-  and `list.txt` describe. `_name` is never public
-- Released is frozen: `1.0.0/` stays what it is.
-  A rename, a dropped name or a changed shape is a new version folder;
-  the loose files beside the folders are the newest release,
-  and differ from it in the first line only
-- Every app loads the loose path unless it pins a version on purpose
-- A new major is a fresh start: nothing reads a previous layout,
-  nothing answers to a previous name
-
 ---
 
 # Behaviour
@@ -779,13 +753,13 @@ and every caller reads the same decision.
 The message names the module and says what to do, in words a caller can show:
 
 ```js
-throw new TypeError("Stash: a folder is made with makeDir");
-throw new Error("Protobuf: string field is not valid UTF-8");
+throw new TypeError("Widget: a size is a number");
+throw new Error("Parser: a field is not valid UTF-8");
 ```
 
 **`null`** for a lookup miss; the caller decides.
 
-**`ApiError`** for anything a server refused: `status`, `body`, and a `message` short enough
+**A server's refusal** is an error with `status`, `body`, and a `message` short enough
 for a control.
 A `detail` carries the rest for a log or an alert.
 
@@ -813,8 +787,8 @@ An app maps codes to words once, `ERROR_MSG[e.code] || e.message`, and a view sh
 - On the element, through mutators: `row.selected = true`, `btn.loading = true`
 - A list re-renders from its array: `list.replaceChildren(...items.map(row))`
 - A ref is a closure; a forward ref is a `let`
-- Settings live in `State`, with their defaults in one place, and `State.fallback(key)`
-  is where a reset reads from
+- Settings live in `State`, with their defaults in one place;
+  a reset, where an app has one, reads them through `State.fallback(key)`
 - No mutable singleton beyond a namespace's own closure
 
 ## Config
@@ -827,6 +801,6 @@ A value compared against internal data carries the same scale as that data.
 ## Proof
 
 A change is proven by running, not by reading:
-a vm suite for a library file, a headless page for a view, a sandbox request for a client.
+a vm suite for logic, a headless page for a view, a sandbox request for a client.
 The report says what ran and the numbers it gave.
 A test older than the code is brought up to the code, never silenced.

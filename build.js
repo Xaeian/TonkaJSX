@@ -1,9 +1,16 @@
+// build.js
+//
+// One project packed into one `index.html`: styles and scripts inlined, JSX compiled,
+// both minified, and on request remote assets, fonts and SVGs pulled in.
+
 import fs from "fs"
 import path from "path"
 import http from "http"
 import https from "https"
-import { PATH, readFile, fileList, loadVars, replaceVars, hasFlag, getFlagValues, flagLimit,
-  COLOR as c, Log } from "./utils.js"
+import { useProject, readFile, fileList, loadVars, replaceVars, hasFlag, getFlagValues,
+  flagLimit, COLOR as c, Log } from "./utils.js"
+
+const PATH = useProject()
 
 const bytes = (s) => Buffer.byteLength(String(s || ""), "utf8")
 
@@ -29,12 +36,9 @@ const removeBabelTags = (html) => {
   const removed = []
   const out = html.replace(re, (tag, src) => {
     const s = String(src || "").trim().toLowerCase()
-    const hit =
-      s.includes("babel") && (
-        s.includes("standalone") ||
-        s.includes("@babel") ||
-        /(^|\/)babel(\.min)?\.js(\?|#|$)/i.test(s)
-      )
+    const hit = s.includes("babel") && (s.includes("standalone")
+      || s.includes("@babel")
+      || /(^|\/)babel(\.min)?\.js(\?|#|$)/i.test(s))
     if(!hit) return tag
     removed.push(String(src || "").trim())
     return ""
@@ -84,15 +88,16 @@ async function minifyCssSmart(css) {
       minify: true
     })
     return Buffer.from(code).toString("utf8").trim()
-  } catch(e) {
+  }
+  catch(e) {
     const msg = String(e?.message || e)
-    const missing =
-      e?.code === "ERR_MODULE_NOT_FOUND" ||
-      /Cannot find (package|module) 'lightningcss'/i.test(msg)
+    const missing = e?.code === "ERR_MODULE_NOT_FOUND"
+      || /Cannot find (package|module) 'lightningcss'/i.test(msg)
     if(missing) {
       Log.warn("lightningcss missing: CSS basic minify only")
       Log.run("npm i -D lightningcss")
-    } else {
+    }
+    else {
       Log.warn("lightningcss failed: CSS basic minify only")
       Log.info(msg)
     }
@@ -106,7 +111,9 @@ async function loadBabel() {
     const jsxMod = await import("@babel/plugin-transform-react-jsx")
     const babel = babelMod?.default || babelMod
     const jsxPlugin = jsxMod?.default || jsxMod
-    if(!babel?.transformSync) throw new Error("Babel transformSync missing (module shape mismatch)")
+    if(!babel?.transformSync) {
+      throw new Error("Babel transformSync missing (module shape mismatch)")
+    }
     return { transformSync: babel.transformSync, jsxPlugin }
   }
   catch(e) {
@@ -205,7 +212,7 @@ function fetchBytes(url, depth = 0) {
     }, (res) => {
       const sc = res.statusCode || 0
       const loc = res.headers?.location
-      if((sc === 301 || sc === 302 || sc === 303 || sc === 307 || sc === 308) && loc && depth < 5) {
+      if([301, 302, 303, 307, 308].includes(sc) && loc && depth < 5) {
         res.resume()
         const next = new URL(loc, u).toString()
         resolve(fetchBytes(next, depth + 1))
@@ -362,7 +369,8 @@ async function processFonts(css, projectDir, subsetText, subsetLigature, srcDir,
     try {
       const mod = await import("subset-font")
       subsetFn = mod.default || mod
-    } catch {
+    }
+    catch {
       Log.warn("subset-font missing: fonts not subsetted")
       Log.run("npm i -D subset-font")
     }
@@ -378,18 +386,19 @@ async function processFonts(css, projectDir, subsetText, subsetLigature, srcDir,
       const icons = new Set()
       const NAME = "[a-z][a-z0-9_]*"
       // JSX: <span class="icon">name</span>
-      for(const m of rawSrc.matchAll(new RegExp(`class=["'][^"']*\\bicon\\b[^"']*["'][^>]*>(${NAME})<`, "g")))
-        icons.add(m[1].trim())
+      const tagged = new RegExp(`class=["'][^"']*\\bicon\\b[^"']*["'][^>]*>(${NAME})<`, "g")
+      for(const m of rawSrc.matchAll(tagged)) icons.add(m[1].trim())
       // Data: { icon: "name" }
-      for(const m of rawSrc.matchAll(new RegExp(`\\bicon:\\s*["'](${NAME})["']`, "g")))
-        icons.add(m[1])
-      // Arrays: const *ICON[S] = ["name", ...] — variable name must end in ICON or ICONS
+      const keyed = new RegExp(`\\bicon:\\s*["'](${NAME})["']`, "g")
+      for(const m of rawSrc.matchAll(keyed)) icons.add(m[1])
+      // Arrays: const *ICON[S] = ["name", ...], the variable name ending in ICON or ICONS
+      const quoted = new RegExp(`["'](${NAME})["']`, "g")
       for(const m of rawSrc.matchAll(/\b\w*ICONS?\s*=\s*\[([\s\S]*?)\]/gi)) {
-        for(const s of m[1].matchAll(new RegExp(`["'](${NAME})["']`, "g")))
-          icons.add(s[1])
+        for(const s of m[1].matchAll(quoted)) icons.add(s[1])
       }
       ligatureText = [...icons].join("\n")
-      Log.info(`  ligatures: ${icons.size} (${[...icons].slice(0, 12).join(", ")}${icons.size > 12 ? "…" : ""})`)
+      const shown = [...icons].slice(0, 12).join(", ") + (icons.size > 12 ? "…" : "")
+      Log.info(`  ligatures: ${icons.size} (${shown})`)
     }
     if(subsetText.length) {
       charText = [...new Set(rawSrc)].join("")
@@ -452,11 +461,9 @@ async function inlineSvgs(code, baseDir, max) {
   let optimize = null
   try {
     const svgo = await import("svgo")
-    optimize = (s) => svgo.optimize(s, {
-      multipass: true,
-      plugins: ["preset-default"]
-    }).data
-  } catch {
+    optimize = (s) => svgo.optimize(s, { multipass: true, plugins: ["preset-default"] }).data
+  }
+  catch {
     Log.warn("svgo missing: SVGs not optimized")
     Log.run("npm i -D svgo")
   }

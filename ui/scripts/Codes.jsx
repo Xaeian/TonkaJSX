@@ -106,6 +106,15 @@ const Codes = () => {
           onSave: (text) => Alert.ok(`Saved ${text.length} characters`),
         })}>Edit a file</Button>
       </row>
+
+      <h4>Markdown</h4>
+      <p>
+        <code>Markdown</code> reads the page rather than its source:
+        headings, lists, quotes and links, and a fence painted in the language it names.
+      </p>
+      <row>
+        <Markdown height="sm" text={SAMPLES.md} />
+      </row>
     </Panel>
   );
 };

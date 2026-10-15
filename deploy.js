@@ -8,10 +8,10 @@
 //
 // `app.ini` names the default target in `[deploy]` by its kind, and more Workers in `[worker]`:
 //   [deploy]
-//   worker = noti # or `folder = C:/www/noti`, never both
+//   worker = shop # or `folder = C:/www/shop`, never both
 //   include = images, logo.svg # what the page reaches for at runtime, no path in the HTML
 //   [worker]
-//   alfa = noti-alfa # picked with `-w alfa`
+//   test = shop-test # picked with `-w test`
 // A Worker's account and token come from the environment, `CLOUDFLARE_ACCOUNT`
 // and `CLOUDFLARE_TOKEN`, or from a `.env` beside this file, `NAME=value` per line.
 //
@@ -20,16 +20,17 @@
 import fs from "fs";
 import os from "os";
 import path from "path";
-import url from "url";
 import { spawnSync } from "child_process";
-import { PATH, Log, loadIni, deployTargets, fileList, hasFlag, getFlagValues, COLOR as c }
-  from "./utils.js";
+import { ROOT, useProject, Log, loadIni, deployTargets, fileList, hasFlag, getFlagValues,
+  joinArgs, COLOR as c } from "./utils.js";
 
-const ROOT = path.dirname(url.fileURLToPath(import.meta.url));
+const PATH = useProject();
 const WRANGLER = path.join(ROOT, "node_modules", "wrangler", "bin", "wrangler.js");
 
 // what `build` reads; an `index.html` older than any of it is not the page on disk
 const SOURCES = ["app.html", "app.jsx", "app.ini", "scripts", "styles"];
+// what `build` writes, `-c` the two beside the page; `-r` takes all of it back
+const BUILT = ["index.html", "index.html.gz", "index.html.br"];
 // a Worker name as Cloudflare takes it
 const WORKER_NAME = /^[a-z0-9-]+$/;
 // our name -> the one wrangler reads
@@ -52,7 +53,7 @@ const kb = (n) => `${(n / 1024).toFixed(1)}kB`;
 
 /**
  * The target to go to: the `[worker]` entry `-w` names, else the one `[deploy]` names.
- * @param {Record<string, Record<string, string>>} ini app.ini
+ * @param {Record<string, Record<string, string>>} ini `app.ini` as `loadIni` reads it
  * @returns {{ key: string, kind: string, name: string }}
  */
 function pickTarget(ini) {
@@ -221,7 +222,7 @@ async function deploy() {
     try {
       if(dry) {
         Log.warn("Dry run, nothing sent. The command would be:");
-        Log.run(`node ${args.map(a => a.includes(" ") ? `"${a}"` : a).join(" ")}`);
+        Log.run(`node ${joinArgs(args)}`);
         return;
       }
       Log.run("wrangler deploy");
@@ -236,8 +237,11 @@ async function deploy() {
   // the page is out, so the folder goes back to the app being edited, as `serve -r` does,
   // and a `.wrangler` an earlier run left in the workspace goes with it
   if(hasFlag("-r", "--remove")) {
-    fs.unlinkSync(path.join(PATH, "index.html"));
-    Log.ok(`Deleted ${c.orange}index.html${c.reset}`);
+    for(const name of BUILT) {
+      if(!fs.existsSync(path.join(PATH, name))) continue;
+      fs.unlinkSync(path.join(PATH, name));
+      Log.ok(`Deleted ${c.orange}${name}${c.reset}`);
+    }
     const scratch = path.join(ROOT, ".wrangler");
     if(fs.existsSync(scratch)) {
       fs.rmSync(scratch, { recursive: true, force: true });

@@ -1,44 +1,49 @@
 ## Changes 🌰TonkaJSX
 
-### `1.2.4` Targets:
+### `1.2.5` Pipe
 
-- `[deploy]` takes `worker` or `folder`, more Workers in `[worker]` _(`-w alfa`)_
+- `pipe` builds and deploys every app of a list _(`pipe.txt`)_
+- `-m` in a line commits and pushes that app
+
+### `1.2.4` Targets
+
+- `[deploy]` takes `worker` or `folder`, more Workers in `[worker]` _(`-w test`)_
 - `include` lists files and folders that go along
 - `app.ini` value may end with a `#` or `;` comment
 
-### `1.2.3` Deploy:
+### `1.2.3` Deploy
 
 - `deploy` puts built page on a Cloudflare Worker _(`[deploy]` in `app.ini`)_
 - `build` runs Babel on JSX only
 
-### `1.2.2` Limits + libs:
+### `1.2.2` Limits + libs
 
 - `-i` `-f` `-s` take a size _(`-f 800kB`)_
 - Remote libs [lib.tonkajsx.com](https://lib.tonkajsx.com/list.html)
 
-### `1.2.1` TonkaUI + font lookup:
+### `1.2.1` TonkaUI + font lookup
 
 - `ui` demo project: TonkaUI component kit
 - `-f` takes a face from any folder, else from its `@font-face` url
 
-### `1.2.0` Babel 8 compatibility:
+### `1.2.0` Babel 8 compatibility
 
 - `tonka` preset _(classic runtime + `JSX.*` pragma)_ instead of `@jsx` comments
 - `jsx.js`: SVG namespace, `onMount` disposer, safer `on*` and boolean props
 - deps and `@babel/standalone` bumped to 8, browser tests in `.tests`
 
-### `1.1.2` Built-in vars + remove flag:
+### `1.1.2` Built-in vars + remove flag
 
 - `{{date}}` and `{{time}}` available in serve and build
 - `app.ini` values may reference other vars, e.g. `foot = Build {{date}}`
 - `serve -r` / `--remove` deletes built `index.html` _(serve the app you're editing)_
 
-### `1.1.1` Version flag + folder guard:
+### `1.1.1` Version flag + folder guard
 
 - `-v` / `--version` command
 - `serve` / `build` fail on missing folder/project
 
-### `1.1.0` Build optimization flags:
+### `1.1.0` Build optimization flags
 
 - `-f` font filter + inline base64 _(unused `@font-face` dropped)_
 - `-s` SVG inline via SVGO

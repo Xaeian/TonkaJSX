@@ -1,26 +1,29 @@
 #!/usr/bin/env node
+// tonka.js
+//
+// The `tonka` command: hands the command line to `serve`, `build`, `deploy` or `pipe`,
+// or prints the help with every project and where it deploys.
 
 import fs from "fs"
 import path from "path"
-import url from "url"
+import { ROOT, parseIni, deployTargets, COLOR as c } from "./utils.js"
 
-const ROOT = path.dirname(url.fileURLToPath(import.meta.url))
 const { version } = JSON.parse(fs.readFileSync(path.join(ROOT, "package.json"), "utf8"))
 
 const cmd = process.argv[2]
 const rest = process.argv.slice(3)
-const wantHelp = !cmd || cmd === "-h" || cmd === "--help" || rest.includes("-h") || rest.includes("--help")
-const wantVersion = cmd === "-v" || cmd === "--version" || rest.includes("-v") || rest.includes("--version")
+const wantHelp = !cmd || cmd === "-h" || cmd === "--help"
+  || rest.includes("-h") || rest.includes("--help")
+const wantVersion = cmd === "-v" || cmd === "--version"
+  || rest.includes("-v") || rest.includes("--version")
 
 if(wantVersion) { console.log("TonkaJSX " + version); process.exit(0) }
 
-const COMMANDS = ["serve", "build", "deploy"]
+const COMMANDS = ["serve", "build", "deploy", "pipe"]
 
 if(COMMANDS.includes(cmd) && !wantHelp) {
   process.argv.splice(2, 1)
 }
-
-const { hasFlag, parseIni, deployTargets, COLOR: c } = await import("./utils.js")
 
 function listProjects() {
   return fs.readdirSync(ROOT, { withFileTypes: true })
@@ -30,7 +33,7 @@ function listProjects() {
     .sort()
 }
 
-// where a project deploys, as its app.ini says: the default bare, a further Worker by its key;
+// where a project deploys, as its `app.ini` says: the default bare, a further Worker by its key;
 // a broken `[deploy]` shows the error `deploy` would stop on
 function targetsOf(project) {
   const ini = path.join(ROOT, project, "app.ini")
@@ -56,6 +59,7 @@ ${c.grey}Usage:${c.reset}
   ${c.yellow}tonka${c.reset} serve  [<${c.green}project${c.reset}>] [${c.blue}-p${c.reset} <${c.grey}port${c.reset}>] [${c.blue}-r${c.reset}]    start dev server
   ${c.yellow}tonka${c.reset} build  [<${c.green}project${c.reset}>] [${c.blue}options${c.reset}]           build production index.html
   ${c.yellow}tonka${c.reset} deploy [<${c.green}project${c.reset}>] [${c.blue}-w${c.reset} <${c.grey}key${c.reset}>] [${c.blue}--dry${c.reset}] [${c.blue}-r${c.reset}]  put built page on a Worker or in a folder
+  ${c.yellow}tonka${c.reset} pipe   [<${c.green}list${c.reset}>] [${c.blue}--dry${c.reset}]                build and deploy every app of a list
 
 ${c.grey}Serve options:${c.reset}
   ${c.blue}-r${c.reset}, --remove                  delete built index.html before serving
@@ -74,6 +78,12 @@ ${c.grey}Deploy options:${c.reset}
       --dry                     list files and target, send and copy nothing
   ${c.blue}-r${c.reset}, --remove                  delete built index.html after deploying
       ${c.grey}a Worker needs CLOUDFLARE_ACCOUNT and CLOUDFLARE_TOKEN in the environment or .env${c.reset}
+
+${c.grey}Pipe options:${c.reset}
+      --dry                     show the commands, run nothing
+      ${c.grey}list = pipe.txt in the workspace or the one named, an app and its build options per line;${c.reset}
+      ${c.grey}-m "message" in a line commits that app first and pushes once its page is out${c.reset}
+
   ${c.blue}-h${c.reset}, --help                    show this message
   ${c.blue}-v${c.reset}, --version                 show version
 
@@ -86,6 +96,7 @@ if(wantHelp) { help(); process.exit(0) }
 if(cmd === "serve") await import("./serve.js")
 else if(cmd === "build") await import("./build.js")
 else if(cmd === "deploy") await import("./deploy.js")
+else if(cmd === "pipe") await import("./pipe.js")
 else {
   console.log(`${c.red}Unknown command:${c.reset} ${cmd}\n`)
   help()

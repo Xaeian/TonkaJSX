@@ -1,0 +1,35 @@
+/* styles/ui/markdown.css */
+
+@layer components {
+  .markdown {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    min-width: 0;
+    color: var(--text2);
+    line-height: var(--leading);
+  }
+  .markdown > * { flex-shrink: 0; }
+  .markdown :is(h1, h2, h3, h4, h5, h6) { color: var(--text); font-weight: 600; line-height: 1.3; }
+  .markdown h1 { font-size: var(--text-xl); }
+  .markdown h2 { font-size: var(--text-lg); padding-top: var(--space-sm); }
+  .markdown :is(h3, h4, h5, h6) { font-size: var(--text-md); }
+  .markdown :is(ul, ol) {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+    padding-left: 1.25em;
+  }
+  .markdown li::marker { color: var(--text4); }
+  .markdown blockquote {
+    padding-left: var(--space-md);
+    border-left: 2px solid var(--border2);
+    color: var(--text3);
+  }
+  .markdown pre {
+    padding: var(--space-md);
+    overflow-x: auto;
+    font: var(--text-base) / 1.6 var(--font-mono);
+    white-space: pre;
+  }
+}

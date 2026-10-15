@@ -2,6 +2,12 @@
 
 const _HEIGHT = { sm: "12rem", md: "20rem", lg: "min(70vh, 44rem)" };
 
+// A height as `Code` and `Markdown` take it: a size of `_HEIGHT`, pixels, or any length
+function _height(height) {
+  if(height == null || height === "") return null;
+  return _HEIGHT[height] || (typeof height === "number" ? height + "px" : String(height));
+}
+
 // Painting rebuilds the whole document and hands it to the parser.
 // A short file can afford that on every keystroke;
 // past this many characters it cannot, so its colours land once the typing has settled instead.
@@ -31,10 +37,8 @@ const Code = ({ value = "", lang, height, readOnly, wrap, numbers, onChange,
   class: className, ...rest }) => {
   const paint = <pre class="code-paint" aria-hidden="true"></pre>;
   const field = <textarea class="code-field" spellcheck="false"></textarea>;
-  const tall = height == null || height === "" ? null
-    : _HEIGHT[height] || (typeof height === "number" ? height + "px" : String(height));
   const el = (
-    <div {...rest} style={{ height: tall }}
+    <div {...rest} style={{ height: _height(height) }}
       class={["code", wrap && "code-wrap", numbers && "code-num", className]}>
       {paint}
       {field}

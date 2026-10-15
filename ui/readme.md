@@ -137,6 +137,7 @@ const yes = await Alert.ask("err", "Delete?");
 <Code lang="conf.ini" height="md" value={text} onChange={(t) => ...} />   // readOnly, wrap
 Code.open("notes.md", text, { onSave });   // the same box in a dialog
 Syntax.paint(text, "query.sql");   // just the colours, no element
+<Markdown text={md} height="md" />   // a page to read, fences painted; .text
 <ColorPicker value="teal" gray onChange={(c) => ...} />
 <IconPicker icons={["key", "lock"]} value="key" onChange={(ic) => ...} />
 <QrCode text="HELLO" size={200} />   // needs qrcode-generator on the page; .text, .svg

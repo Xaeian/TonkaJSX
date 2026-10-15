@@ -14,17 +14,17 @@ More Workers stand in `[worker]`, one per key.
 
 ```ini
 [deploy]
-worker = editest
+worker = shop
 include = images
 [worker]
-alfa = editest-alfa
+test = shop-test
 ```
 
-- `[deploy]` target needs no flag, `-w alfa` goes to `editest-alfa` instead
+- `[deploy]` target needs no flag, `-w test` goes to `shop-test` instead
 - `[deploy]` takes `worker` or `folder`, never both, and `include`; any other key stops deploy
 - `include` names files and folders that go along, see [What goes in](#what-goes-in)
 
-`tonka -h` lists projects with their targets: `editest (editest, alfa:editest-alfa)`.
+`tonka -h` lists projects with their targets: `shop (shop, test:shop-test)`.
 
 ### Worker
 
@@ -71,11 +71,11 @@ An entry that matches no file is reported.
 `--dry` prints every file with its size and the target, then stops.
 For a Worker it also shows the wrangler command it would run.
 
-`-r` deletes `index.html` once the page is out, the way `serve -r` deletes it before serving.
+`-r` deletes `index.html` once the page is out, the way `serve -r` deletes it before serving, and the `.gz` and `.br` that `build -c` put beside it.
 The folder is back to the app you edit, and nothing stale waits for the next `serve`.
 
 ```
 + index.html 274.1kB
-+ xaeian.svg 1.2kB
-✔ 2 files, 275.3kB → Worker noti
++ logo.svg 1.2kB
+✔ 2 files, 275.3kB → Worker shop
 ```

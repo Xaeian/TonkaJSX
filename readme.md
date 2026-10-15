@@ -11,11 +11,13 @@ Structure is partly opinionated, but not too strict.
 
 ```
 ROOT/                  (your workspace folder; name doesn't matter)
-├─ tonka.js            (CLI entry: `tonka serve` / `tonka build` / `tonka deploy`)
+├─ tonka.js            (CLI entry: `tonka serve` / `tonka build` / `tonka deploy` / `tonka pipe`)
 ├─ build.js            (packs project into production `index.html`)
 ├─ serve.js            (dev server; serves `index.html` if exists else `app.html` + injected links)
 ├─ deploy.js           (puts built `index.html` on a Cloudflare Worker or in a folder)
-├─ utils.js            (shared helpers for `build.js`, `serve.js` + `deploy.js`)
+├─ pipe.js             (builds and deploys every app a list names)
+├─ pipe.txt            (optional; apps for `tonka pipe` with their build flags)
+├─ utils.js            (shared helpers for every script)
 ├─ package.json        (npm config + `bin` for CLI)
 └─ <project-name>/     (one of many projects inside workspace)
    ├─ app.html         (required entry for dev)
@@ -44,12 +46,13 @@ npm install
 npm link
 ```
 
-Framework consists of three scripts: a development **server**, a **build** tool and **deploy**.
+Framework consists of four scripts: a development **server**, a **build** tool, **deploy** and **pipe**.
 
 ```sh
 tonka serve [<project-name>] [--port|-p <port>] [--remove|-r]  # start development server
 tonka build [<project-name>] [options] # build deploy version of project
 tonka deploy [<project-name>] [--worker|-w <key>] [--dry] [--remove|-r] # put built page where it runs
+tonka pipe [<list>] [--dry] # build and deploy every app of a list
 ```
 
 Build supports optional optimization flags:
@@ -92,6 +95,26 @@ With `--remove`/`-r` server first deletes a built `index.html`, so you're sure i
 Script order matters: load `.js` first, then `.jsx`. Files in deeper folders load before files in parent folders.
 All other files are served as static assets, exactly as they are in project folder.
 During build you can inline remote styles and scripts with `--inline-remote` (good for offline use).
+
+`tonka pipe` ships many apps in one go: each gets `build` with its flags, then `deploy -r`.
+The list is a text file in workspace, `pipe.txt` unless named, one app per line with its build flags; a line starting with `#` is a comment.
+
+```
+shop -f -s
+blog -m "Update libs"
+docs
+```
+
+```sh
+tonka pipe       # every app of pipe.txt
+tonka pipe all   # every app of all.txt
+tonka pipe --dry # show the commands, run nothing
+```
+
+`-m` in a line commits what changed in that app before its build, and pushes the commit once the page is out.
+App with no change commits nothing, and a branch with no upstream keeps the commit local.
+A line goes to `deploy` too, so `-w test` works there.
+Every line is checked before the first app goes, and the first failure stops the run.
 
 ## 💡 Example
 
