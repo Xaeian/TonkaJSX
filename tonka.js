@@ -56,10 +56,10 @@ function help() {
 ${c.cyan}TonkaJSX${c.reset} ${c.grey}${version}${c.reset}: lightweight JSX frontend framework
 
 ${c.grey}Usage:${c.reset}
-  ${c.yellow}tonka${c.reset} serve  [<${c.green}project${c.reset}>] [${c.blue}-p${c.reset} <${c.grey}port${c.reset}>] [${c.blue}-r${c.reset}]    start dev server
-  ${c.yellow}tonka${c.reset} build  [<${c.green}project${c.reset}>] [${c.blue}options${c.reset}]           build production index.html
-  ${c.yellow}tonka${c.reset} deploy [<${c.green}project${c.reset}>] [${c.blue}-w${c.reset} <${c.grey}key${c.reset}>] [${c.blue}--dry${c.reset}] [${c.blue}-r${c.reset}]  put built page on a Worker or in a folder
-  ${c.yellow}tonka${c.reset} pipe   [<${c.green}list${c.reset}>] [${c.blue}--dry${c.reset}]                build and deploy every app of a list
+  ${c.yellow}tonka${c.reset} serve  [<${c.green}project${c.reset}>] [${c.blue}-p${c.reset} <${c.grey}port${c.reset}>] [${c.blue}-r${c.reset}]  start dev server
+  ${c.yellow}tonka${c.reset} build  [<${c.green}project${c.reset}>] [${c.blue}options${c.reset}]         build production index.html
+  ${c.yellow}tonka${c.reset} deploy [<${c.green}project${c.reset}>] [${c.blue}-w${c.reset} <${c.grey}key${c.reset}>] [${c.blue}-r${c.reset}]   put built page on a Worker or in a folder
+  ${c.yellow}tonka${c.reset} pipe   [<${c.green}list${c.reset}>] [${c.blue}--dry${c.reset}]              build and deploy every app of a list
 
 ${c.grey}Serve options:${c.reset}
   ${c.blue}-r${c.reset}, --remove                  delete built index.html before serving
@@ -80,9 +80,9 @@ ${c.grey}Deploy options:${c.reset}
       ${c.grey}a Worker needs CLOUDFLARE_ACCOUNT and CLOUDFLARE_TOKEN in the environment or .env${c.reset}
 
 ${c.grey}Pipe options:${c.reset}
+      ${c.orange}<list>${c.reset}                    pipe.txt unless named: an app and its build options per line
+      ${c.blue}-m${c.reset} ${c.orange}"message"${c.reset}              in a line: commit the app, push it after its deploy
       --dry                     show the commands, run nothing
-      ${c.grey}list = pipe.txt in the workspace or the one named, an app and its build options per line;${c.reset}
-      ${c.grey}-m "message" in a line commits that app first and pushes once its page is out${c.reset}
 
   ${c.blue}-h${c.reset}, --help                    show this message
   ${c.blue}-v${c.reset}, --version                 show version
