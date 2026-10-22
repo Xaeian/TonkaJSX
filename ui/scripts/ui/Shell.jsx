@@ -2,14 +2,14 @@
 
 /**
  * App frame: sidebar on the left, then topbar, content and footer stacked.
- * @param {Object} props
- * @param {JSX.Element} [props.sidebar]
- * @param {JSX.Element} [props.topbar]
- * @param {JSX.Element} [props.footer]
- * @param {JSX.Element|JSX.Element[]} [props.children]  usually one `<Content>`
+ * @param {object} props
+ * @param {Element} [props.sidebar]
+ * @param {Element} [props.topbar]
+ * @param {Element} [props.footer]
+ * @param {Element|Element[]} [props.children]  usually one `<Content>`
  */
-const Shell = ({ sidebar, topbar, footer, children, ...rest }) => (
-  <div {...rest} class="shell">
+const Shell = ({ sidebar, topbar, footer, class: className, children, ...rest }) => (
+  <div {...rest} class={["shell", className]}>
     {sidebar}
     <div class="shell-main">
       {topbar}
@@ -21,16 +21,16 @@ const Shell = ({ sidebar, topbar, footer, children, ...rest }) => (
 
 /**
  * Scrolling view area between topbar and footer.
+ * `fullbleed` takes away its padding and its scroll: the visible view owns both (docks, editors).
  *
- * Mutators:
- *   .fullbleed   no padding, no scroll; the visible view owns both (docks, editors)
+ * Mutators: .fullbleed
  *
- * @param {Object} props
+ * @param {object} props
  * @param {boolean} [props.fullbleed]
- * @param {JSX.Element|JSX.Element[]} [props.children]
+ * @param {Element|Element[]} [props.children]
  */
-const Content = ({ fullbleed, children, ...rest }) => {
-  const el = <div {...rest} class="content">{children}</div>;
+const Content = ({ fullbleed, class: className, children, ...rest }) => {
+  const el = <div {...rest} class={["content", className]}>{children}</div>;
   UI.prop(el, "fullbleed",
     () => el.classList.contains("content-fullbleed"),
     (v) => el.classList.toggle("content-fullbleed", !!v));
@@ -48,8 +48,3 @@ const Content = ({ fullbleed, children, ...rest }) => {
   new ResizeObserver(gauge).observe(el);
   return el;
 };
-
-/** Left dock + content + right dock in one row; the content shrinks and may `scroll`. */
-const DockRow = ({ children, ...rest }) => (
-  <div {...rest} class="dock-row">{children}</div>
-);

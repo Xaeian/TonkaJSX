@@ -12,22 +12,28 @@
   }
   .btn, .select, .toggle { flex: 0 0 auto; font-weight: 500; }
   .btn, .select { padding: 0 var(--ctrl-pad); }
-  .btn .icon, .input-group .icon, .toggle .icon { font-size: var(--ctrl-icon); }
+  .btn .icon, .input-group .icon, .toggle .icon, .icon-tile .icon { font-size: var(--ctrl-icon); }
 
-  :is(.btn, .select, .input-group, .toggle).sm {
+  :is(.btn, .select, .input-group, .toggle, .color-picker, .icon-picker).sm {
     --ctrl-h:    var(--ctrl-h-sm);
     --ctrl-text: var(--text-xs);
     --ctrl-pad:  var(--space-sm);
     --ctrl-icon: var(--text-sm);
   }
-  :is(.btn, .select, .input-group, .toggle).lg {
+  :is(.btn, .select, .input-group, .toggle, .color-picker, .icon-picker).lg {
     --ctrl-h:    var(--ctrl-h-lg);
     --ctrl-text: var(--text-base);
     --ctrl-pad:  var(--space-lg);
     --ctrl-icon: var(--text-lg);
   }
 
-  .btn:disabled, .select:disabled, .input-group:has(:disabled) {
+  :is(.btn, .select, .color-dot, .icon-tile, .file-drop):focus-visible,
+  .input-group:focus-within, .checkbox-input:focus-visible + .checkbox-box {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+
+  .btn:disabled, .select:disabled, .input-group:has(:disabled), .checkbox:has(:disabled) {
     opacity: var(--opacity-disabled);
     pointer-events: none;
   }

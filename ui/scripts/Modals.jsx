@@ -91,22 +91,37 @@ const Modals = () => {
     </Modal>
   );
 
+  //------------------------------------------------------------------------------------------ Once
+
+  // built on the click and taken out of the page once it closes
+  function openOnce() {
+    const modal = (
+      <Modal once title="Once" size="sm"
+        footer={<Button onClick={() => modal.close()}>Close</Button>}>
+        <p>Built for this click, and gone from the page once closed.</p>
+      </Modal>
+    );
+    modal.open();
+  }
+
   //------------------------------------------------------------------------------------------ View
 
   return (
     <Panel title="Modals">
       <p>
-        Create a modal once, then open and close it from code:
-        <code>modal.open()</code>, <code>modal.close()</code>, <code>modal.opened</code>.
+        A modal is built once and opened from code with <code>modal.open()</code>.
+        Then <code>modal.close()</code> shuts it; <code>modal.opened</code> reads or sets either.
       </p>
       <p>
-        Escape, the backdrop and the close button all dismiss a modal.
-        The form below carries <code>noClickAway</code>, so a click beside it leaves what you
-        typed alone; <code>noClose</code> takes all three away.
+        Escape, the backdrop and the close button all dismiss a modal; a toast above it never does.
+        The form wears <code>noClickAway</code>: a click beside it keeps what was typed.
+        With <code>noClose</code> none of the three works.
+        With <code>once</code>, a modal built for one answer leaves the page when it closes.
       </p>
       <row>
         <Button icon="open_in_new" onClick={() => confirmModal.open()}>Small confirm</Button>
         <Button icon="open_in_new" onClick={() => formModal.open()}>Form</Button>
+        <Button icon="add_comment" onClick={openOnce}>Once</Button>
         <Button variant="primary" icon="open_in_new" onClick={() => largeModal.open()}>
           Large
         </Button>

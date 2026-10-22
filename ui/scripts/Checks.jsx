@@ -40,6 +40,7 @@ const Checks = () => {
 
       <h4>Sizes</h4>
       <row>
+        <Checkbox size="sm" label="Small" checked />
         <Checkbox label="Default" checked />
         <Checkbox size="lg" label="Large" checked />
       </row>

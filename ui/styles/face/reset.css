@@ -28,6 +28,8 @@
     color: var(--text);
   }
 
+  del { color: var(--text3); }
+
   pre {
     font-family: var(--font-mono);
     font-size: var(--text-sm);

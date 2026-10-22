@@ -5,9 +5,10 @@
   .login-logged { color: var(--accent); }
 
   .login-panel {
-    --login-offset: 0px;
+    --login-offset: 14px;
     position: absolute;
     top: calc(100% + var(--login-offset));
+    right: 0;
     width: 250px;
     display: flex;
     background: var(--surface2);
@@ -20,13 +21,6 @@
     transition: opacity var(--dur) var(--ease-out), transform var(--dur) var(--ease-out);
   }
   .login-panel.show { opacity: 1; transform: translateY(0); }
-  .login-right { right: 0; }
-  .login-left { left: 0; }
-  .login-center {
-    left: 50%;
-    transform: translateX(-50%) translateY(calc(-1 * var(--space-xs)));
-  }
-  .login-center.show { transform: translateX(-50%) translateY(0); }
 
   .login-fields { flex: 1 1 auto; min-width: 0; }
   .login-fields > .input-group { padding: 0 var(--space-sm); font-family: var(--font-mono); }

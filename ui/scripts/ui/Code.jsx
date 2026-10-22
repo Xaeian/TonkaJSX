@@ -1,11 +1,11 @@
 // scripts/ui/Code.jsx
 
-const _HEIGHT = { sm: "12rem", md: "20rem", lg: "min(70vh, 44rem)" };
-
-// A height as `Code` and `Markdown` take it: a size of `_HEIGHT`, pixels, or any length
+// What a height puts on a box as `Code` and `Markdown` take it, null for none:
+// a preset as an attribute the stylesheet sizes, any other length as a style, a number in pixels
 function _height(height) {
   if(height == null || height === "") return null;
-  return _HEIGHT[height] || (typeof height === "number" ? height + "px" : String(height));
+  if(["sm", "md", "lg"].includes(height)) return { height };
+  return { style: { height: typeof height === "number" ? height + "px" : String(height) } };
 }
 
 // Painting rebuilds the whole document and hands it to the parser.
@@ -20,25 +20,26 @@ const _PAINT_MS = 120;
  * and the scrolling are the browser's own while the colours are ours.
  * `Syntax` decides what a name is written in; without `onChange` the field is still there,
  * and `readOnly` takes it away.
+ * `.focus()` puts the caret at the top, so the view starts there too.
  *
- * Mutators: .value, .lang, .readOnly, .focusEditor()
+ * Mutators: .value, .lang, .readOnly, .focus(), .input
  *
- * @param {Object} props
+ * @param {object} props
  * @param {string} [props.value]
- * @param {string} [props.lang]       a language id, or a file name to take one from
+ * @param {string} [props.lang]  a language id, or a file name to take one from
  * @param {string|number} [props.height]  "sm" 12rem, "md" 20rem, "lg" a page, or any length
  * @param {boolean} [props.readOnly]
- * @param {boolean} [props.wrap]      long lines fold instead of running off the side
- * @param {boolean} [props.numbers]   a gutter counting the source lines, folds and all;
+ * @param {boolean} [props.wrap]  long lines fold instead of running off the side
+ * @param {boolean} [props.numbers]  a gutter counting the source lines, folds and all;
  *   the column holds three digits and the count starts over past them, so it never widens
  * @param {(text:string) => void} [props.onChange]
  */
 const Code = ({ value = "", lang, height, readOnly, wrap, numbers, onChange,
   class: className, ...rest }) => {
   const paint = <pre class="code-paint" aria-hidden="true"></pre>;
-  const field = <textarea class="code-field" spellcheck="false"></textarea>;
+  const field = <textarea class="code-field" spellcheck={false}></textarea>;
   const el = (
-    <div {...rest} style={{ height: _height(height) }}
+    <div {...rest} {..._height(height)}
       class={["code", wrap && "code-wrap", numbers && "code-num", className]}>
       {paint}
       {field}
@@ -69,30 +70,22 @@ const Code = ({ value = "", lang, height, readOnly, wrap, numbers, onChange,
     paint.scrollLeft = field.scrollLeft;
   });
 
-  // Tab indents rather than leaving the field, and the modal's focus trap never sees it
+  // Tab indents a field open to writing rather than leaving it,
+  // and the modal's focus trap never sees it
   field.addEventListener("keydown", (e) => {
-    if(e.key !== "Tab") return;
+    if(e.key !== "Tab" || field.readOnly) return;
     e.preventDefault();
     e.stopPropagation();
-    const from = field.selectionStart, to = field.selectionEnd;
-    field.value = field.value.slice(0, from) + "  " + field.value.slice(to);
-    field.selectionStart = field.selectionEnd = from + 2;
+    field.setRangeText("  ", field.selectionStart, field.selectionEnd, "end");
     repaintSoon();
     onChange?.(field.value);
   });
 
   UI.prop(el, "value", () => field.value, (v) => { field.value = v ?? ""; repaint(); });
   UI.prop(el, "lang", () => _lang, (v) => { _lang = v; repaint(); });
-  UI.prop(el, "readOnly",
-    () => el.classList.contains("code-read"),
-    (v) => {
-      el.classList.toggle("code-read", !!v);
-      field.readOnly = !!v;
-    });
-
-  /** The caret starts at the top, so the view does too. */
-  el.focusEditor = () => { field.setSelectionRange(0, 0); field.focus(); };
-  el.field = field;
+  UI.prop(el, "readOnly", () => field.readOnly, (v) => { field.readOnly = !!v; });
+  el.focus = () => { field.setSelectionRange(0, 0); field.focus(); };
+  el.input = field;
 
   el.readOnly = !!readOnly;
   repaint();
@@ -107,10 +100,10 @@ const Code = ({ value = "", lang, height, readOnly, wrap, numbers, onChange,
  *
  * @param {string} name
  * @param {string} text
- * @param {Object} [opts]
+ * @param {object} [opts]
  * @param {(text:string) => (void|Promise)} [opts.onSave]
  * @param {string} [opts.lang]  a painter's own id, when the name would pick the wrong one
- * @returns {HTMLElement} the dialog, already open
+ * @returns {Element} the dialog, already open
  */
 Code.open = (name, text, { onSave, lang } = {}) => {
   let dirty = false;
@@ -154,11 +147,8 @@ Code.open = (name, text, { onSave, lang } = {}) => {
   );
   const title = <span>{name} {badge}</span>;
   const modal = (
-    <Modal title={title} size="xl" noClickAway footer={<>{closeBtn}{dropBtn}{saveBtn}</>}
-      onChange={(opened) => {
-        if(opened) requestAnimationFrame(() => box.focusEditor());
-        else setTimeout(() => modal.remove(), UI.duration(modal));
-      }}>
+    <Modal once title={title} size="xl" noClickAway footer={<>{closeBtn}{dropBtn}{saveBtn}</>}
+      onChange={(opened) => { if(opened) requestAnimationFrame(() => box.focus()); }}>
       {box}
     </Modal>
   );

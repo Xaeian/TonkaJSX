@@ -9,17 +9,20 @@
     border-radius: var(--radius);
     overflow: hidden;
   }
+  :is(.code, .markdown)[height="sm"] { height: 12rem; }
+  :is(.code, .markdown)[height="md"] { height: 20rem; }
+  :is(.code, .markdown)[height="lg"] { height: min(70vh, 44rem); }
   .code-paint,
-  .code-field {
-    margin: 0;
-    border: 0;
+  .code-field,
+  pre.code {
     padding: var(--space-md);
     font: var(--text-base) / 1.6 var(--font-mono);
     tab-size: 2;
     white-space: pre;
-    background: transparent;
     overflow: auto;
   }
+  .code-paint,
+  .code-field { margin: 0; border: 0; background: transparent; }
   .code-paint {
     position: absolute;
     inset: 0;
@@ -36,7 +39,7 @@
     color: transparent;
     caret-color: var(--text);
   }
-  .code-read .code-field { caret-color: transparent; }
+  .code-field:read-only { caret-color: transparent; }
 
   .code-line { min-height: 1lh; }
   .code-num .code-line { position: relative; padding-left: var(--code-gutter); }

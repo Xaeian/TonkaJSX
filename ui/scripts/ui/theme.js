@@ -1,9 +1,9 @@
 // scripts/ui/theme.js
 
 /**
- * Theme: the page follows the system until `set` writes `data-theme`,
- * and follows it again once `set("system")` takes that attribute away.
- * Nothing is kept unless `remember` ties the choice to storage;
+ * Dark or light for the page: the system's until `set` writes `data-theme`,
+ * and the system's again once `set("system")` takes that attribute away.
+ * Nothing is kept unless `remember` ties the choice to a store;
  * an app holding it in its own state calls `set`.
  * Every change fires `theme:change` on `document` with the choice, which may be "system";
  * what is actually showing is always `current()`.
@@ -23,10 +23,7 @@ const Theme = (() => {
   /** Whether dark is what is showing. */
   const isDark = () => current() === "dark";
 
-  function emit() {
-    return document.dispatchEvent(
-      new CustomEvent("theme:change", { detail: choice() }));
-  }
+  const emit = () => document.dispatchEvent(new CustomEvent("theme:change", { detail: choice() }));
 
   /**
    * A theme to show, or `system` to hand the page back to the operating system.
@@ -43,11 +40,12 @@ const Theme = (() => {
   const toggle = () => set(isDark() ? "light" : "dark");
 
   /**
-   * Take up the choice kept under `name`, and keep every later one there.
-   * @param {string} name storage namespace, the choice lands under `name:theme`
+   * Take up the choice `store` keeps under `theme`, and keep every later one there.
+   * @param {{get: (key: string) => *, set: (key: string, value: *) => void}} store
+   *   a `createCache` of the library, or anything that reads and writes the same way
    */
-  function remember(name) {
-    cache = createCache(name);
+  function remember(store) {
+    cache = store;
     const saved = cache.get(KEY);
     if(saved) set(saved);
   }

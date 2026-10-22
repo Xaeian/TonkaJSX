@@ -45,8 +45,8 @@ const Loaders = () => {
 
       <h4>Live</h4>
       <p>
-        Button spins while bar fills:
-        <code>btn.loading</code> and <code>bar.value</code> from one timer.
+        One timer moves both: <code>btn.loading</code> spins the button
+        and <code>bar.value</code> fills the bar.
       </p>
       <row nowrap>
         {startBtn}

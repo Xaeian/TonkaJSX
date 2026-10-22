@@ -16,6 +16,7 @@
   .empty-icon { font-size: var(--display-icon); }
   .empty-title { font-weight: 500; color: var(--text3); }
   .empty-desc { font-size: var(--text-sm); line-height: var(--leading); }
+  :is(.empty-icon, .empty-title, .empty-desc):empty { display: none; }
 
   .empty.sm { padding: var(--space-md) var(--space-sm); gap: var(--space-xs); }
   .empty.sm .empty-icon { font-size: var(--display-icon-sm); }

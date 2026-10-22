@@ -1,8 +1,8 @@
 // scripts/Docks.jsx
 
 const Docks = () => {
-  const TWELVE = Array.from({ length: 12 }, (_, i) => i + 1);
-  const THREE = TWELVE.slice(0, 3);
+  const items = (n) => Array.from({ length: n },
+    (_, i) => <Panel inline ghost>Item {i + 1}</Panel>);
 
   return (
     <stack>
@@ -21,7 +21,7 @@ const Docks = () => {
               <span tone="meta">nav rail</span>
             </stack>
           </Dock>
-          <div scroll pad="md"><span tone="meta">middle content</span></div>
+          <stack scroll pad="md"><span tone="meta">middle content</span></stack>
           <Dock pos="right" width="160px" tint>
             <stack gap="xs">
               <strong>right</strong>
@@ -59,16 +59,14 @@ const Docks = () => {
               <Panel inline ghost glow pointer icon="notifications">Notifications</Panel>
             </list>
           </Dock>
-          <div scroll pad="md">
-            <stack>
-              <row>
-                <Input icon="badge" placeholder="Display name" value="Ada Lovelace" />
-                <Input icon="mail" value="ada@example.com" />
-              </row>
-              <Textarea auto minRows={2} placeholder="Bio" value="Working on async code." />
-              <Checkbox label="Public profile" checked />
-            </stack>
-          </div>
+          <stack scroll pad="md">
+            <row>
+              <Input icon="badge" placeholder="Display name" value="Ada Lovelace" />
+              <Input icon="mail" value="ada@example.com" />
+            </row>
+            <Textarea auto minRows={2} placeholder="Bio" value="Working on async code." />
+            <Checkbox label="Public profile" checked />
+          </stack>
         </DockRow>
       </Panel>
 
@@ -76,34 +74,24 @@ const Docks = () => {
         <p>
           With <code>scroll</code> a dock scrolls inside a bounded parent;
           without it, it grows with its content.
+          A <code>DockRow</code> takes the height of its parent,
+          or its content's where the parent sets none.
         </p>
-        <row split align="stretch">
+        <row split align="start">
           <Panel title="scroll" flush height="220px">
             <DockRow>
               <Dock pos="left" width="140px" scroll>
-                <stack gap="xs">
-                  {TWELVE.map(i => <Panel inline ghost>Item {i}</Panel>)}
-                </stack>
+                <stack gap="xs">{items(12)}</stack>
               </Dock>
-              <div scroll pad="md">
-                <stack gap="xs">
-                  {TWELVE.map(i => <Panel inline ghost>Row {i}</Panel>)}
-                </stack>
-              </div>
+              <stack pad="md"><span tone="meta">twelve items: the dock scrolls</span></stack>
             </DockRow>
           </Panel>
           <Panel title="grow" flush>
             <DockRow>
               <Dock pos="left" width="140px">
-                <stack gap="xs">
-                  {THREE.map(i => <Panel inline ghost>Item {i}</Panel>)}
-                </stack>
+                <stack gap="xs">{items(3)}</stack>
               </Dock>
-              <div pad="md">
-                <stack gap="xs">
-                  {THREE.map(i => <Panel inline ghost>Row {i}</Panel>)}
-                </stack>
-              </div>
+              <stack pad="md"><span tone="meta">three items: the panel grows</span></stack>
             </DockRow>
           </Panel>
         </row>

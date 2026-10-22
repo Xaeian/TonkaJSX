@@ -10,75 +10,57 @@
  * `maxWidth` beside `height` lets a wide picture spread that far and no further,
  * losing height rather than its edges; the box keeps the height it was given.
  *
- * Mutators: .src, .alt, .loading
+ * Mutators: .src, .loading
  *
- * @param {Object} props
+ * @param {object} props
  * @param {string} [props.src]
  * @param {string} [props.alt]
  * @param {string} [props.title]
  * @param {string|number} [props.height]
  * @param {string|number} [props.width]
- * @param {string|number} [props.maxWidth]
+ * @param {string|number} [props.maxWidth]  pixels or a CSS length
  * @param {"contain"|"cover"|"fill"} [props.fit="contain"]
  * @param {boolean} [props.minSquare]
  * @param {boolean} [props.rounded]
  * @param {boolean} [props.circle]
  * @param {boolean} [props.border]
- * @param {string} [props.fallbackIcon]
  * @param {string} [props.fallbackText]
  * @param {() => void} [props.onClick]
  */
 const Img = ({ src, alt, height, width, maxWidth, fit = "contain", minSquare, rounded, circle,
-  border, fallbackIcon, fallbackText, onClick, class: className, ...rest }) => {
+  border, fallbackText, onClick, class: className, ...rest }) => {
+  // a side as the stylesheet takes it: a preset by name, else a length, a number in pixels
+  const side = (v) => v == null || v === "" ? null
+    : ["sm", "md", "lg"].includes(v) ? { preset: v }
+    : { length: typeof v === "number" ? v + "px" : String(v) };
+  const h = side(height), w = side(width), mw = side(maxWidth)?.length;
+  // given one side alone, the other follows the picture
+  const heightOnly = h && !w, widthOnly = w && !h;
   const img = <img class="image-inner" alt={alt || ""} loading="lazy" />;
   const iconEl = <span class="icon" translate={false}></span>;
   const el = (
-    <div {...rest} onClick={onClick}
+    <div {...rest} onClick={onClick} height={h?.preset} width={w?.preset}
+      style={{ "--image-h": h?.length, "--image-w": w?.length, "--image-max-w": mw }}
       class={["image", "image-fit-" + fit, className, {
         "image-rounded": rounded, "image-circle": circle,
         "image-border": border, "image-click": onClick,
+        "image-auto-width": heightOnly, "image-square": minSquare && (heightOnly || widthOnly),
+        "image-bounded": mw,
       }]}>
       {img}
       <div class="image-fallback">
         {iconEl}
-        {fallbackText ? <span class="image-fallback-text">{fallbackText}</span> : null}
+        {fallbackText && <span class="image-fallback-text">{fallbackText}</span>}
       </div>
       <div class="image-overlay"><Spinner /></div>
     </div>
   );
 
-  const PRESET = { sm: "40px", md: "80px", lg: "160px" };
-  function css(v) {
-    if(v == null || v === "") return null;
-    return PRESET[v] || (typeof v === "number" ? v + "px" : String(v));
-  }
-  const h = css(height), w = css(width);
-  if(h) el.style.height = h;
-  if(w) el.style.width = w;
-  if(h && !w) {
-    el.style.width = "auto";
-    el.classList.add("image-auto-width");
-    if(minSquare) el.style.minWidth = h;
-  }
-  if(w && !h) {
-    el.style.height = "auto";
-    if(minSquare) el.style.minHeight = w;
-  }
-  // The limits go on the picture as well as on the box, so it scales itself down to fit
-  // instead of being cut off at the edge.
-  const mw = css(maxWidth);
-  if(mw) {
-    el.classList.add("image-bounded");
-    el.style.maxWidth = mw;
-    img.style.maxWidth = mw;
-    if(h) img.style.maxHeight = h;
-  }
-
   let _src = "";
   function setState(state) {
     el.classList.remove("image-ok", "image-error", "image-empty");
     el.classList.add("image-" + state);
-    iconEl.textContent = fallbackIcon || (state === "error" ? "broken_image" : "image");
+    iconEl.textContent = state === "error" ? "broken_image" : "image";
   }
   img.addEventListener("load", () => { if(_src) setState("ok"); });
   img.addEventListener("error", () => { if(_src) setState("error"); });
@@ -88,7 +70,6 @@ const Img = ({ src, alt, height, width, maxWidth, fit = "contain", minSquare, ro
     if(_src) img.src = _src;
     else img.removeAttribute("src");
   });
-  UI.prop(el, "alt", () => img.alt, (v) => { img.alt = v || ""; });
   UI.prop(el, "loading",
     () => el.classList.contains("image-loading"),
     (v) => el.classList.toggle("image-loading", !!v));

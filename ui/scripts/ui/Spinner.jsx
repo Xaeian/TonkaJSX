@@ -1,27 +1,16 @@
 // scripts/ui/Spinner.jsx
 
 /**
- * Spinning glyph, alone or with a text label.
+ * Spinning glyph, with a text label beside it when given one.
  *
- * Mutators (with `text`): .text
- *
- * @param {Object} props
- * @param {string} [props.color]   semantic or palette name, else the current text color
+ * @param {object} props
+ * @param {string} [props.color]  semantic or palette name, else the current text colour
  * @param {"sm"|"lg"} [props.size]
  * @param {string} [props.text]
  */
-const Spinner = ({ color, size, text, class: className, ...rest }) => {
-  // alone, the glyph is the element and takes the attributes; with `text`, the wrap does
-  const alone = text == null;
-  const glyph = (
-    <span {...(alone ? rest : {})} translate={false}
-      class={["spinner", "icon", size, className]} color={color}>
-      progress_activity
-    </span>
-  );
-  if(alone) return glyph;
-  const label = <span class="spinner-text">{text}</span>;
-  const el = <span {...rest} class="spinner-wrap">{glyph}{label}</span>;
-  UI.text(el, "text", label);
-  return el;
-};
+const Spinner = ({ color, size, text, class: className, ...rest }) => (
+  <span {...rest} class={["spinner-wrap", size, className]}>
+    <span class="spinner icon" translate={false} color={color}>{_SPIN_ICON}</span>
+    <span class="spinner-text">{text}</span>
+  </span>
+);

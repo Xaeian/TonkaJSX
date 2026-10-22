@@ -28,7 +28,7 @@ const Alerts = () => {
 
       <h4>Timing</h4>
       <row>
-        <Button onClick={() => Alert.inf("Quick flash", 800)}>800 ms</Button>
+        <Button onClick={() => Alert.inf("Quick flash", 800)}>800ms</Button>
         <Button onClick={() => Alert.ok("Sticky until dismissed", 0)}>Sticky</Button>
         <Button icon="wrap_text" onClick={() => Alert.inf(LONG, 6000)}>Long text</Button>
         <Button icon="clear_all" variant="ghost" onClick={() => Alert.clear()}>

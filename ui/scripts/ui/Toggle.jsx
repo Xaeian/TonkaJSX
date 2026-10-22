@@ -3,19 +3,17 @@
 /**
  * Segmented single-select group of `ToggleBtn`.
  *
- * Mutators: `.value` (setter is silent).
+ * Mutators: .value (setter is silent), .title
  *
- * @param {Object} props
+ * @param {object} props
  * @param {string} [props.value]
  * @param {"sm"|"lg"} [props.size]
  * @param {string} [props.title]
  * @param {(value:string) => void} [props.onChange]
- * @param {JSX.Element|JSX.Element[]} props.children
+ * @param {Element|Element[]} props.children
  */
-const Toggle = ({ value, size, title, onChange, class: className, children, ...rest }) => {
-  const wrap = (
-    <div {...rest} class={["toggle", size, className]} title={title}>{children}</div>
-  );
+const Toggle = ({ value, size, onChange, class: className, children, ...rest }) => {
+  const wrap = <div {...rest} class={["toggle", size, className]}>{children}</div>;
   let current = value;
   function sync() {
     for(const btn of wrap.children) btn.active = btn.dataset.value === current;
@@ -29,12 +27,13 @@ const Toggle = ({ value, size, title, onChange, class: className, children, ...r
   });
   sync();
   UI.prop(wrap, "value", () => current, (v) => { current = v; sync(); });
+  UI.title(wrap);
   return wrap;
 };
 
 /**
  * One option of a `Toggle`; the parent handles clicks and the active state.
- * @param {Object} props
+ * @param {object} props
  * @param {string} props.value
  * @param {string} [props.icon]
  * @param {string} [props.label]

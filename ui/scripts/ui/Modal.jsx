@@ -1,26 +1,26 @@
 // scripts/ui/Modal.jsx
 
-// modals stack; the body scroll is unlocked by the last one to close
-let _modalCount = 0;
-
 /**
- * Dialog with a backdrop, focus trap and scroll lock.
+ * Dialog with a backdrop and a focus trap.
  * Escape, the backdrop and the close button dismiss it unless `noClose` is set.
  * `noClickAway` keeps the backdrop out of it and leaves the other two,
  * for a dialog holding work that a stray click beside it must not throw away.
+ * A click away lands on the backdrop itself, never on a toast or a menu standing above it.
+ * `once` takes it out of the page when it closes, for a dialog built for one answer.
  *
  * Mutators: .open(), .close(), .toggle(), .opened
  *
- * @param {Object} props
+ * @param {object} props
  * @param {string} [props.title]
  * @param {"sm"|"lg"|"xl"} [props.size]
  * @param {boolean} [props.noClose]
  * @param {boolean} [props.noClickAway]  a click outside leaves it open
- * @param {JSX.Element|JSX.Element[]} [props.actions]  head buttons, left of the close button
- * @param {JSX.Element|JSX.Element[]} [props.footer]
+ * @param {boolean} [props.once]  removed from the page once closed
+ * @param {Element|Element[]} [props.actions]  head buttons, left of the close button
+ * @param {Element|Element[]} [props.footer]
  * @param {(opened:boolean) => void} [props.onChange]
  */
-const Modal = ({ title, size, noClose, noClickAway, actions, footer, onChange,
+const Modal = ({ title, size, noClose, noClickAway, once, actions, footer, onChange,
   class: className, children, ...rest }) => {
   const closeBtn = noClose ? null
     : <IconBtn icon="close" title="Close" onClick={() => root.close()} />;
@@ -55,17 +55,17 @@ const Modal = ({ title, size, noClose, noClickAway, actions, footer, onChange,
   });
 
   UI.overlay(root, {
-    // a predicate still listens for Escape, and answers no to every pointer outside
-    dismiss: noClose ? false : noClickAway ? () => false : true,
+    // A predicate still listens for Escape, and answers no to every pointer outside:
+    // the backdrop covers the page, so what lies outside lies above it.
+    dismiss: noClose ? false : () => false,
     onOpen: () => {
-      if(_modalCount++ === 0) document.body.classList.add("modal-locked");
       document.addEventListener("keydown", trap);
       requestAnimationFrame(() => (focusable()[0] || dialog).focus());
       onChange?.(true);
     },
     onClose: () => {
-      if(--_modalCount === 0) document.body.classList.remove("modal-locked");
       document.removeEventListener("keydown", trap);
+      if(once) UI._unmount(root);
       onChange?.(false);
     },
   });

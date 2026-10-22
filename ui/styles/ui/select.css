@@ -4,14 +4,18 @@
   .select {
     appearance: none;
     cursor: pointer;
-    outline: none;
-    background: var(--surface) no-repeat right var(--ctrl-pad) center / 0.75rem;
+    background-image:
+      linear-gradient(45deg, transparent 50%, var(--text4) 50%),
+      linear-gradient(-45deg, transparent 50%, var(--text4) 50%);
+    background-position:
+      right calc(var(--ctrl-pad) + 6px) center,
+      right calc(var(--ctrl-pad) + 2px) center;
+    background-size: 4px 4px;
+    background-repeat: no-repeat;
     background-clip: padding-box;
-    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'><path d='M2 4l4 4 4-4' fill='none' stroke='%23808080' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/></svg>");
     padding-right: calc(var(--ctrl-pad) + 1.25rem);
   }
   .select:hover:not(:disabled) { border-color: var(--border2); }
-  .select:focus { border-color: var(--accent-dim); }
   .select option { background: var(--surface); color: var(--text); padding: var(--space-sm); }
   .select option:checked { background: var(--accent); color: var(--bg2); }
 }

@@ -9,7 +9,8 @@
     color: var(--text3);
     cursor: pointer;
     user-select: none;
-    transition: all var(--dur) var(--ease-out);
+    transition: background var(--dur) var(--ease-out), color var(--dur) var(--ease-out),
+      border-color var(--dur) var(--ease-out), opacity var(--dur) var(--ease-out);
   }
   .btn-label:empty { display: none; }
   .btn:hover { background: var(--surface2); color: var(--text); border-color: var(--border2); }
@@ -41,31 +42,6 @@
     color: var(--accent);
     background: color-mix(in srgb, var(--accent) 12%, transparent);
     border-color: transparent;
-  }
-
-  .btn.btn-rail {
-    width: var(--sidebar-btn);
-    height: var(--sidebar-btn);
-    padding: 0;
-    border: none;
-    background: transparent;
-    color: var(--text4);
-    position: relative;
-  }
-  .btn.btn-rail:hover { color: var(--text2); background: var(--surface); }
-  .btn.btn-rail.active, .btn.btn-rail.active:hover {
-    color: var(--text);
-    background: var(--surface);
-  }
-  .btn.btn-rail.active::before {
-    content: "";
-    position: absolute;
-    left: -6px;
-    top: var(--space-sm);
-    bottom: var(--space-sm);
-    width: 2px;
-    background: var(--accent);
-    border-radius: 1px;
   }
 
   .btn-confirm { display: inline-grid; grid-template-areas: "s"; }

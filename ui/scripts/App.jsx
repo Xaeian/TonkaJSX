@@ -1,20 +1,39 @@
 // scripts/App.jsx
+//
+// The manual's shell: one rail button per panel, each panel one file of `scripts/`.
+// On a narrow screen the topbar folds its search and its theme switch under More.
+
+/**
+ * A session shaped as `createSession` makes one, with no server behind it:
+ * any name signs in with the password `demo`.
+ * @returns {{ login, logout, onChange }}
+ */
+function demoSession() {
+  let state = { status: "anon", user: null, error: null };
+  const subs = new Set();
+  function set(next) {
+    state = next;
+    for(const fn of subs) fn(state);
+  }
+  function login(username, password) {
+    if(password === "demo") set({ status: "auth", user: { username }, error: null });
+    else set({ status: "error", user: null, error: "Wrong password (hint: demo)" });
+  }
+  const logout = () => set({ status: "anon", user: null, error: null });
+  // a new listener hears the state at once, as with `createSession`
+  function onChange(fn) {
+    subs.add(fn);
+    fn(state);
+  }
+  return { login, logout, onChange };
+}
 
 const App = () => {
   const sectionTag = <span>section: hero</span>;
-  const clicksTag  = <span></span>;
-  const itemsTag   = <span></span>;
+  const clicksTag = <span></span>;
+  const itemsTag = <span></span>;
   const itemsBadge = <Badge color="ok" size="sm" pos="top-right"></Badge>;
-  const login = (
-    <Login onSubmit={({ user, pass }) => {
-      if(pass === "demo") login.logged(user);
-      else login.error("Wrong password (hint: demo)");
-    }} onLogout={() => {
-      login.logout();
-      Alert.inf("Logged out");
-    }} />
-  );
-  const onClicks = (n) => clicksTag.textContent = n + " clicks";
+  const onClicks = (n) => { clicksTag.textContent = n + " clicks"; };
   function onItems(n) {
     itemsTag.textContent = n + " items";
     itemsBadge.text = n;
@@ -22,6 +41,7 @@ const App = () => {
   }
   const panels = [
     { key: "hero", icon: "home", title: "Welcome", el: <Hero /> },
+    { key: "layout", icon: "view_quilt", title: "Layout", el: <Layout /> },
     { key: "input", icon: "edit", title: "Inputs & Select", el: <Inputs /> },
     { key: "button", icon: "smart_button", title: "Buttons & Toggles", badge: itemsBadge,
       el: <Buttons onClicks={onClicks} onItems={onItems} /> },
@@ -30,11 +50,12 @@ const App = () => {
     { key: "load", icon: "progress_activity", title: "Spinners & Progress", el: <Loaders /> },
     { key: "panel", icon: "table_chart", title: "Panels & Tabs", el: <Panels /> },
     { key: "cards", icon: "view_agenda", title: "Cards", el: <Cards /> },
-    { key: "lists", icon: "view_list", title: "Lists", el: <Lists /> },
+    { key: "lists", icon: "view_list", title: "Lists & Empty", el: <Lists /> },
     { key: "modal", icon: "open_in_new", title: "Modals", el: <Modals /> },
     { key: "menu", icon: "menu_open", title: "Menus", el: <Menus /> },
     { key: "dock", icon: "dock_to_bottom", title: "Docks", el: <Docks /> },
     { key: "drop", icon: "upload_file", title: "FileDrops", el: <FileDrops /> },
+    { key: "files", icon: "folder_open", title: "Files", el: <Files /> },
     { key: "img", icon: "image", title: "Images", el: <Imgs /> },
     { key: "code", icon: "code", title: "Code", el: <Codes /> },
     { key: "library", icon: "menu_book", title: "Documents", el: <Docs />, fullbleed: true },
@@ -58,40 +79,25 @@ const App = () => {
   }
   show("hero");
 
-  // Shortcuts to every panel plus the theme toggle, anchored to the rail.
-  // The rail insets its button, so 6px moves the placement gap out to the sidebar line.
-  const quickMenu = (
-    <Menu title="Quick actions" pos="right-top" offsetX={6} width="220px">
-      <stack gap="xs">
-        <span tone="meta">Jump to panel</span>
-        {panels.map(p => (
-          <Panel inline ghost glow pointer
-            onClick={() => { show(p.key); quickMenu.close(); }}>
-            <span class="icon" translate={false}>{p.icon}</span>
-            <span>{p.title}</span>
-          </Panel>
-        ))}
-        <sep blank />
-        <Panel inline ghost glow pointer
-          onClick={() => { Theme.toggle(); quickMenu.close(); }}>
-          <span class="icon" translate={false}>contrast</span>
-          <span>Toggle theme</span>
-        </Panel>
-      </stack>
-    </Menu>
+  // Enter opens the first panel whose title holds the text, a suggestion being one
+  const search = (
+    <SearchInput fold placeholder="Jump to..." suggest={panels.map(p => p.title)}
+      onEnter={(q) => {
+        const needle = q.trim().toLowerCase();
+        const hit = needle && panels.find(p => p.title.toLowerCase().includes(needle));
+        if(hit) show(hit.key);
+      }} />
   );
-  const quickBtn = <SidebarBtn icon="bolt" title="Quick actions"
-    onClick={() => quickMenu.toggle(quickBtn)} />;
 
-  // switch mirrors theme, whoever changes it
+  // the switch follows the theme, whoever changes it: itself, the rail button or the system
   const themeToggle = (
-    <Toggle value={Theme.choice()} onChange={(v) => Theme.set(v)}>
-      <ToggleBtn value="light"  icon="light_mode" label="Light" />
-      <ToggleBtn value="dark"   icon="dark_mode"  label="Dark" />
-      <ToggleBtn value="system" icon="contrast"   label="System" />
+    <Toggle fold value={Theme.choice()} onChange={Theme.set}>
+      <ToggleBtn value="light" icon="light_mode" label="Light" />
+      <ToggleBtn value="dark" icon="dark_mode" label="Dark" />
+      <ToggleBtn value="system" icon="contrast" label="System" />
     </Toggle>
   );
-  document.addEventListener("theme:change", (e) => { themeToggle.value = e.detail; });
+  Theme.onChange((e) => { themeToggle.value = e.detail; });
 
   return (
     <Shell
@@ -99,36 +105,35 @@ const App = () => {
         <Sidebar>
           {panels.map(p => p.nav)}
           <spacer />
-          {quickBtn}
-          <SidebarBtn icon="settings" title="Settings (soon)" disabled />
+          <ThemeBtn />
         </Sidebar>
       }
       topbar={
         <Topbar>
           <TopbarLogo href="https://ui.tonkajsx.com" target="_blank" img="tonka.svg" alt="T">
-            {{title}}</TopbarLogo>
+            {{title}}
+          </TopbarLogo>
           <spacer />
+          {search}
           {themeToggle}
-          {login}
+          <Login session={demoSession()} />
         </Topbar>
       }
       footer={
-        <Footer
-          left={sectionTag}
+        <Footer left={sectionTag} right={<>{clicksTag}{itemsTag}</>}
           center={<>
-            <span>2026 <span class="icon" translate={false}>copyright</span>
-              <a href="https://ui.tonkajsx.com" target="_blank">{{title}}</a> {{ver}}</span>
-            <sep />
-            <span>
+            <inline>
+              2026<span class="icon" translate={false}>copyright</span>{{title}} {{ver}}
+            </inline>
+            <sep hide-narrow />
+            <span hide-narrow>
               Design by <a href="https://github.com/Xaeian" target="_blank">Xaeian</a>
             </span>
-            <sep />
-            <span>
+            <sep hide-narrow />
+            <span hide-narrow>
               {{foot}} by <a href="https://tonkajsx.com" target="_blank">TonkaJSX</a>
             </span>
-          </>}
-          right={<>{clicksTag}{itemsTag}</>}
-        />
+          </>} />
       }>
       {content}
     </Shell>

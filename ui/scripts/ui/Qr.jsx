@@ -5,15 +5,16 @@
  * Needs `qrcode` (qrcode-generator) on the page; without it the card stays empty.
  * Text that is digits and upper-case letters goes in the alphanumeric mode,
  * 5.5 bits a character against 8 for bytes, so such a code stays sparse.
+ * `.svg` reads the code as a standalone SVG file, with a quiet zone.
  *
- * Mutators: .text, .svg (read-only: the code as a standalone SVG file, with a quiet zone)
+ * Mutators: .text, .svg
  *
- * @param {Object} props
+ * @param {object} props
  * @param {string} [props.text=""]
  * @param {number} [props.size=200]  CSS pixels
  */
-const QrCode = ({ text = "", size = 200 }) => {
-  const el = <div class="qr"></div>;
+const QrCode = ({ text = "", size = 200, class: className, ...rest }) => {
+  const el = <div {...rest} class={["qr", className]}></div>;
   let current = "";
   let code = null;
   UI.prop(el, "text", () => current, (v) => {
@@ -36,20 +37,26 @@ const QrCode = ({ text = "", size = 200 }) => {
 };
 
 /**
- * Camera QR reader: the rear camera in a <video>, a frame decoded every few hundred ms until
- * one holds a code. Decoding is the browser's `BarcodeDetector` where it exists, else `jsQR`
- * on the page; with neither, `start` reports it. A camera also needs a secure origin.
+ * Camera QR reader: the rear camera in a `<video>`,
+ * a frame decoded every few hundred ms until one holds a code.
+ * Decoding is the browser's `BarcodeDetector` where it exists, else `jsQR` on the page;
+ * with neither, `.start()` reports it.
+ * `.start()` turns the camera on and resolves once it shows; `.stop()` turns it off.
+ * A camera also needs a secure origin.
  *
- * Mutators: .start() (camera on; a promise), .stop()
+ * Mutators: .start(), .stop()
  *
- * @param {Object} props
+ * @param {object} props
  * @param {(text:string) => void} props.onScan  first code found; the camera is off by then
  * @param {(message:string) => void} [props.onError]
  */
-const QrScan = ({ onScan, onError }) => {
-  const video = <video class="qr-scan" playsinline muted autoplay></video>;
+const QrScan = ({ onScan, onError, class: className, ...rest }) => {
+  const video = (
+    <video {...rest} class={["qr-scan", className]} playsinline muted autoplay></video>
+  );
   let stream = null;
   let timer = 0;
+  let run = 0; // the scan a camera answers: a stop while it is being asked for ends that one
 
   // one frame to text or null, by whatever decoder the page has
   function decoder() {
@@ -75,26 +82,33 @@ const QrScan = ({ onScan, onError }) => {
   async function start() {
     const decode = decoder();
     if(!decode) { onError?.("No QR decoder on this page"); return; }
+    const mine = ++run;
+    let camera;
     try {
-      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+      camera = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
     }
     catch(e) {
       onError?.(e.name === "NotAllowedError" ? "Camera access was refused" : e.message);
       return;
     }
+    if(mine !== run) { camera.getTracks().forEach(t => t.stop()); return; }
+    stream = camera;
     video.srcObject = stream;
     await video.play();
     async function tick() {
       let text = null;
       try { text = await decode(); }
       catch {} // a frame that fails to decode is skipped
-      if(text) { stop(); onScan(text); return; }
+      if(!stream) return; // stopped while the frame was decoding
+      if(text) { stopScan(); onScan(text); return; }
       timer = setTimeout(tick, 250);
     }
     tick();
   }
 
-  function stop() {
+  // every way a scan ends, a code found or `.stop()`
+  function stopScan() {
+    run++;
     clearTimeout(timer);
     timer = 0;
     stream?.getTracks().forEach(t => t.stop());
@@ -103,6 +117,6 @@ const QrScan = ({ onScan, onError }) => {
   }
 
   video.start = start;
-  video.stop = stop;
+  video.stop = stopScan;
   return video;
 };

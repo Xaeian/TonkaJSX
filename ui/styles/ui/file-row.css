@@ -1,0 +1,9 @@
+/* styles/ui/file-row.css */
+
+@layer components {
+  .file-row {
+    --file-thumb: 40px;
+    --file-thumb-max: 240px;
+  }
+  .file-row > .panel-main { min-height: var(--file-thumb); }
+}

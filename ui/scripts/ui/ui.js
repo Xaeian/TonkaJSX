@@ -1,12 +1,20 @@
 // scripts/ui/ui.js
-// Glue shared by the components: property mutators, overlay lifecycle, anchored placement.
+//
+// Glue the components share, a section per concern:
+// mutators, the clipboard, scripts loaded on demand, inline marks, overlays and placement.
 
 // `title` in JSX is the library tooltip, `Tooltip`, never the native one
 JSX.TitleAttr = "data-tooltip";
 
+// an http(s) address, running to the next space: what `linkify` and `markup` both take
+const _URL = "https?://\\S+";
+
+// the glyph every spinner of the kit turns
+const _SPIN_ICON = "progress_activity";
+
 const UI = {
 
-  //----------------------------------------------------------------------------------------- Props
+  //-------------------------------------------------------------------------------------- Mutators
 
   /** Defines a read/write property on `el`. */
   prop: (el, name, get, set) =>
@@ -18,177 +26,28 @@ const UI = {
     (v) => { if(target) target.textContent = v ?? ""; }),
 
   /**
-   * Copies `text` and flashes a check on `btn` (an icon button), then its `icon` is back.
-   * `text` may be a promise of one, for words still on their way: the button spins meanwhile.
-   * `clearAfter` seconds later the copy is taken back,
-   * for a secret that should not sit in the clipboard until the next copy.
-   * @returns {Promise<void>} settles once the clipboard holds it, rejects when it refused
+   * `.title`: the tooltip text.
+   * An element that carries an `aria-label` when wired keeps that label in step with the tip:
+   * a `null` title takes both away, and the next title brings both back.
    */
-  copy: (btn, text, { icon = "content_copy", clearAfter = 0 } = {}) => {
-    const later = typeof text !== "string";
-    const asBlob = (t) => new Blob([t], { type: "text/plain" });
-    const written = later
-      ? UI._clip("text/plain", Promise.resolve(text).then(asBlob))
-      : navigator.clipboard.writeText(text);
-    UI._copied(btn, icon, written, later);
-    if(clearAfter > 0 && !later) UI.uncopy(text, clearAfter);
-    return written;
-  },
-
-  /**
-   * Copies a picture, `btn` flashing as for `copy`.
-   * Any format goes in and a PNG comes out, the one picture every clipboard takes.
-   * @param {Element} btn
-   * @param {Blob|Promise<Blob>} picture  a promise spins the button while it loads
-   * @returns {Promise<void>} settles once the clipboard holds it, rejects when it refused
-   */
-  copyPicture: (btn, picture, { icon = "content_copy" } = {}) => {
-    const written = UI._clip("image/png", Promise.resolve(picture).then(UI._png));
-    UI._copied(btn, icon, written, picture instanceof Promise);
-    return written;
-  },
-
-  /**
-   * Takes `text` off the clipboard after `sec`, replacing whatever wipe was pending.
-   * A page without focus may not write the clipboard,
-   * so a wipe that falls due then waits for the tab to come back.
-   * Where the clipboard may be read without asking for it (a granted permission)
-   * the wipe lands only while the text is still there;
-   * elsewhere it lands blind,
-   * since a password left behind costs more than someone else's line of text.
-   */
-  uncopy: (text, sec) => {
-    clearTimeout(UI._wipeTimer);
-    async function wipe() {
-      if(UI._wipe !== wipe) return; // a newer copy owns the clipboard now
-      if(!document.hasFocus()) { addEventListener("focus", wipe, { once: true }); return; }
-      UI._wipe = null;
-      try {
-        const can = await navigator.permissions?.query({ name: "clipboard-read" });
-        if(can?.state === "granted" && await navigator.clipboard.readText() !== text) return;
+  title: (el) => {
+    const labelled = el.hasAttribute("aria-label");
+    UI.prop(el, "title", () => el.getAttribute("data-tooltip"), (v) => {
+      if(v == null) {
+        el.removeAttribute("data-tooltip");
+        if(labelled) el.removeAttribute("aria-label");
+        return;
       }
-      catch {} // no way to ask and no way to read: wipe anyway
-      try { await navigator.clipboard.writeText(""); }
-      catch {} // refused as well: the text stays, and nothing here can take it
-    }
-    UI._wipe = wipe;
-    UI._wipeTimer = setTimeout(wipe, sec * 1000);
+      el.setAttribute("data-tooltip", v);
+      if(labelled) el.setAttribute("aria-label", v);
+    });
   },
-
-  /** Runs a pending `uncopy` now, for a lock that should not leave the copy behind. */
-  uncopyNow: () => { clearTimeout(UI._wipeTimer); UI._wipe?.(); },
-
-  _wipe: null,
-  _wipeTimer: null,
-
-  // `data`, a promise of a Blob of `type`, goes to the clipboard now, inside the click:
-  // Safari refuses a clipboard asked for after an await, and a promise is how bytes come later
-  _clip: (type, data) => {
-    if(typeof ClipboardItem !== "undefined") {
-      return navigator.clipboard.write([new ClipboardItem({ [type]: data })]);
-    }
-    if(type === "text/plain") {
-      return data.then(b => b.text()).then(t => navigator.clipboard.writeText(t));
-    }
-    return Promise.reject(new Error("This browser copies text and nothing else"));
-  },
-
-  // the spinner while a promise loads, then the check;
-  // the spinner puts its glyph back on the way out, so the check goes on after it
-  _copied: (btn, icon, written, waiting) => {
-    if(waiting) btn.loading = true;
-    written
-      .finally(() => { if(waiting) btn.loading = false; })
-      .then(() => {
-        btn.icon = "check";
-        setTimeout(() => { btn.icon = icon; }, 1200);
-      }, () => {}); // a refusal is the caller's to say, on the promise handed back
-  },
-
-  // a picture as PNG, drawn once at its own size; one already PNG goes as it is
-  _png: async (blob) => {
-    if(blob.type === "image/png") return blob;
-    const url = URL.createObjectURL(blob);
-    try {
-      const img = new Image();
-      img.src = url;
-      await img.decode();
-      const cv = document.createElement("canvas");
-      // an SVG with no size of its own lands on 512px square
-      cv.width = img.naturalWidth || 512;
-      cv.height = img.naturalHeight || 512;
-      cv.getContext("2d").drawImage(img, 0, 0, cv.width, cv.height);
-      const png = await new Promise(resolve => cv.toBlob(resolve, "image/png"));
-      if(!png) throw new Error("This picture would not turn into a PNG");
-      return png;
-    }
-    finally { URL.revokeObjectURL(url); }
-  },
-
-  /** Loads a script once, with SRI when given; the same `src` again resolves at once. */
-  script: (src, integrity) => UI._scripts[src] ??= new Promise((resolve, reject) => {
-    const s = document.createElement("script");
-    s.src = src;
-    if(integrity) { s.integrity = integrity; s.crossOrigin = "anonymous"; }
-    s.onload = resolve;
-    s.onerror = () => reject(new Error(`Could not load ${src}`));
-    document.head.appendChild(s);
-  }),
-  _scripts: {},
-
-  /** `text` as children: every http(s) address in it a `[link]` that opens in a new tab. */
-  linkify: (text) => String(text ?? "").split(/(https?:\/\/[^\s]+)/).map((part, i) => i % 2
-    ? UI._link(part)
-    : part),
 
   /**
-   * `text` as children with its inline marks live: `**bold**`, `*italic*` or `_italic_`,
-   * `` `code` `` shown as it is, and every http(s) address a `[link]` in a new tab.
-   * The marks are Markdown's, so a note reads the same here and in a file it is exported to.
-   * A mark inside a word (`snake_case`, `2*3*4`) or a span left open is plain text.
+   * `.active`: toggles the `active` class and aria-pressed.
+   * @param {Element} el
+   * @param {boolean} [initial]  pressed from the start
    */
-  markup: (text) => {
-    const src = String(text ?? "");
-    const out = [];
-    let at = 0;
-    for(const m of src.matchAll(UI._MARKS)) {
-      const [, code, url, bold, , italic] = m;
-      if(m.index > at) out.push(src.slice(at, m.index));
-      at = m.index + m[0].length;
-      if(code) out.push(JSX.createElement("code", {}, code));
-      else if(url) out.push(UI._link(url));
-      else if(bold) out.push(JSX.createElement("strong", {}, bold));
-      else out.push(JSX.createElement("em", {}, italic));
-    }
-    if(at < src.length) out.push(src.slice(at));
-    return out;
-  },
-
-  // Code is taken first, so a mark or an address inside a span stays text.
-  // A span is one line, starts and ends on a character that is not a space or a mark,
-  // and an italic mark has no letter, digit or mark on its outer side.
-  _MARKS: new RegExp([
-    "`([^`\\n]+)`",
-    "(https?://[^\\s]+)",
-    "\\*\\*([^\\s*](?:[^\\n]*?[^\\s*])??)\\*\\*",
-    "(?<![\\w*_])([*_])([^\\s*_](?:[^\\n]*?[^\\s*_])??)\\4(?![\\w*_])",
-  ].join("|"), "g"),
-
-  _link: (url) =>
-    JSX.createElement("a", { link: true, href: url, target: "_blank", rel: "noopener" }, url),
-
-  /** `.title`: the tooltip text, mirrored to aria-label when the element carries one. */
-  title: (el) => UI.prop(el, "title",
-    () => el.getAttribute("data-tooltip"),
-    (v) => {
-      for(const attr of ["data-tooltip", "aria-label"]) {
-        if(attr === "aria-label" && !el.hasAttribute(attr)) continue;
-        if(v == null) el.removeAttribute(attr);
-        else el.setAttribute(attr, v);
-      }
-    }),
-
-  /** `.active`: toggles the `active` class and aria-pressed. */
   active: (el, initial = false) => {
     UI.prop(el, "active",
       () => el.classList.contains("active"),
@@ -218,7 +77,7 @@ const UI = {
           el.prepend(iconEl);
           own = true;
         }
-        iconEl.textContent = "progress_activity";
+        iconEl.textContent = _SPIN_ICON;
         iconEl.classList.add("spinner");
         el.disabled = true;
         return;
@@ -228,6 +87,190 @@ const UI = {
       el.disabled = wasDisabled;
     });
   },
+
+  //------------------------------------------------------------------------------------- Clipboard
+
+  /**
+   * Copies `text` and flashes a check on `btn`, a copy button wearing `content_copy`.
+   * `text` may be a promise of one, for words still on their way: the button spins meanwhile.
+   * @param {Element} btn
+   * @param {string|Promise<string>} text
+   * @param {object} [opts]
+   * @param {number} [opts.clearAfter]  seconds until the copy is taken back,
+   *   for a secret that should not sit in the clipboard until the next copy
+   * @returns {Promise<void>} settles once the clipboard holds it, rejects when it refused
+   */
+  copy: (btn, text, { clearAfter = 0 } = {}) => {
+    const later = typeof text !== "string";
+    const asBlob = (t) => new Blob([t], { type: "text/plain" });
+    const written = later
+      ? UI._clip("text/plain", Promise.resolve(text).then(asBlob))
+      : navigator.clipboard.writeText(text);
+    UI._copied(btn, written, later);
+    // the wipe counts from the text's arrival; a text that never comes is said on `written`
+    if(clearAfter > 0) Promise.resolve(text).then((t) => UI._uncopy(t, clearAfter), () => {});
+    return written;
+  },
+
+  /**
+   * Copies a picture, `btn` flashing as for `copy`.
+   * Any format goes in and a PNG comes out, the one picture every clipboard takes.
+   * @param {Element} btn
+   * @param {Blob|Promise<Blob>} picture  a promise spins the button while it loads
+   * @returns {Promise<void>} settles once the clipboard holds it, rejects when it refused
+   */
+  copyPicture: (btn, picture) => {
+    const written = UI._clip("image/png", Promise.resolve(picture).then(UI._png));
+    UI._copied(btn, written, picture instanceof Promise);
+    return written;
+  },
+
+  // `text` taken off the clipboard after `sec`, replacing whatever wipe was pending.
+  // A page without focus may not write the clipboard,
+  // so a wipe that falls due then waits for the tab to come back.
+  // Where the clipboard may be read without asking for it (a granted permission),
+  // the wipe lands only while the text is still there;
+  // elsewhere it lands blind,
+  // since a password left behind costs more than someone else's line of text.
+  _uncopy: (text, sec) => {
+    clearTimeout(UI._wipeTimer);
+    async function wipe() {
+      if(UI._wipe !== wipe) return; // a newer copy owns the clipboard now
+      if(!document.hasFocus()) { addEventListener("focus", wipe, { once: true }); return; }
+      UI._wipe = null;
+      try {
+        const can = await navigator.permissions?.query({ name: "clipboard-read" });
+        if(can?.state === "granted" && await navigator.clipboard.readText() !== text) return;
+      }
+      catch {} // no way to ask and no way to read: wipe anyway
+      try { await navigator.clipboard.writeText(""); }
+      catch {} // refused as well: the text stays, and nothing here can take it
+    }
+    UI._wipe = wipe;
+    UI._wipeTimer = setTimeout(wipe, sec * 1000);
+  },
+
+  /** A pending `clearAfter` wipe run now, for a lock that should not leave the copy behind. */
+  uncopyNow: () => { clearTimeout(UI._wipeTimer); UI._wipe?.(); },
+
+  _wipe: null,
+  _wipeTimer: null,
+
+  // `data`, a promise of a Blob of `type`, goes to the clipboard now, inside the click:
+  // Safari refuses a clipboard asked for after an await, and a promise is how bytes come later
+  _clip: (type, data) => {
+    if(typeof ClipboardItem !== "undefined") {
+      return navigator.clipboard.write([new ClipboardItem({ [type]: data })]);
+    }
+    if(type === "text/plain") {
+      return data.then(b => b.text()).then(t => navigator.clipboard.writeText(t));
+    }
+    return Promise.reject(new Error("This browser copies text and nothing else"));
+  },
+
+  // the spinner while a promise loads, then the check;
+  // the spinner puts its glyph back on the way out, so the check goes on after it
+  _copied: (btn, written, waiting) => {
+    if(waiting) btn.loading = true;
+    written
+      .finally(() => { if(waiting) btn.loading = false; })
+      .then(() => {
+        btn.icon = "check";
+        setTimeout(() => { btn.icon = "content_copy"; }, 1200);
+      }, () => {}); // a refusal is the caller's to say, on the promise handed back
+  },
+
+  // a picture as PNG, drawn once at its own size; one already PNG goes as it is
+  _png: async (blob) => {
+    if(blob.type === "image/png") return blob;
+    const url = URL.createObjectURL(blob);
+    try {
+      const img = new Image();
+      img.src = url;
+      await img.decode();
+      const cv = document.createElement("canvas");
+      // an SVG with no size of its own lands on 512px square
+      cv.width = img.naturalWidth || 512;
+      cv.height = img.naturalHeight || 512;
+      cv.getContext("2d").drawImage(img, 0, 0, cv.width, cv.height);
+      const png = await new Promise(resolve => cv.toBlob(resolve, "image/png"));
+      if(!png) throw new Error("This picture would not turn into a PNG");
+      return png;
+    }
+    finally { URL.revokeObjectURL(url); }
+  },
+
+  //--------------------------------------------------------------------------------------- Scripts
+
+  /**
+   * A script loaded once, with SRI when given: the same `src` again shares that load,
+   * and one that failed is tried afresh.
+   * @returns {Promise<Event>} settles once the script has run, rejects when it would not load
+   */
+  script: (src, integrity) => UI._scripts[src] ??= new Promise((resolve, reject) => {
+    const s = document.createElement("script");
+    s.src = src;
+    if(integrity) { s.integrity = integrity; s.crossOrigin = "anonymous"; }
+    s.onload = resolve;
+    s.onerror = () => {
+      delete UI._scripts[src];
+      s.remove();
+      reject(new Error(`Could not load ${src}`));
+    };
+    document.head.appendChild(s);
+  }),
+  _scripts: {},
+
+  //----------------------------------------------------------------------------------------- Marks
+
+  /** `text` as children: every http(s) address in it a `[link]` that opens in a new tab. */
+  linkify: (text) => String(text ?? "")
+    .split(new RegExp(`(${_URL})`))
+    .map((part, i) => i % 2 ? UI._link(part) : part),
+
+  /**
+   * `text` as children with its inline marks live:
+   * `**bold**` or `__bold__`, `*italic*` or `_italic_`, `~~struck~~`,
+   * `` `code` `` shown as it is, and every http(s) address a `[link]` in a new tab.
+   * A backslash keeps the mark after it as text: `\*` is a star.
+   * The marks are Markdown's, so a note reads the same here and in a file it is exported to.
+   * A mark inside a word (`snake_case`, `2*3*4`) or a span left open is plain text.
+   */
+  markup: (text) => {
+    const src = String(text ?? "");
+    const out = [];
+    let at = 0;
+    for(const m of src.matchAll(UI._MARKS)) {
+      const { code, escaped, url, bold, under, struck, italic } = m.groups;
+      if(m.index > at) out.push(src.slice(at, m.index));
+      at = m.index + m[0].length;
+      if(code) out.push(JSX.createElement("code", {}, code));
+      else if(escaped) out.push(escaped);
+      else if(url) out.push(UI._link(url));
+      else if(bold || under) out.push(JSX.createElement("strong", {}, bold || under));
+      else if(struck) out.push(JSX.createElement("del", {}, struck));
+      else out.push(JSX.createElement("em", {}, italic));
+    }
+    if(at < src.length) out.push(src.slice(at));
+    return out;
+  },
+
+  // Code is taken first, so a mark or an address inside a span stays text, then an escape.
+  // A span is one line, starts and ends on a character that is not a space or a mark,
+  // and an underscore or italic mark has no letter, digit or mark on its outer side.
+  _MARKS: new RegExp([
+    "`(?<code>[^`\\n]+)`",
+    "\\\\(?<escaped>[\\\\`*_~\\[\\]()#+\\-.!|<>])",
+    `(?<url>${_URL})`,
+    "\\*\\*(?<bold>[^\\s*](?:[^\\n]*?[^\\s*])??)\\*\\*",
+    "(?<![\\w_])__(?<under>[^\\s_](?:[^\\n]*?[^\\s_])??)__(?![\\w_])",
+    "~~(?<struck>[^\\s~](?:[^\\n]*?[^\\s~])??)~~",
+    "(?<![\\w*_])(?<side>[*_])(?<italic>[^\\s*_](?:[^\\n]*?[^\\s*_])??)\\k<side>(?![\\w*_])",
+  ].join("|"), "g"),
+
+  // a link that opens in a new tab, wearing `label` or else its own address
+  _link: (url, label = url) =>
+    JSX.createElement("a", { link: true, href: url, target: "_blank", rel: "noopener" }, label),
 
   //--------------------------------------------------------------------------------------- Overlay
 
@@ -288,6 +331,9 @@ const UI = {
     UI.prop(root, "opened", () => opened, (v) => v ? root.open() : root.close());
   },
 
+  // `el` taken out of the page once its closing transition is over
+  _unmount: (el) => setTimeout(() => el.remove(), UI.duration(el)),
+
   //------------------------------------------------------------------------------------- Placement
 
   /**
@@ -295,7 +341,7 @@ const UI = {
    * `pos` is a main side (top, bottom, left, right) with an optional alignment:
    * `-start`/`-end` for top and bottom, `-top`/`-bottom` for left and right, none centers.
    * The main side flips when it does not fit, then the result is clamped to the viewport.
-   * Returns true when neither was needed.
+   * @returns {boolean} true when it needed neither
    */
   place: (el, anchor, pos = "bottom", { gap = 4, margin = 8, dx = 0, dy = 0 } = {}) => {
     const r = anchor.getBoundingClientRect();

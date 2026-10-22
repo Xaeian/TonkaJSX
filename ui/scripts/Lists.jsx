@@ -38,6 +38,12 @@ const Lists = () => {
   }
   render();
 
+  // the same rows in both containers, so the containers alone tell them apart
+  const ITEMS = [["red", "item one"], ["amber", "item two"], ["green", "item three"]];
+  const rows = () => ITEMS.map(([color, text]) => (
+    <Panel inline stripe color={color} icon="key">{text}</Panel>
+  ));
+
   //------------------------------------------------------------------------------------------ View
 
   return (
@@ -54,24 +60,25 @@ const Lists = () => {
 
       <Panel title="list and stack" icon="view_agenda">
         <p>
-          <code>&lt;list&gt;</code> fuses rows into one bordered card with dividers;
+          A <code>&lt;list&gt;</code> fuses rows into one bordered card with dividers;
           a <code>&lt;stack&gt;</code> keeps them apart by <code>gap</code>.
         </p>
-        <row split>
-          <Panel title="<list>" size="sm">
-            <list>
-              <Panel inline stripe color="red" icon="key">item one</Panel>
-              <Panel inline stripe color="amber" icon="key">item two</Panel>
-              <Panel inline stripe color="green" icon="key">item three</Panel>
-            </list>
-          </Panel>
-          <Panel title='<stack gap="sm">' size="sm">
-            <stack gap="sm">
-              <Panel inline stripe color="red" icon="key">item one</Panel>
-              <Panel inline stripe color="amber" icon="key">item two</Panel>
-              <Panel inline stripe color="green" icon="key">item three</Panel>
-            </stack>
-          </Panel>
+        <row split align="start">
+          <Panel title="<list>" size="sm"><list>{rows()}</list></Panel>
+          <Panel title='<stack gap="sm">' size="sm"><stack gap="sm">{rows()}</stack></Panel>
+        </row>
+      </Panel>
+
+      <Panel title="Empty states" icon="inbox">
+        <p>
+          An <code>Empty</code> stands where a list has nothing to show:
+          an icon, a title, a description, then its children, an action for one.
+        </p>
+        <row split align="stretch">
+          <Empty icon="inbox" title="No messages" description="New messages will appear here." />
+          <Empty size="sm" icon="search_off" title="No results">
+            <Button size="sm" icon="refresh">Clear filters</Button>
+          </Empty>
         </row>
       </Panel>
     </stack>

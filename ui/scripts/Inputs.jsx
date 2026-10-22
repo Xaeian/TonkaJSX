@@ -5,11 +5,24 @@ const FRUITS = ["apple", "banana", "cherry", "grape", "lemon", "mango"];
 const Inputs = () => {
   const picked = <Badge color="ok" variant="tint" mono>banana</Badge>;
 
+  //------------------------------------------------------------------------------------------ Form
+
+  const hostIn = <Input icon="dns" value="localhost"
+    onEscape={() => { hostIn.value = "localhost"; }} />;
+  const proxyIn = <Input icon="vpn_lock" placeholder="off" disabled />;
+  const proxyChk = <Checkbox label="via proxy" onChange={(on) => {
+    proxyIn.disabled = !on;
+    proxyIn.placeholder = on ? "host:port" : "off";
+  }} />;
+
+  //------------------------------------------------------------------------------------------ View
+
   return (
     <Panel title="Inputs">
       <p>
-        Every field returns a wrapper with <code>.value</code>, <code>.focus()</code> and
-        native <code>.input</code>.
+        A field wraps its native <code>.input</code> and reaches it with <code>.focus()</code>.
+        It holds <code>.value</code>, <code>.disabled</code> and <code>.placeholder</code>.
+        Every handler gets the value, never the event.
       </p>
 
       <h4>Text</h4>
@@ -36,7 +49,7 @@ const Inputs = () => {
       <row>
         <NumberInput value={5} min={0} max={100} />
         <PasswordInput placeholder="Password" />
-        <SearchInput onSearch={(q) => Alert.inf(`Search: ${q}`)} />
+        <SearchInput onEnter={(q) => Alert.inf(`Search: ${q}`)} />
       </row>
 
       <h4>Date and time</h4>
@@ -60,6 +73,22 @@ const Inputs = () => {
         <span tone="meta">picked:</span>
         {picked}
       </row>
+
+      <h4>Form</h4>
+      <p>
+        A <code>formRow</code> sets a name beside its controls, line under line.
+        Where a line carries several, <code>named</code> gives each its own small name.
+        A <code>formNote</code> says what the lines above it mean.
+      </p>
+      {formRow("Server", hostIn, <NumberInput icon="numbers" value={8080} min={1} max={65535} />)}
+      {formRow("Proxy", proxyChk, proxyIn)}
+      {formRow("Retry",
+        named("times", <NumberInput value={3} min={0} />),
+        named("every", <NumberInput value={10} min={1} />))}
+      {formNote(
+        <span tone="note">Escape puts the host back.</span>,
+        <span tone="note">The proxy field opens with its box.</span>,
+      )}
     </Panel>
   );
 };

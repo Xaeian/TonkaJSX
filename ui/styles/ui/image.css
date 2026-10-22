@@ -6,12 +6,22 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    width: var(--image-w);
+    height: var(--image-h);
     overflow: hidden;
     background: var(--surface);
     color: var(--text4);
     vertical-align: middle;
     flex-shrink: 0;
   }
+  .image[width="sm"]  { --image-w: 40px; }
+  .image[width="md"]  { --image-w: 80px; }
+  .image[width="lg"]  { --image-w: 160px; }
+  .image[height="sm"] { --image-h: 40px; }
+  .image[height="md"] { --image-h: 80px; }
+  .image[height="lg"] { --image-h: 160px; }
+  .image-square { min-width: var(--image-h); min-height: var(--image-w); }
+  .image-bounded { max-width: var(--image-max-w); }
   .image-rounded { border-radius: var(--radius); }
   .image-circle  { border-radius: 50%; }
   .image-border  { border: var(--bw) solid var(--border); }
@@ -30,7 +40,12 @@
   .image-fit-fill    .image-inner { object-fit: fill; }
   .image-ok .image-inner { opacity: 1; }
   .image-auto-width .image-inner { width: auto; }
-  .image-bounded .image-inner { width: auto; height: auto; }
+  .image-bounded .image-inner {
+    width: auto;
+    height: auto;
+    max-width: var(--image-max-w);
+    max-height: var(--image-h);
+  }
 
   .image-fallback {
     position: absolute;

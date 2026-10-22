@@ -30,20 +30,10 @@
     font-family: var(--font-body);
   }
   @container (max-width: 700px) {
-    .footer:not(.footer-status):has(.footer-left > *, .footer-right > *) .footer-center {
-      display: none;
-    }
+    .footer:has(.footer-left > *, .footer-right > *) .footer-center { display: none; }
   }
-  .footer-status { padding: 2px var(--space-md); gap: var(--space-sm); }
-  .footer-status .footer-slot { gap: var(--space-sm); }
-  .footer-status .footer-center { display: flex; }
 
   .footer .icon { font-size: var(--text-md); }
-  .footer-slot > span:has(.icon) {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-xs);
-  }
   .footer a { transition: color var(--dur) var(--ease-out); }
   .footer a:hover { color: var(--text2); }
 }

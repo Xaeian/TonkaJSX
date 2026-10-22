@@ -4,34 +4,30 @@
  * File input with click and drag-and-drop, drawn as an `Empty`.
  * Stateless: valid files go to `onFiles` and the zone returns to idle; the caller keeps them.
  *
- * Validation, in order: `accept` (extensions, MIME types, `image/*`), `maxSize`, `maxCount`.
+ * Validation, in order: how many (`multiple`, `maxCount`),
+ * then each file's `accept` (extensions, MIME types, `image/*`) and `maxSize`.
  * The first failure goes to `onError` and nothing reaches `onFiles`.
  *
- * Mutators:
- *   .loading    spinner, no interaction
- *   .selected   File or {name, size?}: shows the file, a click clears it (`onClear`)
- *   .input      the native `<input type="file">`
+ * `.selected` shows a File or `{name, size?}` in the zone; a click clears it and calls `onClear`.
  *
- * @param {Object} props
+ * Mutators: .loading (spinner, no interaction), .selected
+ *
+ * @param {object} props
  * @param {string} [props.accept]
  * @param {boolean} [props.multiple]
- * @param {number} [props.maxSize]    bytes per file
- * @param {number} [props.maxCount]   files per drop
+ * @param {number} [props.maxSize] bytes per file
+ * @param {number} [props.maxCount] files per drop
  * @param {string} [props.icon="upload_file"]
- * @param {string} [props.selectedIcon="description"]
- * @param {string} [props.title="Drop files here"]
+ * @param {string} [props.title="Drop files here"] the heading
  * @param {string} [props.description="or click to browse"]
  * @param {"sm"|"lg"} [props.size]
- * @param {string} [props.height]
- * @param {boolean} [props.fill]
  * @param {(files:File[]) => void} props.onFiles
  * @param {(msg:string) => void} [props.onError]
  * @param {() => void} [props.onClear]
  */
 const FileDrop = ({
   accept, multiple, maxSize, maxCount,
-  icon = "upload_file", selectedIcon = "description",
-  title = "Drop files here", description = "or click to browse",
+  icon = "upload_file", title = "Drop files here", description = "or click to browse",
   onFiles, onError, onClear, class: className, ...rest
 }) => {
   const rules = (accept || "").split(",").map(s => s.trim()).filter(Boolean);
@@ -45,12 +41,6 @@ const FileDrop = ({
     const type = file.type || "";
     return mimes.some(m => m.endsWith("/*") ? type.startsWith(m.slice(0, -1)) : type === m);
   }
-  function fmtBytes(n) {
-    if(n < 1024) return n + "B";
-    if(n < 1048576) return (n / 1024).toFixed(1) + "kB";
-    if(n < 1073741824) return (n / 1048576).toFixed(1) + "MB";
-    return (n / 1073741824).toFixed(2) + "GB";
-  }
   function validate(files) {
     if(!files.length) return "No files selected";
     if(!multiple && files.length > 1) return "Only one file allowed";
@@ -60,7 +50,7 @@ const FileDrop = ({
     for(const f of files) {
       if(!accepts(f)) return `${f.name}: wrong type`;
       if(maxSize && f.size > maxSize) {
-        return `${f.name}: too large (${fmtBytes(f.size)}, max ${fmtBytes(maxSize)})`;
+        return `${f.name}: too large (${Kind.sizeText(f.size)}, max ${Kind.sizeText(maxSize)})`;
       }
     }
     return null;
@@ -124,7 +114,7 @@ const FileDrop = ({
   let selected = null;
   const iconEl = zone.firstChild;
   function showIcon() {
-    zone.icon = loading ? "progress_activity" : selected ? selectedIcon : icon;
+    zone.icon = loading ? _SPIN_ICON : selected ? "description" : icon;
     iconEl.classList.toggle("spinner", loading);
   }
   UI.prop(zone, "loading", () => loading, (v) => {
@@ -137,11 +127,10 @@ const FileDrop = ({
     zone.classList.toggle("file-drop-selected", !!selected);
     zone.title = selected ? selected.name || "file" : title;
     zone.description = !selected ? description
-      : typeof selected.size === "number" ? `${fmtBytes(selected.size)} • click to clear`
+      : typeof selected.size === "number" ? `${Kind.sizeText(selected.size)} • click to clear`
       : "click to clear";
     zone.setAttribute("aria-label", zone.title);
     showIcon();
   });
-  zone.input = input;
   return zone;
 };

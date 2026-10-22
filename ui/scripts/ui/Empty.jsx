@@ -1,40 +1,32 @@
 // scripts/ui/Empty.jsx
 
 /**
- * Dashed placeholder for empty lists and results: icon, title, description, an action.
+ * Dashed placeholder for empty lists and results: icon, title, description,
+ * then the children, an action for one.
+ * A line left empty takes no room.
  *
- * Mutators: .icon, .title, .description (empty hides the line).
+ * Mutators: .icon, .title, .description
  *
- * @param {Object} props
+ * @param {object} props
  * @param {string} [props.icon]
  * @param {string} [props.title]
  * @param {string} [props.description]
- * @param {JSX.Element} [props.action]   slot below the description
- * @param {boolean} [props.fill]         take the parent's free height
- * @param {string} [props.height]
  * @param {"sm"|"lg"} [props.size]
  */
-const Empty = ({ icon, title, description, action, fill, height, size, class: className,
-  children, ...rest }) => {
-  const iconEl = <span class="icon empty-icon" translate={false} hidden={!icon}>{icon}</span>;
-  const titleEl = <h4 class="empty-title" hidden={!title}>{title}</h4>;
-  const descEl = <p class="empty-desc" hidden={!description}>{description}</p>;
+const Empty = ({ icon, title, description, size, class: className, children, ...rest }) => {
+  const iconEl = <span class="icon empty-icon" translate={false}>{icon}</span>;
+  const titleEl = <h4 class="empty-title">{title}</h4>;
+  const descEl = <p class="empty-desc">{description}</p>;
   const el = (
-    <div {...rest} class={["empty", size, className]} style={{ height }} grow={fill}>
+    <div {...rest} class={["empty", size, className]}>
       {iconEl}
       {titleEl}
       {descEl}
-      {action}
       {children}
     </div>
   );
-  function line(name, target) {
-    return UI.prop(el, name,
-      () => target.textContent,
-      (v) => { target.textContent = v || ""; target.hidden = !v; });
-  }
-  line("icon", iconEl);
-  line("title", titleEl);
-  line("description", descEl);
+  UI.text(el, "icon", iconEl);
+  UI.text(el, "title", titleEl);
+  UI.text(el, "description", descEl);
   return el;
 };

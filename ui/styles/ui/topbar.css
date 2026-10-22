@@ -28,14 +28,12 @@
     transition: color var(--dur) var(--ease-out);
   }
   .topbar-logo:hover { color: var(--text); }
-  .topbar-logo .icon { font-size: var(--text-lg); }
   .topbar-logo img { width: 20px; height: 20px; display: block; }
   .topbar.sm .topbar-logo img { width: 18px; height: 18px; }
   .topbar.lg .topbar-logo { font-size: var(--text-base); gap: var(--space-sm); }
   .topbar.lg .topbar-logo img { width: 24px; height: 24px; }
-
-  .topbar span:not(.icon) { transform: translateY(1px); }
-  .topbar.lg span:not(.icon) { transform: translateY(2px); }
+  .topbar-logo-label { transform: translateY(1px); }
+  .topbar.lg .topbar-logo-label { transform: translateY(2px); }
 
   @media (max-width: 720px) {
     .topbar { flex-wrap: wrap; }

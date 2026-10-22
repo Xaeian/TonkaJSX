@@ -1,0 +1,38 @@
+/* styles/ui/table.css */
+
+@layer components {
+  .table { overflow: auto; border: var(--bw) solid var(--border); }
+  .table > table {
+    width: 100%;
+    border-collapse: collapse;
+    font: var(--text-sm) / 1.5 var(--font-mono);
+  }
+  .table th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    padding: var(--space-xs) var(--space-md);
+    border-bottom: var(--bw) solid var(--border);
+    background: var(--surface2);
+    color: var(--text3);
+    font-size: var(--text-xs);
+    letter-spacing: 0.5px;
+    text-align: left;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .table td {
+    max-width: 360px;
+    padding: var(--space-xs) var(--space-md);
+    border-bottom: var(--bw) solid var(--border);
+    color: var(--text2);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .table tr:last-child td { border-bottom: none; }
+  .table .table-null { color: var(--text4); font-style: italic; }
+  .table .table-num  { color: var(--number); }
+  .table .table-bool { color: var(--keyword); }
+  .table .table-json { color: var(--string); }
+}

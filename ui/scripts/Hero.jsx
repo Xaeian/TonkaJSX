@@ -1,5 +1,18 @@
 // scripts/Hero.jsx
 
+// the code of the row it stands under, as a reader writes it
+const HELLO = `const name = <Input icon="person" placeholder="Your name" value="World"
+  onChange={(v) => { greeting.text = \`Hello, \${v || "World"}!\`; }} />;
+const greeting = <Badge color="ok" variant="tint" size="lg">Hello, World!</Badge>;
+
+<row>
+  {name}
+  <Button variant="primary" icon="waving_hand" onClick={() => Alert.ok(greeting.text)}>
+    Say hi
+  </Button>
+  {greeting}
+</row>`;
+
 const Hero = () => {
   const name = <Input icon="person" placeholder="Your name" value="World"
     onChange={(v) => { greeting.text = `Hello, ${v || "World"}!`; }} />;
@@ -21,22 +34,12 @@ const Hero = () => {
         </Button>
         {greeting}
       </row>
-      <pre>{`const name = <Input icon="person" placeholder="Your name" value="World"
-  onChange={(v) => { greeting.text = \`Hello, \${v || "World"}!\`; }} />;
-const greeting = <Badge color="ok" variant="tint" size="lg">Hello, World!</Badge>;
-
-<row>
-  {name}
-  <Button variant="primary" icon="waving_hand" onClick={() => Alert.ok(greeting.text)}>
-    Say hi
-  </Button>
-  {greeting}
-</row>`}</pre>
+      <Code lang="jsx" readOnly height="16rem" value={HELLO} />
 
       <h4>How it works</h4>
       <stack gap="xs">
         <Panel inline ghost icon="code">
-          Every panel in sidebar is one small <code>.jsx</code> file.
+          Every panel in the rail is one small <code>.jsx</code> file.
           Read it, copy it, change it.
         </Panel>
         <Panel inline ghost icon="tune">
@@ -49,7 +52,7 @@ const greeting = <Badge color="ok" variant="tint" size="lg">Hello, World!</Badge
         </Panel>
         <Panel inline ghost icon="contrast">
           Light and dark come from <code>light-dark()</code> tokens.
-          Flip switch in topbar.
+          The button at the foot of the rail flips them.
         </Panel>
       </stack>
     </Panel>

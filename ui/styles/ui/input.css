@@ -11,7 +11,6 @@
     flex: 0 0 auto;
   }
   row > .input-group, .panel-toolbar > .input-group { flex: 1 1 200px; }
-  .input-group:focus-within { border-color: var(--accent-dim); }
   .input-group .icon { color: var(--text4); flex-shrink: 0; }
   .input-group:focus-within .icon { color: var(--text3); }
   .input-group:not(.input-group-ghost) > .icon:first-child {
@@ -48,7 +47,6 @@
     padding-left: 0;
     padding-right: 0;
   }
-  .input-group-ghost:focus-within { border-color: transparent; }
 
   .input-group-btn {
     cursor: pointer;
@@ -56,6 +54,7 @@
     transition: color var(--dur) var(--ease-out);
   }
   .input-group-btn:hover { color: var(--text2); }
+  .input-group-btn[inert] { visibility: hidden; }
 
   .input-group-date { padding-right: var(--space-sm); }
   .input-group-date input::-webkit-calendar-picker-indicator {
@@ -74,6 +73,7 @@
   }
   .input-group-textarea textarea { line-height: var(--leading); resize: none; }
   .input-group-auto textarea { overflow: hidden; }
+  .input-group-capped textarea { overflow: auto; }
   .input-group-textarea textarea::-webkit-scrollbar,
   .input-group-textarea textarea::-webkit-scrollbar-thumb { cursor: default; }
 }

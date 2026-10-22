@@ -406,7 +406,8 @@ A component naming itself inside its own body shadows the global; the inner one 
 With Tonka UI:
 
 - Native attributes pass through every component to its root element
-- `title` is always the kit tooltip, never the native one
+- `title` is kit tooltip, never the native one;
+  on a component with a heading of its own (Panel, Modal, Menu, Empty, FileDrop) it is that heading
 - An icon span carries `translate={false}`: its glyph is a ligature of its name,
   and a browser translating the page would turn `lock` into a word.
   Not `translate="no"`: `translate` is a boolean property, and the string reads true

@@ -10,6 +10,7 @@
     color: var(--text4);
   }
   .toggle > .btn + .btn { border-left: var(--bw) solid var(--border); }
+  .toggle > .btn:focus-visible { outline-offset: -2px; }
   .toggle > .btn:hover { color: var(--text2); background: transparent; }
   .toggle > .btn.active, .toggle > .btn.active:hover {
     background: var(--accent-dim);

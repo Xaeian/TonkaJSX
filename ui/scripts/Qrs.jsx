@@ -11,26 +11,31 @@ const Qrs = () => {
       onChange={(v) => { code.text = v; }} />
   );
   const code = <QrCode text="HELLO TONKA" size={200} />;
-  const saveBtn = <Button icon="download" title="Save as .svg file"
+  const saveBtn = <IconBtn icon="download" title="Save as .svg file"
     onClick={() => fileSave("qr.svg", code.svg, "image/svg+xml")} />;
 
+  // every way a scan ends: a code read, a failure, or the button pressed again
+  function stopScan() {
+    scanner.stop();
+    scanner.hidden = true;
+    scanBtn.active = false;
+  }
   const scanner = <QrScan
     onScan={(text) => {
-      scanner.hidden = true;
-      scanBtn.active = false;
+      stopScan();
       textIn.value = text;
       code.text = text;
       Alert.ok(`Scanned: ${text}`);
     }}
-    onError={(msg) => { scanner.hidden = true; scanBtn.active = false; Alert.err(msg); }} />;
+    onError={(msg) => { stopScan(); Alert.err(msg); }} />;
   scanner.hidden = true;
 
   const scanBtn = <ActiveBtn icon="photo_camera" onChange={async (on) => {
-    if(!on) { scanner.stop(); scanner.hidden = true; return; }
+    if(!on) { stopScan(); return; }
     if(!("BarcodeDetector" in window) && typeof jsQR !== "function") {
       scanBtn.loading = true;
       try { await UI.script(JSQR_SRC, JSQR_SRI); }
-      catch(e) { Alert.err(e.message); scanBtn.active = false; return; }
+      catch(e) { Alert.err(e.message); stopScan(); return; }
       finally { scanBtn.loading = false; }
     }
     scanner.hidden = false;
@@ -40,23 +45,23 @@ const Qrs = () => {
   return (
     <Panel title="QR">
       <p>
-        <code>QrCode</code> needs <code>qrcode-generator</code> on the page and exposes
-        <code>.text</code> and <code>.svg</code>, the code as a file with its quiet zone.
+        A <code>QrCode</code> needs <code>qrcode-generator</code> on the page.
+        It holds <code>.text</code> and <code>.svg</code>, the code as a file with its quiet zone.
         Digits and capitals go in the alphanumeric mode, so such a code stays sparse.
       </p>
       <h4>Code</h4>
       <row gap="sm" nowrap>
-        <div flex="1">{textIn}</div>
+        {textIn}
         {saveBtn}
       </row>
       <row justify="center">{code}</row>
 
       <h4>Camera</h4>
       <p>
-        <code>QrScan</code> reads one code and stops: <code>.start()</code>,
-        <code>.stop()</code>, <code>onScan</code>. A camera needs a secure origin.
+        A <code>QrScan</code> reads one code and stops, then hands it to <code>onScan</code>.
+        It runs from <code>.start()</code> to <code>.stop()</code>, on a secure origin only.
       </p>
-      {scanBtn}
+      <row>{scanBtn}</row>
       {scanner}
     </Panel>
   );

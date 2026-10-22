@@ -42,10 +42,10 @@ const Panels = () => {
       <TabPanel value="advanced">
         <Checkbox label="Verbose logging" />
         <row>
-          <Button size="sm" icon="arrow_back" onClick={() => { tabbed.tab = "general"; }}>
+          <Button size="sm" icon="arrow_back" onClick={() => { tabbed.value = "general"; }}>
             Back to General
           </Button>
-          <span tone="meta"><code>panel.tab = "general"</code></span>
+          <span tone="meta"><code>panel.value = "general"</code></span>
         </row>
       </TabPanel>
     </Panel>
@@ -147,7 +147,7 @@ const Panels = () => {
             </stack>
           </TabPanel>
           <TabPanel value="auth">
-            <Empty fill size="sm" icon="article" title="This file has no entries." />
+            <Empty grow size="sm" icon="article" title="This file has no entries." />
           </TabPanel>
         </Panel>
       </stack>
@@ -166,7 +166,7 @@ const Panels = () => {
       <Panel title="Tabs" icon="tab">
         <p>
           Panes are <code>&lt;TabPanel&gt;</code> children.
-          Here <code>onChange</code> drives title and <code>.tab</code> switches from code.
+          Here <code>onChange</code> drives title and <code>.value</code> switches from code.
         </p>
         {tabbed}
       </Panel>
@@ -195,15 +195,6 @@ const Panels = () => {
           <Panel title="compact" compact><p>Slimmer head.</p></Panel>
           <Panel dashed><p>Dashed, no head.</p></Panel>
           <Panel ghost><p>Ghost: no border, no background.</p></Panel>
-        </row>
-      </Panel>
-
-      <Panel title="Empty states" icon="inbox">
-        <row split>
-          <Empty icon="inbox" title="No messages"
-            description="New messages will appear here." />
-          <Empty icon="search_off" title="No results"
-            action={<Button size="sm" icon="refresh">Clear filters</Button>} />
         </row>
       </Panel>
     </stack>

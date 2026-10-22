@@ -83,13 +83,14 @@
     --radius:      6px;
     --radius-lg:   10px;
     --radius-full: 9999px;
-    --bw: 1px;
+    --bw:       1px;
+    --stripe-w: 3px;
     --sidebar-w:   48px;
     --sidebar-btn: 36px;
     --z-dropdown: 100;
     --z-sticky:   200;
-    --z-overlay:  300;
-    --z-modal:    400;
+    --z-modal:    300;
+    --z-overlay:  400;
     --z-toast:    500;
     --z-tooltip:  600;
     --dur-fast: 100ms;
@@ -110,7 +111,4 @@
   }
   [data-theme="light"] { color-scheme: light; }
   [data-theme="dark"]  { color-scheme: dark; }
-  @media (prefers-reduced-motion: reduce) {
-    :root { --dur-fast: 0ms; --dur: 0ms; --dur-slow: 0ms; }
-  }
 }

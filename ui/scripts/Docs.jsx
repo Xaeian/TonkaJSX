@@ -43,19 +43,20 @@ const DOCS = [
 ];
 
 const ME = "Ada Lovelace";
-/** A test a document passes when it stands at status `s`. */
-const status = (s) => (d) => d.status === s;
-const BUCKETS = [
-  { key: "all", label: "All", icon: "inbox", test: () => true },
-  { key: "draft", label: "Drafts", icon: "edit_note", test: status("draft") },
-  { key: "review", label: "In review", icon: "rate_review", test: status("review") },
-  { key: "approved", label: "Approved", icon: "task_alt", test: status("approved") },
-  { key: "archived", label: "Archived", icon: "archive", test: status("archived") },
-  { key: "starred", label: "Starred", icon: "star", test: (d) => d.starred },
-  { key: "mine", label: "Mine", icon: "person", test: (d) => d.author === ME },
-];
 
 const Docs = () => {
+  // a test a document passes when it stands at status `s`
+  const status = (s) => (d) => d.status === s;
+  const BUCKETS = [
+    { key: "all", label: "All", icon: "inbox", test: () => true },
+    { key: "draft", label: "Drafts", icon: "edit_note", test: status("draft") },
+    { key: "review", label: "In review", icon: "rate_review", test: status("review") },
+    { key: "approved", label: "Approved", icon: "task_alt", test: status("approved") },
+    { key: "archived", label: "Archived", icon: "archive", test: status("archived") },
+    { key: "starred", label: "Starred", icon: "star", test: (d) => d.starred },
+    { key: "mine", label: "Mine", icon: "person", test: (d) => d.author === ME },
+  ];
+
   let bucket = BUCKETS[0];
   let query = "";
   let current = DOCS[0];
@@ -67,8 +68,7 @@ const Docs = () => {
   const list = <list></list>;
   const details = <stack></stack>;
   const statusBar = <row gap="sm" tone="meta"></row>;
-  const search = <SearchInput placeholder="Search..."
-    onChange={(v) => { query = v.toLowerCase(); render(); }} />;
+  const search = <SearchInput onChange={(v) => { query = v.toLowerCase(); render(); }} />;
   const navDock = <Dock pos="left" width="220px" scroll>{nav}</Dock>;
 
   //------------------------------------------------------------------------------------- Renderers
@@ -113,6 +113,11 @@ const Docs = () => {
 
   function renderDetails() {
     const d = current;
+    const facts = [
+      ["person", "Author", d.author],
+      ["business", "Entity", d.entity],
+      ["schedule", "Updated", d.updated],
+    ];
     details.replaceChildren(
       <row gap="sm">
         <code>{d.id}</code>
@@ -122,21 +127,13 @@ const Docs = () => {
       <strong>{d.title}</strong>,
       <span tone="note">{d.info}</span>,
       <stack gap="xs">
-        <row gap="sm" tone="meta">
-          <span class="icon" translate={false}>person</span>
-          <span flex="1">Author</span>
-          <span>{d.author}</span>
-        </row>
-        <row gap="sm" tone="meta">
-          <span class="icon" translate={false}>business</span>
-          <span flex="1">Entity</span>
-          <span>{d.entity}</span>
-        </row>
-        <row gap="sm" tone="meta">
-          <span class="icon" translate={false}>schedule</span>
-          <span flex="1">Updated</span>
-          <span>{d.updated}</span>
-        </row>
+        {facts.map(([icon, label, value]) => (
+          <row gap="sm" tone="meta" nowrap>
+            <span class="icon" translate={false}>{icon}</span>
+            <span flex="1">{label}</span>
+            <span>{value}</span>
+          </row>
+        ))}
       </stack>,
       <row gap="xs">
         <Button variant="primary" icon="open_in_new" size="sm"
@@ -157,8 +154,8 @@ const Docs = () => {
       <span>{bucket.label}</span>,
       <sep />,
       <span>{visible().length} of {DOCS.length} documents</span>,
-      query ? <sep /> : null,
-      query ? <span>search: "{query}"</span> : null,
+      // `replaceChildren` writes a null as the word, so the search part is there or absent
+      ...(query ? [<sep />, <span>search: "{query}"</span>] : []),
     );
   }
 
@@ -190,9 +187,9 @@ const Docs = () => {
           </row>
         </row>
       </Dock>
-      <DockRow grow>
+      <DockRow>
         {navDock}
-        <div scroll pad="md">{list}</div>
+        <stack scroll pad="md">{list}</stack>
         <Dock pos="right" width="320px" tint scroll>{details}</Dock>
       </DockRow>
       <Dock pos="bottom" tint>{statusBar}</Dock>
