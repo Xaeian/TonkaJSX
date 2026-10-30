@@ -24,18 +24,19 @@ const Files = () => {
     glyph: <span class="icon" translate={false} color={Kind.color(name)}>{Kind.icon(name)}</span>,
     size: Kind.sizeText(bytes),
     opens: Kind.opens(name, bytes),
+    main: Kind.main(name),
   }));
 
   return (
     <Panel title="Files">
       <h4>What a name says</h4>
       <p>
-        <code>Kind</code> reads a file name: the glyph it wears, the colour of that glyph
-        and how it opens, past a copy's <code>.bak</code>.
+        <code>Kind</code> reads a file name: the glyph it wears, the colour of that glyph,
+        how it opens and what is done with it first, past a copy's <code>.bak</code>.
         Weights are SI, from <code>Kind.sizeText</code>.
         The table is a <code>Table</code>: numbers to the right, a <code>null</code> in grey.
       </p>
-      <Table columns={["name", "glyph", "bytes", "size", "opens"]} rows={rows} />
+      <Table columns={["name", "glyph", "bytes", "size", "opens", "main"]} rows={rows} />
 
       <h4>Rows</h4>
       <p>
@@ -64,6 +65,8 @@ const Files = () => {
         <code>Dump.text(name, bytes)</code> writes bytes out to read,
         an offset and sixteen of them as hex and as text, for a <code>Code</code> to paint.
         An Intel HEX comes out as the memory its records describe.
+        Any file opens in a dialog through <code>Code.openBytes(name, bytes)</code>:
+        bytes that are text as words, whatever the name, the rest as this dump.
       </p>
       <Code lang="dump" readOnly height="6rem" value={Dump.text("boot.bin", FIRMWARE)} />
     </Panel>

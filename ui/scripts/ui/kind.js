@@ -22,14 +22,16 @@ const Kind = (() => {
     md: "md", markdown: "md",
     csv: "csv", tsv: "csv",
     log: "log",
-    c: "c", h: "c", cpp: "cpp", cc: "cpp", cxx: "cpp", hpp: "cpp",
+    c: "c", h: "c", cpp: "cpp", cc: "cpp", cxx: "cpp", hpp: "cpp", ino: "cpp",
     js: "js", mjs: "js", cjs: "js", jsx: "js", ts: "js", tsx: "js",
     py: "py", sh: "sh", bash: "sh", rs: "rust",
     html: "html", htm: "html", xml: "html", svg: "html", css: "css",
   };
 
-  /** Extensions opened as text: every one `LANG` paints, and plain text, which needs no paint. */
-  const TEXT_EXT = [...Object.keys(LANG), "txt"];
+  const PLAIN_EXT = ["txt", "s", "asm", "ld", "mk", "go", "bat", "cmd", "ps1"];
+
+  /** Extensions opened as text: every one `LANG` paints, and plain ones that need no paint. */
+  const TEXT_EXT = [...Object.keys(LANG), ...PLAIN_EXT];
 
   // a glyph per kind, for a file that is not a picture
   const FILE_ICONS = {
@@ -101,7 +103,8 @@ const Kind = (() => {
   const FETCH_MAX = 8 * 1000 * 1000; // B
 
   /**
-   * How a file opens: `image`, `pdf`, `text`, `gzip` for what it holds, `dump` for its bytes.
+   * How a file opens: `image`, `pdf`, `text`, `gzip` for what it holds,
+   * `dump` for the rest, which `Code.openBytes` shows as words when its bytes are text.
    * The last two fetch the whole file, so one past 8MB is `null`: it only downloads.
    * @param {string} name
    * @param {number} [size]  bytes, when the listing knows
@@ -113,6 +116,18 @@ const Kind = (() => {
     if(isText(name)) return "text";
     if(size > FETCH_MAX) return null;
     return isGzip(name) ? "gzip" : "dump";
+  }
+
+  const MAIN = { text: "copy", image: "copy", pdf: "open" };
+
+  /**
+   * What a person does first with a file, the one action a list puts forward:
+   * `copy` words and pictures into a message, `open` a PDF to read, `download` the rest.
+   * @param {string} name
+   * @returns {"copy"|"open"|"download"}
+   */
+  function main(name) {
+    return own(MAIN, opens(name)) || "download";
   }
 
   /** What a gzip holds, by name: `index.html.gz` holds `index.html`. */
@@ -140,7 +155,7 @@ const Kind = (() => {
 
   return {
     IMAGE_EXT, TEXT_EXT, LANG,
-    ext, isImage, isText, isPdf, isGzip, opens,
+    ext, isImage, isText, isPdf, isGzip, opens, main,
     imageType, gunzipName,
     icon, color, sizeText,
   };

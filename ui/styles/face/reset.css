@@ -9,6 +9,7 @@
     font-family: var(--font-body);
     font-size: var(--text-base);
     line-height: var(--leading);
+    overflow-wrap: break-word;
     color: var(--text);
     background: var(--bg);
     -webkit-font-smoothing: antialiased;

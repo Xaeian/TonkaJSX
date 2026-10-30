@@ -122,8 +122,8 @@ An Img's `height` and `width` take `sm md lg` (40, 80, 160px), a Code's or a Mar
 - `FileDrop accept multiple maxSize maxCount icon title description size`: nothing reaches `onFiles` unless every file passes, the first failure goes to `onError`; `.selected` shows a file until a click clears it (`onClear`), `.loading` spins.
 - A `FileRow` wears the glyph and colour of its name, its weight in SI, then `meta`; every row stands as tall as one with a `FileThumb`.
 - A `Table` keeps its head in view, sets a column of numbers right and colours a value by its kind; a long cell is cut and its tooltip holds the whole.
-- `Kind` reads a file name, a copy's `.bak` `.old` `.orig` looked past: `ext`, `icon`, `color`, `isImage`, `isText`, `isPdf`, `isGzip`, `imageType`, `gunzipName`, `opens(name, size)` (`image pdf text gzip dump`, `null` past 8MB), `sizeText(bytes)` (`860B`, `1.4kB`, `2.3MB`), and the tables `IMAGE_EXT`, `TEXT_EXT`, `LANG`.
-- `Dump.text(name, bytes)` writes bytes out to read, an Intel HEX as its memory, for a `Code` in `dump`; `Dump.gunzip(bytes)` opens a gzip.
+- `Kind` reads a file name, a copy's `.bak` `.old` `.orig` looked past: `ext`, `icon`, `color`, `isImage`, `isText`, `isPdf`, `isGzip`, `imageType`, `gunzipName`, `opens(name, size)` (`image pdf text gzip dump`, `null` past 8MB), `main(name)` (what a list puts first: `copy open download`), `sizeText(bytes)` (`860B`, `1.4kB`, `2.3MB`), and the tables `IMAGE_EXT`, `TEXT_EXT`, `LANG`.
+- `Dump.text(name, bytes)` writes bytes out to read, an Intel HEX as its memory, for a `Code` in `dump`; `Dump.read(name, bytes)` gives `{text, lang}` for `Code.open`, words when the bytes are text whatever the name, else that dump; `Dump.gunzip(bytes)` opens a gzip.
 
 **Buttons**
 
@@ -197,6 +197,7 @@ menu.toggle(anchorBtn);
 ```jsx
 <Code lang="conf.ini" height="md" value={text} onChange={(t) => ...} />   // readOnly, wrap, numbers
 Code.open("notes.md", text, { onSave });   // the same box in a dialog
+Code.openBytes("boot.bin", bytes);   // any file: words when they are text, else a dump
 Syntax.paint(text, "query.sql");   // the colours, no element
 <Markdown text={md} height="md" onCheck={(t) => save(t)} />   // a page to read
 ```

@@ -1,7 +1,7 @@
 // scripts/ui/dump.js
 //
 // Bytes as a person reads them: an offset, sixteen of them as hex, the same sixteen as text.
-// A file nothing else opens is opened this way,
+// A file nothing else opens is opened this way once its bytes turn out not to be text,
 // and an Intel HEX is opened as the memory it describes, not as the records that describe it.
 // Pure functions, no DOM: the text comes back and `Syntax` paints it as `dump`.
 //
@@ -149,6 +149,19 @@ const Dump = (() => {
 
   //--------------------------------------------------------------------------------------- Opening
 
+  // the controls a text file holds: tab, the line ends, vertical tab, form feed,
+  // and escape, which colours a log
+  const TEXT_CONTROLS = new Set([0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x1b]);
+
+  // Whether bytes are text: no other control and no DEL.
+  // A binary shows a NUL within its first bytes, so the scan stops early for one.
+  function readable(bytes) {
+    for(const b of bytes) {
+      if((b < 0x20 && !TEXT_CONTROLS.has(b)) || b === 0x7f) return false;
+    }
+    return true;
+  }
+
   /**
    * The dump a file gets: its memory for an Intel HEX, its bytes for anything else.
    * @param {string} name  what the bytes are called, which says how to read them
@@ -161,6 +174,21 @@ const Dump = (() => {
   }
 
   /**
+   * A file as `Code.open` takes it: the words of bytes that are text, whatever the name,
+   * and what `text` writes for the rest and for an Intel HEX, under `dump`.
+   * A single-byte encoding reads as text too, its letters past ASCII as replacement marks.
+   * @param {string} name
+   * @param {Uint8Array} bytes
+   * @returns {{text:string, lang:string|null}} `lang` is `null` for words, painted by the name
+   */
+  function read(name, bytes) {
+    const words = Kind.ext(name) !== "hex" && bytes.length > 0 && readable(bytes);
+    return words
+      ? { text: new TextDecoder().decode(bytes), lang: null }
+      : { text: text(name, bytes), lang: "dump" };
+  }
+
+  /**
    * A gzip opened, in the browser's own inflater.
    * @param {Uint8Array} bytes
    * @returns {Promise<Uint8Array>}
@@ -170,5 +198,5 @@ const Dump = (() => {
     return new Uint8Array(await new Response(stream).arrayBuffer());
   }
 
-  return { text, gunzip };
+  return { text, read, gunzip };
 })();

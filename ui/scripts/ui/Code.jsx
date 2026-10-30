@@ -161,3 +161,15 @@ Code.open = (name, text, { onSave, lang } = {}) => {
   modal.open();
   return modal;
 };
+
+/**
+ * Bytes of any file in the same dialog, as `Dump.read` reads them:
+ * words when they are text, a dump otherwise. Nothing saves.
+ * @param {string} name
+ * @param {Uint8Array} bytes
+ * @returns {Element} the dialog, already open
+ */
+Code.openBytes = (name, bytes) => {
+  const { text, lang } = Dump.read(name, bytes);
+  return Code.open(name, text, { lang });
+};
