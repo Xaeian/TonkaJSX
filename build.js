@@ -7,8 +7,8 @@ import fs from "fs"
 import path from "path"
 import http from "http"
 import https from "https"
-import { useProject, readFile, fileList, loadVars, replaceVars, hasFlag, getFlagValues,
-  flagLimit, COLOR as c, Log } from "./utils.js"
+import { useProject, readFile, fileList, bodyScripts, loadBabel, loadVars, replaceVars, hasFlag,
+  getFlagValues, flagLimit, JSX_OPTIONS, COLOR as c, Log } from "./utils.js"
 
 const PATH = useProject()
 
@@ -102,24 +102,6 @@ async function minifyCssSmart(css) {
       Log.info(msg)
     }
     return minifyCss(css)
-  }
-}
-
-async function loadBabel() {
-  try {
-    const babelMod = await import("@babel/core")
-    const jsxMod = await import("@babel/plugin-transform-react-jsx")
-    const babel = babelMod?.default || babelMod
-    const jsxPlugin = jsxMod?.default || jsxMod
-    if(!babel?.transformSync) {
-      throw new Error("Babel transformSync missing (module shape mismatch)")
-    }
-    return { transformSync: babel.transformSync, jsxPlugin }
-  }
-  catch(e) {
-    Log.err("Babel missing in node_modules.")
-    Log.run("npm i -D @babel/core @babel/plugin-transform-react-jsx")
-    throw e
   }
 }
 
@@ -578,38 +560,11 @@ async function build()
   const jsDir = path.join(PATH, "scripts")
   const jsList = fileList(jsDir, [".js"])
   const jsxList = fileList(jsDir, [".jsx"])
-  const lo = html.toLowerCase()
-  const b0 = lo.indexOf("<body")
-  const add = []
-  if(b0 >= 0) {
-    const b1 = html.indexOf(">", b0)
-    const b2 = lo.lastIndexOf("</body>")
-    if(b1 >= 0) {
-      const pre = html.slice(0, b1 + 1)
-      const body = html.slice(b1 + 1, b2 >= 0 ? b2 : html.length)
-      const post = html.slice(b2 >= 0 ? b2 : html.length)
-      const re = /<script\b[^>]*\bsrc=["']([^"']+)["'][^>]*>\s*<\/script>\s*/gi
-      const seen = new Set()
-      const body2 = body.replace(re, (tag, src) => {
-        src = String(src || "").trim()
-        if(/^(https?:)?\/\//i.test(src)) return tag
-        let p = src.split("#")[0].split("?")[0].replace(/\\/g, "/").trim()
-        while(p.startsWith("./")) p = p.slice(2)
-        while(p.startsWith("/")) p = p.slice(1)
-        if(!p || p.startsWith("..") || !/\.(js|jsx)$/i.test(p)) return tag
-        if(/^scripts\//i.test(p)) return tag
-        const k = p.toLowerCase()
-        if(seen.has(k)) return ""
-        seen.add(k); add.push(p)
-        return ""
-      })
-      if(add.length) {
-        html = pre + body2 + post
-        for(const p of add) (p.toLowerCase().endsWith(".jsx") ? jsxList : jsList).push(`../${p}`)
-        for(const p of add) Log.info(`+ ${p}`)
-      }
-    }
-  }
+  const body = bodyScripts(html)
+  const add = body.scripts
+  html = body.html
+  for(const p of add) (p.toLowerCase().endsWith(".jsx") ? jsxList : jsList).push(`../${p}`)
+  for(const p of add) Log.info(`+ ${p}`)
   Log.ok(`JS:${jsList.length} JSX:${jsxList.length} BODY:${add.length}`)
   for(const f of jsList) Log.info(`+ scripts/${f}`)
   for(const f of jsxList) Log.info(`+ scripts/${f}`)
@@ -627,15 +582,10 @@ async function build()
   const local = replaceVars(joined(jsxList), vars)
   let compiled = ""
   if(local) {
-    const { transformSync, jsxPlugin } = await loadBabel()
+    const { babel, jsxPlugin } = await loadBabel()
     Log.ok("Babel: JSX → JS")
-    const jsx = [jsxPlugin, {
-      runtime: "classic",
-      pragma: "JSX.createElement",
-      pragmaFrag: "JSX.Fragment",
-      throwIfNamespace: false,
-    }]
-    const out = transformSync(local, {
+    const jsx = [jsxPlugin, JSX_OPTIONS]
+    const out = babel.transformSync(local, {
       filename: "scripts.jsx",
       babelrc: false,
       configFile: false,

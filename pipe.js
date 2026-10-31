@@ -1,6 +1,6 @@
 // pipe.js
 //
-// Ships the apps a list names, one after another: `build` with the app's flags,
+// Ships the apps a list names, one after another: the app's tests, `build` with its flags,
 // then `deploy -r`, and around them a commit when the line asks for one.
 // The list is a text file in the workspace, `pipe.txt` unless named, one app per line
 // with its build flags as they follow `tonka build`; a line starting with `#` is a comment:
@@ -9,7 +9,8 @@
 // `-m` commits what changed in that app before its build, and once the page is out
 // pushes the commit when the branch has an upstream; an app with no change commits nothing.
 // `build` and `deploy` get the rest of the line and each takes what it knows, `-w test` too.
-// Every line is checked before the first app goes, and the first failure stops the run.
+// Every line is checked before the first app goes, and the first failure stops the run,
+// a failed test as much as a failed build.
 //
 //   tonka pipe [<list>] [--dry]
 
@@ -85,15 +86,16 @@ function push(dir) {
   Log.ok(`Pushed to ${to}`);
 }
 
-// one `tonka` command in a process of its own: `build` and `deploy` read their argv once
+// one `tonka` command in a process of its own: each command reads its argv once
 function tonka(args) {
   return spawnSync(process.execPath, [TONKA, ...args], { stdio: "inherit" }).status === 0;
 }
 
-// one app out: its commit when the line asks, `build`, `deploy -r`, then the push,
-// so the remote gets only what went out
+// one app out: its tests, its commit when the line asks, `build`, `deploy -r`, then the push,
+// so nothing red is committed and the remote gets only what went out
 function ship({ app, args, message }) {
   const dir = path.resolve(ROOT, app);
+  if(!tonka(["test", app])) throw new Error("tests failed");
   const committed = message ? commit(dir, message) : false;
   if(!tonka(["build", ...args])) throw new Error("build failed");
   if(!tonka(["deploy", ...args, "-r"])) throw new Error("deploy failed");
@@ -102,6 +104,7 @@ function ship({ app, args, message }) {
 
 // what `ship` would run, for `--dry`
 function show({ app, args, message }) {
+  Log.run(`tonka test ${app}`);
   if(message) {
     Log.run(`git commit -m ${joinArgs([message])} ${c.grey}when ${app} changed${c.reset}`);
   }

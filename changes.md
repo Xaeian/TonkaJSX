@@ -1,5 +1,10 @@
 ## Changes 🌰TonkaJSX
 
+### `1.2.6` Tests
+
+- `test` checks scripts and runs suites of a project _(`.tests/*.test.js`)_
+- `pipe` tests each app before its build
+
 ### `1.2.5` Pipe
 
 - `pipe` builds and deploys every app of a list _(`pipe.txt`)_

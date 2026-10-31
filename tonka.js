@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 // tonka.js
 //
-// The `tonka` command: hands the command line to `serve`, `build`, `deploy` or `pipe`,
+// The `tonka` command: hands the command line to `serve`, `build`, `deploy`, `pipe` or `test`,
 // or prints the help with every project and where it deploys.
 
 import fs from "fs"
 import path from "path"
-import { ROOT, parseIni, deployTargets, COLOR as c } from "./utils.js"
+import { ROOT, parseIni, deployTargets, listProjects, COLOR as c } from "./utils.js"
 
 const { version } = JSON.parse(fs.readFileSync(path.join(ROOT, "package.json"), "utf8"))
 
@@ -19,18 +19,10 @@ const wantVersion = cmd === "-v" || cmd === "--version"
 
 if(wantVersion) { console.log("TonkaJSX " + version); process.exit(0) }
 
-const COMMANDS = ["serve", "build", "deploy", "pipe"]
+const COMMANDS = ["serve", "build", "deploy", "pipe", "test"]
 
 if(COMMANDS.includes(cmd) && !wantHelp) {
   process.argv.splice(2, 1)
-}
-
-function listProjects() {
-  return fs.readdirSync(ROOT, { withFileTypes: true })
-    .filter(d => d.isDirectory() && !d.name.startsWith(".") && d.name !== "node_modules")
-    .map(d => d.name)
-    .filter(n => fs.existsSync(path.join(ROOT, n, "app.html")))
-    .sort()
 }
 
 // where a project deploys, as its `app.ini` says: the default bare, a further Worker by its key;
@@ -60,6 +52,7 @@ ${c.grey}Usage:${c.reset}
   ${c.yellow}tonka${c.reset} build  [<${c.green}project${c.reset}>] [${c.blue}options${c.reset}]         build production index.html
   ${c.yellow}tonka${c.reset} deploy [<${c.green}project${c.reset}>] [${c.blue}-w${c.reset} <${c.grey}key${c.reset}>] [${c.blue}-r${c.reset}]   put built page on a Worker or in a folder
   ${c.yellow}tonka${c.reset} pipe   [<${c.green}list${c.reset}>] [${c.blue}--dry${c.reset}]              build and deploy every app of a list
+  ${c.yellow}tonka${c.reset} test   [<${c.green}project${c.reset}>]                   check scripts, run .tests suites, of one project or all
 
 ${c.grey}Serve options:${c.reset}
   ${c.blue}-r${c.reset}, --remove                  delete built index.html before serving
@@ -97,6 +90,7 @@ if(cmd === "serve") await import("./serve.js")
 else if(cmd === "build") await import("./build.js")
 else if(cmd === "deploy") await import("./deploy.js")
 else if(cmd === "pipe") await import("./pipe.js")
+else if(cmd === "test") await import("./test.js")
 else {
   console.log(`${c.red}Unknown command:${c.reset} ${cmd}\n`)
   help()

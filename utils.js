@@ -9,6 +9,37 @@ import url from "url"
 /** The workspace: the folder of these scripts, beside every project. */
 export const ROOT = path.dirname(url.fileURLToPath(import.meta.url))
 
+/** The JSX transform `build` compiles a project with, and `test` reads its scripts by. */
+export const JSX_OPTIONS = {
+  runtime: "classic",
+  pragma: "JSX.createElement",
+  pragmaFrag: "JSX.Fragment",
+  throwIfNamespace: false,
+}
+
+/**
+ * Babel and its JSX plugin, which `build` and `test` read scripts through.
+ * Missing from `node_modules`, it says what to install, then throws.
+ * @returns {Promise<{ babel: object, jsxPlugin: object }>}
+ */
+export async function loadBabel() {
+  try {
+    const babelMod = await import("@babel/core")
+    const jsxMod = await import("@babel/plugin-transform-react-jsx")
+    const babel = babelMod?.default || babelMod
+    const jsxPlugin = jsxMod?.default || jsxMod
+    if(!babel?.transformSync) {
+      throw new Error("Babel transformSync missing (module shape mismatch)")
+    }
+    return { babel, jsxPlugin }
+  }
+  catch(e) {
+    Log.err("Babel missing in node_modules.")
+    Log.run("npm i -D @babel/core @babel/plugin-transform-react-jsx")
+    throw e
+  }
+}
+
 export const COLOR = {
   reset: "\x1b[0m",
   grey: "\x1b[90m",
@@ -101,6 +132,18 @@ export function getBasePath(ignore = ["node_modules"], dirname = ROOT) {
   return path.join(dirname, picked)
 }
 
+/**
+ * Projects of the workspace, sorted: every folder holding an `app.html`.
+ * @returns {string[]} folder names
+ */
+export function listProjects() {
+  return fs.readdirSync(ROOT, { withFileTypes: true })
+    .filter(d => d.isDirectory() && !d.name.startsWith(".") && d.name !== "node_modules")
+    .map(d => d.name)
+    .filter(n => fs.existsSync(path.join(ROOT, n, "app.html")))
+    .sort()
+}
+
 // the project folder `useProject` picked, where a relative `readFile` reads from
 let project = null
 
@@ -167,6 +210,41 @@ export function fileList(dir, exts = []) {
     for(const f of fileList(path.join(dir, d), exts)) nested.push(path.posix.join(d, f))
   }
   return [...nested, ...files]
+}
+
+/**
+ * The local scripts a page's `<body>` loads outside `scripts/`, each once, as paths from
+ * the project, and the page without their tags: what `build` bundles beside `scripts/`.
+ * @param {string} html
+ * @returns {{ html: string, scripts: string[] }}
+ */
+export function bodyScripts(html) {
+  const scripts = []
+  const lo = html.toLowerCase()
+  const b0 = lo.indexOf("<body")
+  const b1 = b0 >= 0 ? html.indexOf(">", b0) : -1
+  if(b1 < 0) return { html, scripts }
+  const b2 = lo.lastIndexOf("</body>")
+  const pre = html.slice(0, b1 + 1)
+  const body = html.slice(b1 + 1, b2 >= 0 ? b2 : html.length)
+  const post = html.slice(b2 >= 0 ? b2 : html.length)
+  const re = /<script\b[^>]*\bsrc=["']([^"']+)["'][^>]*>\s*<\/script>\s*/gi
+  const seen = new Set()
+  const rest = body.replace(re, (tag, src) => {
+    src = String(src || "").trim()
+    if(/^(https?:)?\/\//i.test(src)) return tag
+    let p = src.split("#")[0].split("?")[0].replace(/\\/g, "/").trim()
+    while(p.startsWith("./")) p = p.slice(2)
+    while(p.startsWith("/")) p = p.slice(1)
+    if(!p || p.startsWith("..") || !/\.(js|jsx)$/i.test(p)) return tag
+    if(/^scripts\//i.test(p)) return tag
+    const k = p.toLowerCase()
+    if(seen.has(k)) return ""
+    seen.add(k)
+    scripts.push(p)
+    return ""
+  })
+  return { html: scripts.length ? pre + rest + post : html, scripts }
 }
 
 const VARS_FILE = "app.ini"

@@ -16,6 +16,8 @@ ROOT/                  (your workspace folder; name doesn't matter)
 ├─ serve.js            (dev server; serves `index.html` if exists else `app.html` + injected links)
 ├─ deploy.js           (puts built `index.html` on a Cloudflare Worker or in a folder)
 ├─ pipe.js             (builds and deploys every app a list names)
+├─ test.js             (checks a project's scripts, runs its `.tests/` suites)
+├─ check.js            (reads a project's scripts as build does)
 ├─ pipe.txt            (optional; apps for `tonka pipe` with their build flags)
 ├─ utils.js            (shared helpers for every script)
 ├─ package.json        (npm config + `bin` for CLI)
@@ -46,13 +48,14 @@ npm install
 npm link
 ```
 
-Framework consists of four scripts: a development **server**, a **build** tool, **deploy** and **pipe**.
+Framework consists of five scripts: a development **server**, a **build** tool, **deploy**, **pipe** and **test**.
 
 ```sh
 tonka serve [<project-name>] [--port|-p <port>] [--remove|-r]  # start development server
 tonka build [<project-name>] [options] # build deploy version of project
 tonka deploy [<project-name>] [--worker|-w <key>] [--dry] [--remove|-r] # put built page where it runs
 tonka pipe [<list>] [--dry] # build and deploy every app of a list
+tonka test [<project-name>] # run tests of project, or of all
 ```
 
 Build supports optional optimization flags:
@@ -96,7 +99,7 @@ Script order matters: load `.js` first, then `.jsx`. Files in deeper folders loa
 All other files are served as static assets, exactly as they are in project folder.
 During build you can inline remote styles and scripts with `--inline-remote` (good for offline use).
 
-`tonka pipe` ships many apps in one go: each gets `build` with its flags, then `deploy -r`.
+`tonka pipe` ships many apps in one go: each gets `tonka test`, then `build` with its flags, then `deploy -r`.
 The list is a text file in workspace, `pipe.txt` unless named, one app per line with its build flags; a line starting with `#` is a comment.
 
 ```
@@ -114,7 +117,7 @@ tonka pipe --dry # show the commands, run nothing
 `-m` in a line commits what changed in that app before its build, and pushes the commit once the page is out.
 App with no change commits nothing, and a branch with no upstream keeps the commit local.
 A line goes to `deploy` too, so `-w test` works there.
-Every line is checked before the first app goes, and the first failure stops the run.
+Every line is checked before the first app goes, and the first failure stops the run, a red test as much as a failed build.
 
 ## 💡 Example
 
