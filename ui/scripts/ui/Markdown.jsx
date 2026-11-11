@@ -207,7 +207,7 @@ const _MD_BOX = /^\[([ xX])\]\s+/;
 const _MD_LINK = /(!?)\[([^[\]]*)\]\(([^)\s]+)(?:\s+"[^"]*")?\)|<(https?:\/\/[^>\s]+)>/dg;
 
 // a code span and an escape, as `UI.markup` reads them: no link opens or closes inside one
-const _MD_KEPT = /`[^`\n]+`|\\[\\`*_~\[\]()#+\-.!|<>]/g;
+const _MD_KEPT = new RegExp("`" + _MARK_CODE + "`|\\\\" + _MARK_ESCAPED, "g");
 
 // The blocks `_mdParse` gives as elements; `opts` is what the page asks of them:
 // `image` for the address of a picture, `breaks`, and `check`, which flips a box, if any
@@ -286,8 +286,8 @@ function _mdInline(text, image) {
       .map(span => span && text.slice(...span));
     out.push(...UI.markup(text.slice(at, m.index)));
     if(bang) out.push(_mdPicture(url, label, image));
-    else if(address) out.push(UI._link(address));
-    else out.push(UI._link(url, label ? _mdLabel(label) : url));
+    else if(address) out.push(_link(address));
+    else out.push(_link(url, label ? _mdLabel(label) : url));
     at = m.index + m[0].length;
   }
   out.push(...UI.markup(text.slice(at)));

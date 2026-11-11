@@ -1,3 +1,5 @@
+// scripts/Footer.jsx
+
 let footerFirst = true;
 
 const Item = ({ children }) => {

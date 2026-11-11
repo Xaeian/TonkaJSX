@@ -5,7 +5,8 @@
 // Names, icons, colours and what opens how, the fetch cap included, and sizes in SI;
 // a dump of bytes, of a text whatever its name, of an Intel HEX at a high linear address;
 // Markdown painted line by line as it reads, and every language without losing a character;
-// marks, titles, the clipboard's wipe, script loads, an unmount and a theme kept in a store.
+// marks, titles, the clipboard's wipe, script loads, an unmount, Escape among overlays
+// and a theme kept in a store.
 
 const { readFileSync } = require("node:fs");
 const { gzipSync } = require("node:zlib");
@@ -18,6 +19,7 @@ const KIT = path.join(APP, "scripts", "ui");
 // timers held instead of run, so a test reads what was armed and for how long
 const timers = [];
 let clip = ""; // what the fake clipboard holds
+const keydown = { capture: null, bubble: null }; // the two key listeners of `_escape`
 const head = { appendChild() {} };
 const ctx = vm.createContext({
   TextDecoder, Blob, Response, DecompressionStream, queueMicrotask,
@@ -31,6 +33,10 @@ const ctx = vm.createContext({
     documentElement: { dataset: {} },
     createElement: (tag) => ({ tag }),
     dispatchEvent: () => true,
+    addEventListener: (type, fn, capture) => {
+      if(type === "keydown") keydown[capture ? "capture" : "bubble"] = fn;
+    },
+    hasFocus: () => true,
   },
   matchMedia: () => ({ matches: false, addEventListener() {} }),
   CustomEvent: class {
@@ -288,10 +294,11 @@ function element(attrs) {
     flat(UI.markup("`**x** https://a.b`")) === "<code>**x** https://a.b</code>");
   ok("linkify: an address up to the next space",
     flat(UI.linkify("see https://a.b/c, now")) === "see <a>https://a.b/c,</a> now");
+  const link = run("_link");
   ok("_link wears its label, or else its address",
-    UI._link("https://a.b", "here").kids[0] === "here"
-    && UI._link("https://a.b").kids[0] === "https://a.b"
-    && UI._link("https://a.b").props.target === "_blank");
+    link("https://a.b", "here").kids[0] === "here"
+    && link("https://a.b").kids[0] === "https://a.b"
+    && link("https://a.b").props.target === "_blank");
 
   //----------------------------------------------------------------------------------------- Title
 
@@ -312,27 +319,31 @@ function element(attrs) {
 
   //------------------------------------------------------------------------------------- Clipboard
 
-  ok("uncopy is private", UI.uncopy === undefined && typeof UI._uncopy === "function");
+  const hidden = ["uncopy", "_uncopy", "_wipe", "_wipeTimer", "_clip", "_scripts", "_MARKS"];
+  ok("the clipboard and the scripts keep their state to themselves",
+    hidden.every(name => UI[name] === undefined));
   const btn = { loading: false, icon: "content_copy" };
   const armed = () => timers.some(t => t.ms === 30000);
   // a text that never comes fails the copy, as it should: the wipe is what is checked
   await UI.copy(btn, Promise.reject(new Error("gone")), { clearAfter: 30 }).catch(() => {});
   await tick();
-  ok("copy: a text that never comes arms no wipe", UI._wipe === null && !armed());
+  ok("copy: a text that never comes arms no wipe", !armed());
   let give;
   const later = new Promise((resolve) => { give = resolve; });
   const written = UI.copy(btn, later, { clearAfter: 30 });
   await tick();
-  ok("copy: no wipe while the text is on its way", UI._wipe === null && !armed());
+  ok("copy: no wipe while the text is on its way", !armed());
   give("secret");
   await written;
   await tick();
-  ok("copy: the wipe is armed once the text has come",
-    typeof UI._wipe === "function" && armed() && clip === "secret");
+  ok("copy: the wipe is armed once the text has come", armed() && clip === "secret");
   const flash = timers.find(t => t.ms === 1200);
   flash?.fn();
   ok("copy: the check flashes and the copy glyph comes back",
     !!flash && btn.icon === "content_copy");
+  UI.uncopyNow();
+  await tick();
+  ok("uncopyNow wipes at once", clip === "");
 
   //---------------------------------------------------------------------------------------- Script
 
@@ -352,10 +363,53 @@ function element(attrs) {
   //--------------------------------------------------------------------------------------- Unmount
 
   let gone = false;
-  UI._unmount({ remove: () => { gone = true; } });
+  run("_unmount")({ remove: () => { gone = true; } });
   const last = timers.at(-1);
   last.fn();
   ok("_unmount waits out the transition, then removes", last.ms === 200 && gone);
+
+  //---------------------------------------------------------------------------------------- Escape
+
+  const escape = run("_escape");
+  // a stand-in overlay in the page, holding what is inside it
+  const overlay = (name) => ({ isConnected: true, contains: (node) => node.in === name });
+  // Escape from inside `place` as a page sends it: the document's capture,
+  // then the field it came from, which takes it when `taken`, then the document's bubble
+  function press(place, taken = false) {
+    const e = { key: "Escape", target: { in: place }, defaultPrevented: false, stopped: false };
+    e.preventDefault = () => { e.defaultPrevented = true; };
+    e.stopPropagation = () => { e.stopped = true; };
+    keydown.capture(e);
+    if(e.stopped) return e;
+    if(taken) e.preventDefault();
+    keydown.bubble(e);
+    return e;
+  }
+  const closed = [];
+  const offUnder = escape(overlay("under"), () => closed.push("under"));
+  const offTop = escape(overlay("top"), () => closed.push("top"));
+  ok("escape: the newest overlay alone closes",
+    press("top").defaultPrevented && closed.join() === "top");
+  offTop();
+  press("under", true);
+  ok("escape: a field inside the newest keeps the key", closed.join() === "top");
+  const offHeld = escape(overlay("held"), null);
+  ok("escape: one held open does nothing with a key from inside",
+    !press("held").defaultPrevented && closed.join() === "top");
+  const outside = press("under", true);
+  ok("escape: and keeps one from outside from those under it",
+    outside.stopped && outside.defaultPrevented && closed.join() === "top");
+  offHeld();
+  const field = press("page", true);
+  ok("escape: a key from outside the newest is its own before the field hears it",
+    field.stopped && closed.join() === "top,under");
+  offUnder();
+  ok("escape: with none open the key stays free", !press("page").defaultPrevented);
+  const left = overlay("left");
+  escape(left, null);
+  left.isConnected = false;
+  ok("escape: one held open, taken out of the page without its close, holds nothing",
+    !press("page").defaultPrevented);
 
   //----------------------------------------------------------------------------------------- Theme
 

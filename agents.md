@@ -12,3 +12,9 @@ Kept short on purpose: only what no other file says.
 **Libraries** are listed in `lib.tonkajsx.com/list.txt`, linked in `app.html` head, baked in by `build`.
 
 **Repos**: every app folder is a repo of its own; the root holds the CLI, `ui/` and `demo/`.
+
+**Search** inside the project folder: the root ignores app folders, so a search from the root skips them.
+
+**Kit** is edited in `ui/` alone; `scripts/ui` and `styles/ui` of an app are its copies, never changed there.
+
+**Checks** are `tonka test <name>`; `build`, `deploy` and git are the person's.

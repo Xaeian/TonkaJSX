@@ -1,6 +1,8 @@
 /* styles/ui/spinner.css */
 
 @layer components {
+  .spinner { display: inline-block; animation: spinner-rotate 0.9s linear infinite; }
+  @keyframes spinner-rotate { to { transform: rotate(360deg); } }
   .spinner-wrap { display: inline-flex; align-items: center; gap: var(--space-xs); }
   .spinner-wrap > .spinner { font-size: var(--text-lg); line-height: 1; }
   .spinner-wrap.sm > .spinner { font-size: var(--text-sm); }

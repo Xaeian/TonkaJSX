@@ -69,7 +69,7 @@ const ConfirmBtn = ({
     wait:    ["hourglass_top", waitLabel],
     confirm: ["check", confirmLabel],
   };
-  const iconEl = <span class="icon" translate={false}>{icon}</span>;
+  const iconEl = <Icon name={icon} />;
   const labelEl = <span>{label}</span>;
   const btn = (
     <button {...rest} color={_confirmColor(color, variant)}
@@ -77,7 +77,7 @@ const ConfirmBtn = ({
       <span>{iconEl}{labelEl}</span>
       {Object.values(steps).map(([ic, lb]) => (
         <span class="confirm-ghost">
-          <span class="icon" translate={false}>{ic}</span>
+          <Icon name={ic} />
           <span>{lb}</span>
         </span>
       ))}

@@ -21,7 +21,8 @@ const Layout = () => (
     <h4>row, stack, inline</h4>
     <p>
       A <code>row</code> lays its children in a line that wraps, a <code>stack</code> in a column.
-      An <code>inline</code> holds an icon to its words, a <code>spacer</code> fills the gap.
+      An <code>inline</code> holds an <code>Icon</code> to its words.
+      A <code>spacer</code> fills the gap.
       A <code>sep</code> dots two things apart, or draws a rule across a stack.
     </p>
     <stack gap="xs">
@@ -30,7 +31,7 @@ const Layout = () => (
         <Badge variant="tint" size="sm" color="wrn">draft</Badge>
         <spacer />
         <inline tone="meta">
-          <span class="icon" translate={false} size="sm">schedule</span>
+          <Icon name="schedule" size="sm" />
           2h ago
         </inline>
         <sep />
@@ -99,7 +100,7 @@ const Layout = () => (
       {LAYOUT_LOG.map(([icon, color, time, message]) => (
         <row gap="sm" nowrap align="baseline" pad="xs" glow edge wash={icon === "error"}
           color={icon !== "info" && color}>
-          <span class="icon" translate={false} size="sm" color={color}>{icon}</span>
+          <Icon name={icon} size="sm" color={color} />
           <span tone="tag" basis="sm">{time}</span>
           <span grow wrap>{message}</span>
         </row>

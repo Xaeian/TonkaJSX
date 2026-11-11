@@ -1,5 +1,10 @@
 ## Changes 🌰TonkaJSX
 
+### `1.2.7` CI
+
+- An app repository runs `test` on GitHub _(`.github/workflows/app.yml`)_
+- TonkaUI: `Icon`, Escape and shell fixes
+
 ### `1.2.6` Tests
 
 - `test` checks scripts and runs suites of a project _(`.tests/*.test.js`)_

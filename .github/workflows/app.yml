@@ -1,0 +1,48 @@
+# .github/workflows/app.yml
+
+# The standard run of an app's tests: `tonka test` in a fresh TonkaJSX workspace,
+# on Windows with Edge, as on its developer's computer,
+# and the library the tests read from `.r2/scripts` as lib.tonkajsx.com publishes it.
+# Whatever else an app's tests need, the app brings itself.
+# An app repository calls it at `main`, the TonkaJSX its developer has:
+# `uses: Xaeian/TonkaJSX/.github/workflows/app.yml@main`
+
+name: App
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: bash
+    env:
+      APP: ${{ github.event.repository.name }}
+    steps:
+      # the app in a fresh TonkaJSX workspace
+      - uses: actions/checkout@v7
+        with:
+          repository: Xaeian/TonkaJSX
+      - uses: actions/checkout@v7
+        with:
+          path: ${{ env.APP }}
+      # every file `list.txt` names, where a developer keeps the library
+      - run: |
+          mkdir -p .r2/scripts
+          curl -fsSL https://lib.tonkajsx.com/list.txt | tr -d '\r' \
+            | grep -oE '^[A-Za-z0-9._-]+\.js' \
+            | while read -r name; do
+                curl -fsSL -o ".r2/scripts/$name" "https://lib.tonkajsx.com/$name"
+              done
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: node tonka.js test "$APP"

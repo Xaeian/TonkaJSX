@@ -123,7 +123,7 @@ const App = () => {
         <Footer left={sectionTag} right={<>{clicksTag}{itemsTag}</>}
           center={<>
             <inline>
-              2026<span class="icon" translate={false}>copyright</span>{{title}} {{ver}}
+              2026<Icon name="copyright" />{{title}} {{ver}}
             </inline>
             <sep hide-narrow />
             <span hide-narrow>

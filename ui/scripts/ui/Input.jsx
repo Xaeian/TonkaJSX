@@ -10,7 +10,7 @@ function _group(field, { icon, trailing, size, ghost, placeholder, disabled, acc
   class: className, ...rest }) {
   const wrap = (
     <div {...rest} class={["input-group", size, ghost && "input-group-ghost", className]}>
-      {icon && <span class="icon" translate={false}>{icon}</span>}
+      {icon && <Icon name={icon} />}
       {field}
       {trailing}
     </div>
@@ -41,7 +41,7 @@ function _keys(wrap, { onChange, onEnter, onEscape, onKeyDown }) {
 // Trailing X that wipes the field, inert and unseen while there is nothing to wipe;
 // it keeps its place in the layout, so the width never jumps
 function _clearBtn(field, onChange) {
-  const btn = <span class="icon input-group-btn" translate={false} title="Clear">close</span>;
+  const btn = <Icon name="close" class="input-group-btn" title="Clear" />;
   btn.sync = () => { btn.inert = !field.value; };
   field.addEventListener("input", btn.sync);
   btn.addEventListener("click", () => {
@@ -104,46 +104,6 @@ const Input = ({ type = "text", value, clear, suggest, name, onChange, onEnter, 
 };
 
 /**
- * One line of a form: its name on the left, its controls on the right.
- *
- * A dozen settings packed several to a line is a wall;
- * laid out as a sheet they read one at a time,
- * which is the shape anything with more of them than a row can carry ends up in.
- *
- * @param {string} label
- * @param {...(Element|null)} ctrl  a null does not appear,
- *   so a field that belongs to one case only can be passed on every call
- */
-function formRow(label, ...ctrl) {
-  return (
-    <row>
-      <strong flex="2">{label}</strong>
-      <row flex="10">{ctrl}</row>
-    </row>
-  );
-}
-
-/**
- * What the lines above mean, in the controls' own column.
- * @param {...Element} lines
- */
-function formNote(...lines) {
-  return (
-    <row>
-      <span flex="2"></span>
-      <stack flex="10" gap="no">{lines}</stack>
-    </row>
-  );
-}
-
-/**
- * One control with its own small name, for a line that carries several.
- * @param {string} label
- * @param {Element} ctrl
- */
-const named = (label, ctrl) => <inline gap="sm" nowrap><i>{label}</i>{ctrl}</inline>;
-
-/**
  * Number input; `.value` and every handler give `null` for an empty field.
  *
  * Mutators: .value, .disabled, .placeholder, .title, .focus(), .input
@@ -201,14 +161,12 @@ const PasswordInput = ({ value, icon = "lock", name, onChange, onEnter, onEscape
   }
   // the eye tells the state: crossed while the value hides, open while it shows;
   // its tooltip names no "password", since the field holds a secret, a key or a token as often
-  const eye = (
-    <span class="icon input-group-btn" translate={false} title="Show">visibility_off</span>
-  );
+  const eye = <Icon name="visibility_off" class="input-group-btn" title="Show" />;
   UI.title(eye);
   eye.addEventListener("click", () => {
     const show = hidden();
     mask(!show);
-    eye.textContent = show ? "visibility" : "visibility_off";
+    eye.name = show ? "visibility" : "visibility_off";
     eye.title = show ? "Hide" : "Show";
   });
   const wrap = _group(field, { ...rest, icon, trailing: eye });

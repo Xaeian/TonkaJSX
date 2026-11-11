@@ -1,3 +1,5 @@
+// scripts/Structure.jsx
+
 const Branch = ({ pre, name, note, cls }) => (
   <div class={"tree-line" + (cls ? " " + cls : "")}>
     <span class="tree-pre">{pre}</span>
@@ -8,7 +10,7 @@ const Branch = ({ pre, name, note, cls }) => (
 
 const Folder = ({ pre, name, note, cls, open: initOpen, children }) => {
   let open = !!initOpen;
-  const arrow = <span class="tree-arrow">{open ? '▾' : '▸'}</span>;
+  const arrow = <span class="tree-arrow">{open ? "▾" : "▸"}</span>;
   const kids = <div class="tree-kids" style={open ? "" : "display:none"}>{children}</div>;
   const line = (
     <div class={"tree-line folder" + (cls ? " " + cls : "")}>
@@ -18,10 +20,10 @@ const Folder = ({ pre, name, note, cls, open: initOpen, children }) => {
       <span class="tree-note">({note})</span>
     </div>
   );
-  line.addEventListener('click', () => {
+  line.addEventListener("click", () => {
     open = !open;
-    kids.style.display = open ? '' : 'none';
-    arrow.textContent = open ? '▾' : '▸';
+    kids.style.display = open ? "" : "none";
+    arrow.textContent = open ? "▾" : "▸";
   });
   return <div class="tree-folder">{line}{kids}</div>;
 };
@@ -34,11 +36,15 @@ const Structure = () => (
       Structure is partly opinionated, but not too strict.
     </p>
     <div class="tree">
-      <Branch pre="├─" name="tonka.js" note="CLI entry: tonka serve / tonka build / tonka deploy" cls="accent" />
+      <Branch pre="├─" name="tonka.js" note="CLI entry: tonka serve / build / deploy / pipe / test" cls="accent" />
       <Branch pre="├─" name="build.js" note="packs project into production index.html" />
       <Branch pre="├─" name="serve.js" note="dev server; serves index.html or app.html + injected links" />
-      <Branch pre="├─" name="deploy.js" note="puts built index.html on a Cloudflare Worker" />
-      <Branch pre="├─" name="utils.js" note="shared helpers for build.js, serve.js + deploy.js" />
+      <Branch pre="├─" name="deploy.js" note="puts built index.html on a Cloudflare Worker or in a folder" />
+      <Branch pre="├─" name="pipe.js" note="builds and deploys every app a list names" />
+      <Branch pre="├─" name="test.js" note="checks a project's scripts, runs its .tests/ suites" />
+      <Branch pre="├─" name="check.js" note="reads a project's scripts as build does" />
+      <Branch pre="├─" name="pipe.txt" note="optional; apps for tonka pipe with their build flags" />
+      <Branch pre="├─" name="utils.js" note="shared helpers for every script" />
       <Branch pre="├─" name="package.json" note="npm config + bin for CLI" />
       <Folder pre="└─" name="<project>/" note="one of many projects inside workspace" open={true}>
         <Branch pre="   ├─" name="app.html" note="required entry for dev" cls="accent" />

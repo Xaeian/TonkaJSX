@@ -12,7 +12,7 @@ function _height(height) {
 // A short file can afford that on every keystroke;
 // past this many characters it cannot, so its colours land once the typing has settled instead.
 const _PAINT_ALL = 40000;
-const _PAINT_MS = 120;
+const _PAINT_ms = 120;
 
 /**
  * Source in its own colours, to read or to write.
@@ -37,6 +37,8 @@ const _PAINT_MS = 120;
 const Code = ({ value = "", lang, height, readOnly, wrap, numbers, onChange,
   class: className, ...rest }) => {
   const paint = <pre class="code-paint" aria-hidden="true"></pre>;
+  // The stylesheet folds the field and the paint alike, `wrap` or not.
+  // A native `wrap` on the field would also meet the kit's `[wrap]` and fold the field alone.
   const field = <textarea class="code-field" spellcheck={false}></textarea>;
   const el = (
     <div {...rest} {..._height(height)}
@@ -59,11 +61,10 @@ const Code = ({ value = "", lang, height, readOnly, wrap, numbers, onChange,
   function repaintSoon() {
     if(field.value.length < _PAINT_ALL) { repaint(); return; }
     clearTimeout(_soon);
-    _soon = setTimeout(repaint, _PAINT_MS);
+    _soon = setTimeout(repaint, _PAINT_ms);
   }
 
   field.value = value ?? "";
-  field.wrap = wrap ? "soft" : "off";
   field.addEventListener("input", () => { repaintSoon(); onChange?.(field.value); });
   field.addEventListener("scroll", () => {
     paint.scrollTop = field.scrollTop;

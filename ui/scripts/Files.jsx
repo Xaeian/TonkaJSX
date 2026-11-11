@@ -21,7 +21,7 @@ const FIRMWARE = Uint8Array.from([
 const Files = () => {
   const rows = LISTING.map(([name, bytes]) => ({
     name, bytes,
-    glyph: <span class="icon" translate={false} color={Kind.color(name)}>{Kind.icon(name)}</span>,
+    glyph: <Icon name={Kind.icon(name)} color={Kind.color(name)} />,
     size: Kind.sizeText(bytes),
     opens: Kind.opens(name, bytes),
     main: Kind.main(name),

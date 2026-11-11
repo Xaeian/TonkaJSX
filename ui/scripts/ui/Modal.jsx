@@ -39,10 +39,10 @@ const Modal = ({ title, size, noClose, noClickAway, once, actions, footer, onCha
   );
   const root = <div {...rest} class={["modal", className]} hidden>{dialog}</div>;
 
-  // Tab cycles inside the dialog
+  // Tab cycles inside the dialog; one taken out of the page without its close traps nothing
   const focusable = () => UI.focusable(dialog);
   function trap(e) {
-    if(e.key !== "Tab") return;
+    if(e.key !== "Tab" || !root.isConnected) return;
     const list = focusable();
     if(!list.length) { e.preventDefault(); return; }
     const first = list[0], last = list[list.length - 1];
@@ -65,7 +65,7 @@ const Modal = ({ title, size, noClose, noClickAway, once, actions, footer, onCha
     },
     onClose: () => {
       document.removeEventListener("keydown", trap);
-      if(once) UI._unmount(root);
+      if(once) _unmount(root);
       onChange?.(false);
     },
   });

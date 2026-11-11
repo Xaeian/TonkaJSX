@@ -37,7 +37,7 @@ const Img = ({ src, alt, height, width, maxWidth, fit = "contain", minSquare, ro
   // given one side alone, the other follows the picture
   const heightOnly = h && !w, widthOnly = w && !h;
   const img = <img class="image-inner" alt={alt || ""} loading="lazy" />;
-  const iconEl = <span class="icon" translate={false}></span>;
+  const iconEl = <Icon />;
   const el = (
     <div {...rest} onClick={onClick} height={h?.preset} width={w?.preset}
       style={{ "--image-h": h?.length, "--image-w": w?.length, "--image-max-w": mw }}

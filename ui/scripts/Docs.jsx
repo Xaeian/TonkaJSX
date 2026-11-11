@@ -129,7 +129,7 @@ const Docs = () => {
       <stack gap="xs">
         {facts.map(([icon, label, value]) => (
           <row gap="sm" tone="meta" nowrap>
-            <span class="icon" translate={false}>{icon}</span>
+            <Icon name={icon} />
             <span flex="1">{label}</span>
             <span>{value}</span>
           </row>
@@ -150,7 +150,7 @@ const Docs = () => {
 
   function renderStatus() {
     statusBar.replaceChildren(
-      <span class="icon" translate={false}>filter_list</span>,
+      <Icon name="filter_list" />,
       <span>{bucket.label}</span>,
       <sep />,
       <span>{visible().length} of {DOCS.length} documents</span>,
@@ -177,7 +177,7 @@ const Docs = () => {
           <row gap="sm">
             <IconBtn icon="menu_open" title="Toggle filters" variant="ghost"
               onClick={() => { navDock.hidden = !navDock.hidden; }} />
-            <span class="icon" translate={false}>menu_book</span>
+            <Icon name="menu_book" />
             <strong>Documents</strong>
           </row>
           <row gap="sm">

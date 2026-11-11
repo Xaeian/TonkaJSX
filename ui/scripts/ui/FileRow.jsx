@@ -17,7 +17,7 @@ const FileRow = ({ name, size, meta, actions, class: className, children, ...res
   return (
     <Panel {...rest} inline stripe class={["file-row", className]} color={color}
       actions={actions}>
-      <span class="icon" translate={false} color={color}>{Kind.icon(name)}</span>
+      <Icon name={Kind.icon(name)} color={color} />
       {children}
       <spacer />
       {size != null && (

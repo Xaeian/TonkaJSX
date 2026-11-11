@@ -11,7 +11,7 @@ Structure is partly opinionated, but not too strict.
 
 ```
 ROOT/                  (your workspace folder; name doesn't matter)
-├─ tonka.js            (CLI entry: `tonka serve` / `tonka build` / `tonka deploy` / `tonka pipe`)
+├─ tonka.js            (CLI entry: `tonka serve` / `build` / `deploy` / `pipe` / `test`)
 ├─ build.js            (packs project into production `index.html`)
 ├─ serve.js            (dev server; serves `index.html` if exists else `app.html` + injected links)
 ├─ deploy.js           (puts built `index.html` on a Cloudflare Worker or in a folder)
@@ -58,6 +58,8 @@ tonka pipe [<list>] [--dry] # build and deploy every app of a list
 tonka test [<project-name>] # run tests of project, or of all
 ```
 
+`test`, `deploy` and `pipe` in depth: [pipeline.md](pipeline.md).
+
 Build supports optional optimization flags:
 
 ```sh
@@ -73,7 +75,7 @@ tonka build -i -f 800kB -s -c -l "Material Symbols"
 | `-t` | `--subset-text "Name"` | Subset text font to chars found in source |
 | `-l` | `--subset-ligature "Name"` | Subset icon font to ligatures found in source |
 
-`-t` and `-l` imply `-f`. Without flags, build works as before.
+`-t` and `-l` imply `-f`.
 `[size]` is `800kB` or `10MB`, and a file above it keeps its address instead of moving in.
 Build then prints how big `index.html` came out and what stayed outside.
 
@@ -81,7 +83,7 @@ Server and build work on chosen project. If you don't pass a project name, it pi
 If project contains `app.ini`, variables defined there are replaced in all JS/JSX/CSS/HTML files using `{{key}}` syntax. Top-level values are shared; `[serve]` and `[build]` sections override per mode.
 Built-in `{{date}}` and `{{time}}` are always available, and values may reference other vars, e.g. `foot = Build {{date}}`.
 A `#` or `;` after a value starts a comment, so a value holding one is quoted.
-`[deploy]` and `[worker]` say where `tonka deploy` puts built page, see [deploy.md](deploy.md).
+`[deploy]` and `[worker]` say where `tonka deploy` puts built page, see [pipeline.md](pipeline.md#deploy).
 
 ```ini
 title = TonkaJSX
@@ -97,27 +99,6 @@ If not, server uses `app.html` and injects styles from `styles/` and scripts fro
 With `--remove`/`-r` server first deletes a built `index.html`, so you're sure it serves the app you're editing.
 Script order matters: load `.js` first, then `.jsx`. Files in deeper folders load before files in parent folders.
 All other files are served as static assets, exactly as they are in project folder.
-During build you can inline remote styles and scripts with `--inline-remote` (good for offline use).
-
-`tonka pipe` ships many apps in one go: each gets `tonka test`, then `build` with its flags, then `deploy -r`.
-The list is a text file in workspace, `pipe.txt` unless named, one app per line with its build flags; a line starting with `#` is a comment.
-
-```
-shop -f -s
-blog -m "Update libs"
-docs
-```
-
-```sh
-tonka pipe       # every app of pipe.txt
-tonka pipe all   # every app of all.txt
-tonka pipe --dry # show the commands, run nothing
-```
-
-`-m` in a line commits what changed in that app before its build, and pushes the commit once the page is out.
-App with no change commits nothing, and a branch with no upstream keeps the commit local.
-A line goes to `deploy` too, so `-w test` works there.
-Every line is checked before the first app goes, and the first failure stops the run, a red test as much as a failed build.
 
 ## 💡 Example
 

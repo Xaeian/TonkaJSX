@@ -1,3 +1,5 @@
+// scripts/Hero.jsx
+
 const Hero = () => (
   <section class="hero">
     <h1><img src="tonka.svg" alt="T" width="50" height="50" />onka<code>JSX</code></h1>

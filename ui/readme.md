@@ -50,14 +50,14 @@ A page needs `jsx.js` of the library.
 | | `hide-narrow` `only-narrow` |
 
 A text tag (`span strong code b i small p`) with `flex` or `basis` cuts its text with an ellipsis.
-An `.icon` takes `color=` and `size="sm"`, and sits mid-word in a row with `align="baseline"`.
+An `<Icon name>` takes `color=` and `size="sm"`, and sits mid-word in a row with `align="baseline"`; `.name` changes its glyph.
 
 Narrow screens (≤ 720px): weighted children of a `row` take a line each unless the row is `nowrap`, a panel head and an inline panel's content wrap, an inline panel with actions puts them under its content unless it is `nowrap`, the topbar wraps and folds its `fold` children under More, a modal takes the width, `hide-narrow` hides and `only-narrow` shows only there.
 A footer under 700px wide gives its centre up to the side slots that hold something.
-The shell is one screen tall in `dvh`, so a phone's sliding toolbars leave no strip of page to scroll past; a view scrolls inside it.
+The shell is pinned to the window, so neither a phone's sliding toolbars nor anything that scrolls the page, such as an extension's box beside a field, moves it; a view scrolls inside it.
 
 Colours: `neutral inf ok wrn err` and `red orange amber green teal blue purple pink gray`, everywhere as `color=`.
-Sizes: `size="sm"` or `size="lg"`; a Modal also takes `xl`, a QrCode takes pixels, an `.icon` takes `sm` alone.
+Sizes: `size="sm"` or `size="lg"`; a Modal also takes `xl`, a QrCode takes pixels, an Icon takes `sm` alone.
 An Img's `height` and `width` take `sm md lg` (40, 80, 160px), a Code's or a Markdown's `height` `sm md lg` (12rem, 20rem, a page); each also takes a length.
 `title` is the kit tooltip, and the heading on a component that has one; `hidden` hides anything; native attributes pass through to root element.
 
@@ -183,13 +183,14 @@ const menu = <Menu title="Actions">...</Menu>;
 menu.toggle(anchorBtn);
 ```
 
-- `Alert.inf ok wrn err(msg, ms)`, `.show(type, msg, ms)`, `.ask(type, msg, {ok, cancel})`, `.clear()`, `.config({max})`: the same message refreshes its toast, `ms` 0 keeps one until dismissed, past `max` the oldest goes.
+- `Alert.inf ok wrn err(msg, ms)`, `.show(type, msg, ms)`, `.ask(type, msg, {ok, cancel})`, `.clear()`, `.config({max})`: the same message refreshes its toast, `ms` 0 keeps one until dismissed, past `max` the oldest goes, and a question that goes so, or by `.clear()`, answers no; the focus goes back from a question only when the question held it.
 - `Badge color variant="solid|tint|outline" size icon mono pos` with `.color .text .title`; `mono` also selects it whole on a click.
 - `Spinner color size text`; `Progress value max color size label` with `.value`, indeterminate without one.
 - `Img src alt height width maxWidth fit minSquare rounded circle border fallbackText` with `.src .loading`.
 - `Modal title size noClose noClickAway once actions footer onChange`: Escape, the backdrop and its close button dismiss it, a press on a toast never does, and `once` takes it out of the page on close.
 - `Menu title pos width offsetX onChange` opens at `.open(anchor)`, one menu for many anchors; `Lightbox.open(src, alt)` shows a picture full size.
-- Overlays share `.open() .close() .toggle() .opened`.
+- Overlays share `.open() .close() .toggle() .opened`; one taken out of the page without `.close()` holds neither Escape nor a Modal's Tab.
+- Escape closes the newest overlay alone, an `Alert.ask` among them; a `noClose` Modal holds it, and a field inside the newest keeps the key to itself with `onEscape`.
 - A tooltip follows a mouse or a pen, never a finger; `data-tooltip-pos` places it.
 
 **Code**
@@ -235,6 +236,7 @@ scripts/
   ui/kind.js         what a file name says, Kind
   ui/dump.js         bytes as text, Dump
   ui/syntax.js       languages Code paints, Syntax
+  ui/Form.jsx        lines of a form: formRow, formNote, named
   ui/<Component>.jsx
 styles/
   face/              tokens, reset, fonts, icons

@@ -15,7 +15,7 @@
  * @param {Element|Element[]|string} [props.children]
  */
 const Button = ({ variant, size, icon, active, class: className, children, ...rest }) => {
-  const iconEl = icon && <span class="icon" translate={false}>{icon}</span>;
+  const iconEl = icon && <Icon name={icon} />;
   const labelEl = <span class="btn-label">{children}</span>;
   const btn = (
     <button {...rest} class={["btn", variant && "btn-" + variant, size, className]}>

@@ -408,9 +408,9 @@ With Tonka UI:
 - Native attributes pass through every component to its root element
 - `title` is kit tooltip, never the native one;
   on a component with a heading of its own (Panel, Modal, Menu, Empty, FileDrop) it is that heading
-- An icon span carries `translate={false}`: its glyph is a ligature of its name,
-  and a browser translating the page would turn `lock` into a word.
-  Not `translate="no"`: `translate` is a boolean property, and the string reads true
+- An icon is `<Icon name="lock" />`, never a span of one's own:
+  its glyph is a ligature of its name, and `Icon` keeps it out of a browser's translation,
+  which would turn `lock` into a word
 - Layout through kit tags and their attributes: `<row>`, `<stack>`, `<list>`, `gap`, `fill`.
   Never `style={...}` and never a raw element with a class of your own
 

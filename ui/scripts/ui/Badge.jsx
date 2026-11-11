@@ -15,17 +15,21 @@
  * @param {"top-right"|"top-left"|"bottom-right"|"bottom-left"} [props.pos]
  * @param {Element|Element[]|string} [props.children]
  */
-const Badge = ({ color = "neutral", variant = "solid", size, icon, pos, class: className,
-  children, ...rest }) => {
+const Badge = ({ color, variant = "solid", size, icon, pos, class: className, children,
+  ...rest }) => {
   const textEl = <span class="badge-text">{children}</span>;
   const el = (
-    <span {...rest} color={color}
+    <span {...rest}
       class={["badge", "badge-" + variant, size, className, pos && "badge-abs badge-" + pos]}>
-      {icon && <span class="icon" translate={false}>{icon}</span>}
+      {icon && <Icon name={icon} />}
       {textEl}
     </span>
   );
-  UI.prop(el, "color", () => el.getAttribute("color"), (v) => el.setAttribute("color", v));
+  // a badge wears its colour whole, so one taken away is the default, never none
+  UI.prop(el, "color",
+    () => el.getAttribute("color"),
+    (v) => el.setAttribute("color", v || "neutral"));
+  el.color = color;
   UI.text(el, "text", textEl);
   UI.title(el);
   return el;

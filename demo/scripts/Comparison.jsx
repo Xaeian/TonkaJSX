@@ -1,3 +1,5 @@
+// scripts/Comparison.jsx
+
 const Star = ({ on }) => <span class={on ? "star" : "star off"}>★</span>;
 const Stars = ({ n }) => <td>{[1,2,3].map(i => <Star on={i <= n} />)}</td>;
 

@@ -28,7 +28,7 @@ const Login = ({ session, class: className, ...rest }) => {
     <div class="login-panel" hidden>
       <stack gap="no" class="login-fields">{userIn}{passIn}{errorEl}</stack>
       <button class="login-submit" onClick={submit}>
-        <span class="icon" translate={false}>login</span>
+        <Icon name="login" />
       </button>
     </div>
   );

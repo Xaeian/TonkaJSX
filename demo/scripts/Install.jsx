@@ -1,3 +1,5 @@
+// scripts/Install.jsx
+
 const Install = () => (
   <Section title="Install">
     <p class="subdesc">

@@ -10,7 +10,7 @@
  */
 const Spinner = ({ color, size, text, class: className, ...rest }) => (
   <span {...rest} class={["spinner-wrap", size, className]}>
-    <span class="spinner icon" translate={false} color={color}>{_SPIN_ICON}</span>
+    <Icon name={_SPIN_ICON} class="spinner" color={color} />
     <span class="spinner-text">{text}</span>
   </span>
 );

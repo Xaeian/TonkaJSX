@@ -29,7 +29,9 @@
   // a button by its words, looked for inside: its icon's ligature is text as well
   const button = (words, root = cur()) =>
     qa(".btn", root).find((b) => b.textContent.includes(words));
-  const key = (el, k) => el.dispatchEvent(new KeyboardEvent("keydown", { key: k, bubbles: true }));
+  // a key as a keyboard sends it, one a handler may take for itself with `preventDefault`
+  const key = (el, k) =>
+    el.dispatchEvent(new KeyboardEvent("keydown", { key: k, bubbles: true, cancelable: true }));
   function typed(group, text) {
     group.value = text;
     group.input.dispatchEvent(new Event("input"));
@@ -70,7 +72,7 @@
       FileRow, FileThumb, Table, Columns, Button, IconBtn, ActiveBtn, Toggle, ToggleBtn,
       ConfirmBtn, IconConfirmBtn, Input, NumberInput, PasswordInput, SearchInput, Textarea,
       DatePicker, Select, Checkbox, Badge, Progress, Spinner, Img, Modal, Lightbox, Menu, Alert,
-      Tooltip, Login, Code, Markdown, QrCode, QrScan, ColorPicker, IconPicker, formRow,
+      Tooltip, Login, Code, Markdown, QrCode, QrScan, ColorPicker, IconPicker, Icon, formRow,
       formNote, named,
     ];
     ok("globals", globals.every(Boolean));
@@ -80,6 +82,17 @@
       && vis(q(".shell-main > .content"))
       && vis(q(".shell-main > .footer")));
     ok("one view shows", qa(".content > *").filter(vis).length === 1);
+    // a box from outside the app, an extension's beside a field, reaching below the window
+    const stray = document.createElement("div");
+    stray.style.cssText = `position:absolute;left:0;top:${innerHeight - 50}px;height:900px`;
+    document.body.appendChild(stray);
+    stray.scrollIntoView();
+    await frame(100);
+    const pinned = q(".shell").getBoundingClientRect();
+    ok("the page scrolled away leaves the shell in the window",
+      pinned.top === 0 && pinned.bottom === innerHeight, `${pinned.top}..${pinned.bottom}`);
+    stray.remove();
+    document.scrollingElement.scrollTop = 0;
     ok("rail has every panel", PANELS.every(nav) && rail().length === PANELS.length + 1);
     for(const title of PANELS) {
       nav(title).click();
@@ -195,6 +208,12 @@
     ok("align baseline", css(logLines[0], "alignItems") === "baseline");
     ok("a baseline icon sits mid-word", css(q(".icon", logLines[0]), "translate") !== "none");
     ok("small icon", css(q(".icon[size='sm']", view), "fontSize") === "14px");
+    const glyph = JSX.createElement(Icon, { name: "lock", size: "sm", color: "red" });
+    glyph.name = "key";
+    ok("icon",
+      glyph.matches(".icon[size='sm'][color='red']")
+      && glyph.translate === false
+      && glyph.textContent === "key");
     ok("wrap keeps breaks", css(q("[wrap]", view), "whiteSpace") === "pre-wrap");
     const stretched = q("stack[stretch]", view);
     ok("stretch spans the row",
@@ -326,8 +345,29 @@
     // a toast closed in the frame it opened in leaves the page one transition later
     await frame(300);
     ok("alert max", alerts().join() === "burst 2,burst 3", alerts().join());
+    // a question taken away without an answer says no
+    Alert.config({ max: 1 });
+    const pushed = Alert.ask("inf", "pushed?");
+    Alert.inf("newer", 0);
+    ok("a question pushed out by the limit says no", (await pushed) === false);
     Alert.config({ max: 5 });
+    const cleared = Alert.ask("inf", "cleared?");
     Alert.clear();
+    ok("a question cleared away says no", (await cleared) === false);
+    // a question that goes leaves the focus where the person went meanwhile
+    const typing = JSX.createElement(Input, {});
+    cur().append(typing);
+    const away = Alert.ask("inf", "while typing?");
+    typing.focus();
+    Alert.clear();
+    ok("a question cleared away leaves the focus in the field",
+      (await away) === false && document.activeElement === typing.input);
+    const skipped = Alert.ask("inf", "escape elsewhere?");
+    typing.focus();
+    key(typing.input, "Escape");
+    ok("escape from a field answers no and leaves the focus there",
+      (await skipped) === false && document.activeElement === typing.input);
+    typing.remove();
 
     //------------------------------------------------------------------------------------- Loaders
 
@@ -343,6 +383,12 @@
     ok("progress indeterminate", !!q(".progress-indeterminate", view));
     ok("spinner colour",
       css(q(".spinner[color='err']", view), "color") !== css(document.body, "color"));
+    ok("spinner turns", css(q(".spinner", view), "animationName") === "spinner-rotate");
+    const plain = JSX.createElement(Badge, {}, "x");
+    const tinted = JSX.createElement(Badge, { color: "ok" }, "x");
+    tinted.color = null;
+    ok("a badge without a colour wears the default",
+      plain.getAttribute("color") === "neutral" && tinted.getAttribute("color") === "neutral");
 
     //-------------------------------------------------------------------------------------- Panels
 
@@ -371,6 +417,21 @@
     typed(q(".panel-toolbar .input-group", people), "zzz");
     ok("toolbar filter", q(".panel-body > list", people).hidden && vis(q(".empty", people)));
     typed(q(".panel-toolbar .input-group", people), "");
+    // a tabbed panel in a pane of another keeps its own panes through the outer's turns
+    const tabs = (...keys) => keys.map((k) => ({ key: k, label: k }));
+    const pane = (k, child) => JSX.createElement(TabPanel, { value: k }, child);
+    const inner = JSX.createElement(Panel, { tabs: tabs("i1", "i2") },
+      pane("i1", "one"), pane("i2", "two"));
+    const outer = JSX.createElement(Panel, { tabs: tabs("o1", "o2") },
+      pane("o1", inner), pane("o2", "three"));
+    const innerShows = () => qa(":scope > .panel-body > [data-tab]", inner)
+      .filter((p) => !p.hidden)
+      .map((p) => p.dataset.tab)
+      .join();
+    const before = innerShows();
+    outer.value = "o2";
+    outer.value = "o1";
+    ok("nested tabs keep their own", before === "i1" && innerShows() === "i1", innerShows());
 
     //--------------------------------------------------------------------------------------- Cards
 
@@ -454,6 +515,69 @@
     ok("noClickAway", form.opened);
     form.close();
     await frame(300);
+
+    // Escape answers the newest overlay alone
+    const layer = (props, ...kids) => JSX.createElement(Modal, { once: true, ...props }, ...kids);
+    const under = layer({ title: "Under" }, "work");
+    under.open();
+    await frame(100);
+    const pop = JSX.createElement(Menu, {}, JSX.createElement(Button, {}, "item"));
+    pop.open(q(".modal-title", under));
+    await frame(100);
+    key(document, "Escape");
+    await frame(300);
+    ok("escape closes a menu over a modal, the modal stays", !pop.opened && under.opened);
+    const answer = Alert.ask("wrn", "Leave?");
+    await frame(50);
+    key(document, "Escape");
+    ok("escape says no to a question over a modal, the modal stays",
+      (await answer) === false && under.opened);
+    const over = layer({ title: "Over" }, "more");
+    over.open();
+    await frame(100);
+    key(document, "Escape");
+    await frame(300);
+    ok("escape closes the top modal alone", !over.opened && under.opened);
+    const held = layer({ title: "Held", noClose: true }, "wait");
+    held.open();
+    await frame(100);
+    key(document, "Escape");
+    await frame(100);
+    ok("a modal held open keeps escape from the one under it", held.opened && under.opened);
+    held.close();
+    let heard = false;
+    const field = JSX.createElement(Input, { onEscape: () => { heard = true; } });
+    const editing = layer({ title: "Field" }, field);
+    editing.open();
+    await frame(100);
+    // a menu with nothing to take the focus leaves it in the field, outside the menu
+    const bare = JSX.createElement(Menu, {}, "nothing to focus");
+    bare.open(field);
+    await frame(100);
+    field.focus();
+    key(field.input, "Escape");
+    await frame(300);
+    ok("a key from outside the newest overlay is its own",
+      !bare.opened && !heard && editing.opened);
+    key(field.input, "Escape");
+    await frame(100);
+    ok("a field's onEscape keeps its modal open", heard && editing.opened);
+    editing.close();
+    // a modal held open but taken out of the page without its close holds no key
+    const lost = layer({ title: "Lost", noClose: true }, "gone");
+    lost.open();
+    await frame(100);
+    lost.remove();
+    const tab = new KeyboardEvent("keydown", { key: "Tab", bubbles: true, cancelable: true });
+    document.body.dispatchEvent(tab);
+    key(document, "Escape");
+    await frame(300);
+    ok("a modal taken out without its close holds neither Escape nor Tab",
+      !under.opened && !tab.defaultPrevented);
+    lost.close();
+    pop.remove();
+    bare.remove();
+    await frame(400);
 
     //--------------------------------------------------------------------------------------- Menus
 
@@ -618,6 +742,15 @@
       return sampleBox.lang === id && !!q(".code-paint [class^='cd-']", sampleBox);
     });
     ok("every sample paints", painted.length === ids.length);
+    // a box that does not fold keeps its field over its paint, however long the line
+    const long = JSX.createElement(Code, { value: "x".repeat(520), height: "sm" });
+    view.append(long);
+    await frame(100);
+    const fieldBox = q(".code-field", long), paintBox = q(".code-paint", long);
+    const extent = (el) => `${el.scrollWidth}x${el.scrollHeight}`;
+    ok("an unfolded field lies over its paint", extent(fieldBox) === extent(paintBox),
+      `${extent(fieldBox)} over ${extent(paintBox)}`);
+    long.remove();
     const md = q(".markdown", view);
     ok("markdown renders",
       !!q("h1", md)

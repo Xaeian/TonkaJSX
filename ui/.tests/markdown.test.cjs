@@ -1,7 +1,7 @@
 // .tests/markdown.test.cjs
 //
 // `scripts/ui/Markdown.jsx` in its two passes, over the library's real `jsx.js`,
-// the kit's `ui.js`, `kind.js` and `syntax.js`, and its own `Checkbox` and `Code`,
+// the kit's `ui.js`, `kind.js` and `syntax.js`, and its own `Icon`, `Checkbox` and `Code`,
 // compiled by Babel as `tonka build` compiles them.
 // `_mdParse` gives plain blocks: headings, lists and their numbers, tables, quotes in quotes,
 // fences, rules and hard breaks.
@@ -91,6 +91,7 @@ class FakeElement extends FakeNode {
 }
 
 const document = {
+  addEventListener() {}, // the kit's Escape among overlays, which no test here presses
   createElement: (tag) => new FakeElement(tag),
   createElementNS: (ns, tag) => new FakeElement(tag),
   createTextNode: (text) => new FakeText(text),
@@ -142,7 +143,7 @@ function plain(v) {
     vm.runInContext(code, ctx, { filename: file });
   load(path.join(LIB, "jsx.js"));
   for(const file of ["ui.js", "kind.js", "syntax.js"]) load(path.join(KIT, file));
-  for(const file of ["Checkbox.jsx", "Code.jsx", "Markdown.jsx"]) {
+  for(const file of ["Icon.jsx", "Checkbox.jsx", "Code.jsx", "Markdown.jsx"]) {
     load(path.join(KIT, file), compile(path.join(KIT, file)));
   }
   const run = (code) => vm.runInContext(code, ctx);

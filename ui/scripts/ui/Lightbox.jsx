@@ -39,7 +39,7 @@ const Lightbox = ({ src, alt, onChange, class: className, ...rest }) => {
 /** One-shot: opens a lightbox for `src` and removes it once closed. */
 Lightbox.open = (src, alt) => {
   const box = (
-    <Lightbox src={src} alt={alt} onChange={(opened) => { if(!opened) UI._unmount(box); }} />
+    <Lightbox src={src} alt={alt} onChange={(opened) => { if(!opened) _unmount(box); }} />
   );
   box.open();
   return box;

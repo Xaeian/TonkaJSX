@@ -1,3 +1,5 @@
+// scripts/Example.jsx
+
 const EXAMPLE_CODE = `const Greeting = ({ name }) => (
   <div class="greeting">
     <h1>Hello {name}!</h1>
@@ -10,7 +12,7 @@ const App = () => (
     <Greeting name="TonkaJSX" />
   </div>
 );
-document.body.appendChild(<App />);`
+document.body.appendChild(<App />);`;
 
 const Example = () => {
   const el = (

@@ -4,46 +4,46 @@
 // The `tonka` command: hands the command line to `serve`, `build`, `deploy`, `pipe` or `test`,
 // or prints the help with every project and where it deploys.
 
-import fs from "fs"
-import path from "path"
-import { ROOT, parseIni, deployTargets, listProjects, COLOR as c } from "./utils.js"
+import fs from "fs";
+import path from "path";
+import { ROOT, parseIni, deployTargets, listProjects, COLOR as c } from "./utils.js";
 
-const { version } = JSON.parse(fs.readFileSync(path.join(ROOT, "package.json"), "utf8"))
+const { version } = JSON.parse(fs.readFileSync(path.join(ROOT, "package.json"), "utf8"));
 
-const cmd = process.argv[2]
-const rest = process.argv.slice(3)
+const cmd = process.argv[2];
+const rest = process.argv.slice(3);
 const wantHelp = !cmd || cmd === "-h" || cmd === "--help"
-  || rest.includes("-h") || rest.includes("--help")
+  || rest.includes("-h") || rest.includes("--help");
 const wantVersion = cmd === "-v" || cmd === "--version"
-  || rest.includes("-v") || rest.includes("--version")
+  || rest.includes("-v") || rest.includes("--version");
 
-if(wantVersion) { console.log("TonkaJSX " + version); process.exit(0) }
+if(wantVersion) { console.log("TonkaJSX " + version); process.exit(0); }
 
-const COMMANDS = ["serve", "build", "deploy", "pipe", "test"]
+const COMMANDS = ["serve", "build", "deploy", "pipe", "test"];
 
 if(COMMANDS.includes(cmd) && !wantHelp) {
-  process.argv.splice(2, 1)
+  process.argv.splice(2, 1);
 }
 
 // where a project deploys, as its `app.ini` says: the default bare, a further Worker by its key;
 // a broken `[deploy]` shows the error `deploy` would stop on
 function targetsOf(project) {
-  const ini = path.join(ROOT, project, "app.ini")
-  if(!fs.existsSync(ini)) return ""
+  const ini = path.join(ROOT, project, "app.ini");
+  if(!fs.existsSync(ini)) return "";
   try {
-    const targets = deployTargets(parseIni(fs.readFileSync(ini, "utf8")))
-    const named = targets.map(t => t.key ? `${c.cyan}${t.key}${c.grey}:${t.name}` : t.name)
-    return named.length ? ` ${c.grey}(${named.join(", ")})${c.reset}` : ""
+    const targets = deployTargets(parseIni(fs.readFileSync(ini, "utf8")));
+    const named = targets.map(t => t.key ? `${c.cyan}${t.key}${c.grey}:${t.name}` : t.name);
+    return named.length ? ` ${c.grey}(${named.join(", ")})${c.reset}` : "";
   }
-  catch(e) { return ` ${c.red}(${e.message})${c.reset}` }
+  catch(e) { return ` ${c.red}(${e.message})${c.reset}`; }
 }
 
 function help() {
-  const projects = listProjects()
-  const line = (p) => `  ${c.green}•${c.reset} ${p}${targetsOf(p)}`
+  const projects = listProjects();
+  const line = (p) => `  ${c.green}•${c.reset} ${p}${targetsOf(p)}`;
   const plist = projects.length
     ? projects.map(line).join("\n")
-    : `  ${c.grey}(none: create a folder with app.html)${c.reset}`
+    : `  ${c.grey}(none: create a folder with app.html)${c.reset}`;
   console.log(`
 ${c.cyan}TonkaJSX${c.reset} ${c.grey}${version}${c.reset}: lightweight JSX frontend framework
 
@@ -82,17 +82,17 @@ ${c.grey}Pipe options:${c.reset}
 
 ${c.grey}Projects(${c.green}${projects.length}${c.grey}):${c.reset}
 ${plist}
-`)
+`);
 }
 
-if(wantHelp) { help(); process.exit(0) }
-if(cmd === "serve") await import("./serve.js")
-else if(cmd === "build") await import("./build.js")
-else if(cmd === "deploy") await import("./deploy.js")
-else if(cmd === "pipe") await import("./pipe.js")
-else if(cmd === "test") await import("./test.js")
+if(wantHelp) { help(); process.exit(0); }
+if(cmd === "serve") await import("./serve.js");
+else if(cmd === "build") await import("./build.js");
+else if(cmd === "deploy") await import("./deploy.js");
+else if(cmd === "pipe") await import("./pipe.js");
+else if(cmd === "test") await import("./test.js");
 else {
-  console.log(`${c.red}Unknown command:${c.reset} ${cmd}\n`)
-  help()
-  process.exit(1)
+  console.log(`${c.red}Unknown command:${c.reset} ${cmd}\n`);
+  help();
+  process.exit(1);
 }

@@ -19,7 +19,7 @@ const IconPicker = ({ icons, value, onChange, size, class: className, ...rest })
       {icons.map(ic => (
         <button type="button" class="icon-tile" data-icon={ic} aria-label={ic} title={ic}
           onClick={() => pick(ic)}>
-          <span class="icon" translate={false}>{ic}</span>
+          <Icon name={ic} />
         </button>
       ))}
     </div>

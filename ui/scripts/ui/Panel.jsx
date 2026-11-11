@@ -42,7 +42,7 @@ const Panel = ({
     "panel-dashed": dashed, "panel-ghost": ghost, "panel-glow": glow, "panel-flash": flash,
     "panel-compact": compact, "panel-flush": flush, "panel-grow": grow, "panel-cap": maxWidth,
   }];
-  const iconEl = icon ? <span class="icon panel-icon" translate={false}>{icon}</span> : null;
+  const iconEl = icon ? <Icon name={icon} class="panel-icon" /> : null;
   const actionsEl = actions ? <div class="panel-actions">{actions}</div> : null;
   const attrs = {
     class: cls, style: { height, maxWidth }, color, tint, grow,
@@ -102,10 +102,11 @@ const Panel = ({
     () => titleEl ? titleEl.textContent : "",
     (v) => { if(titleEl) { titleEl.textContent = v || ""; titleEl.hidden = !v; } });
 
-  // tabs: buttons in the head, panes (`[data-tab]`) in the body
+  // tabs: buttons in the head, panes (`[data-tab]`) the body's own children,
+  // so the panes of a tabbed panel inside one are that panel's to show
   let current = hasTabs ? (value || tabs[0].key) : null;
   function sync() {
-    for(const pane of body.querySelectorAll("[data-tab]")) {
+    for(const pane of body.querySelectorAll(":scope > [data-tab]")) {
       pane.hidden = pane.dataset.tab !== current;
     }
     for(const btn of tabBar.children) {
@@ -121,7 +122,7 @@ const Panel = ({
           sync();
           onChange?.(current);
         }}>
-          {t.icon ? <span class="icon" translate={false}>{t.icon}</span> : null}
+          {t.icon ? <Icon name={t.icon} /> : null}
           {t.label}
         </button>
       );
