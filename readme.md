@@ -80,6 +80,7 @@ tonka build -i -f 800kB -s -c -l "Material Symbols"
 Build then prints how big `index.html` came out and what stayed outside.
 
 Server and build work on chosen project. If you don't pass a project name, it picks the first one _(useful when you only have one)_.
+A name is a project of workspace; a path, `./site` or `C:/sites/site`, takes a project from anywhere.
 If project contains `app.ini`, variables defined there are replaced in all JS/JSX/CSS/HTML files using `{{key}}` syntax. Top-level values are shared; `[serve]` and `[build]` sections override per mode.
 Built-in `{{date}}` and `{{time}}` are always available, and values may reference other vars, e.g. `foot = Build {{date}}`.
 A `#` or `;` after a value starts a comment, so a value holding one is quoted.

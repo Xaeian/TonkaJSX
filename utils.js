@@ -96,11 +96,13 @@ export function getPort(def = 3000, argv = process.argv.slice(2)) {
 const OPTS_WITH_VALUE = new Set(["-p", "--port", "-w", "--worker"]);
 
 /**
- * The folder the command line names, resolved from `dirname`; with none named,
- * `web`, `public`, `site`, `app` or `src` when there is one, else the first folder.
+ * The folder the command line names: a bare name from `dirname`,
+ * a path (`./site`, `../site`, `C:/sites/site`) from where the command runs.
+ * With none named: `web`, `public`, `site`, `app` or `src` when there is one,
+ * else the first folder.
  * A named folder that does not exist ends the process with `Folder not found`.
  * @param {string[]} [ignore] folder names never picked
- * @param {string} [dirname] where names resolve from, the workspace by default
+ * @param {string} [dirname] where bare names resolve from, the workspace by default
  * @returns {string} absolute path
  */
 export function getBasePath(ignore = ["node_modules"], dirname = ROOT) {
@@ -114,7 +116,8 @@ export function getBasePath(ignore = ["node_modules"], dirname = ROOT) {
     if(!a.startsWith("-")) { argPath = a; break; }
   }
   if(argPath) {
-    const resolved = path.resolve(dirname, argPath);
+    const isPath = argPath.startsWith(".") || /[\\/]/.test(argPath) || path.isAbsolute(argPath);
+    const resolved = isPath ? path.resolve(argPath) : path.resolve(dirname, argPath);
     // a named folder must exist: a command fails loudly instead of running on a missing one
     if(!fs.existsSync(resolved) || !fs.statSync(resolved).isDirectory()) {
       console.log(`${c.red}Folder not found${c.grey}:${c.reset} ${argPath}`);

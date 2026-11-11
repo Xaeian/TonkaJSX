@@ -86,9 +86,11 @@ function push(dir) {
   Log.ok(`Pushed to ${to}`);
 }
 
-// one `tonka` command in a process of its own: each command reads its argv once
+// One `tonka` command in a process of its own: each command reads its argv once.
+// It runs in the workspace, so a path in the list means what the list's checks took it for.
 function tonka(args) {
-  return spawnSync(process.execPath, [TONKA, ...args], { stdio: "inherit" }).status === 0;
+  const run = spawnSync(process.execPath, [TONKA, ...args], { stdio: "inherit", cwd: ROOT });
+  return run.status === 0;
 }
 
 // one app out: its tests, its commit when the line asks, `build`, `deploy -r`, then the push,

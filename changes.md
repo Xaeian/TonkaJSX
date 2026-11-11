@@ -1,7 +1,8 @@
 # Changes 🌰TonkaJSX
 
-## `1.2.7` CI
+## `1.2.7` Local project + CI
 
+- A path names a project outside workspace _(`./site`, `C:/sites/site`)_
 - An app repository runs `test` on GitHub _(`.github/workflows/app.yml`)_
 - TonkaUI: `Icon`, Escape and shell fixes
 

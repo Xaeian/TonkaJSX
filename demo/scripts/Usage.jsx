@@ -32,7 +32,11 @@ const Usage = () => {
         <a href="https://github.com/Xaeian/TonkaJSX/blob/main/pipeline.md">pipeline.md</a>
       </p>
       <ul>
-        <li>Server and build work on chosen project. Skip name and it picks the first one.</li>
+        <li>
+          Server and build work on chosen project. Skip name and it picks the first one.
+          A name is a project of workspace;
+          a path, <code>./site</code> or <code>C:/sites/site</code>, takes a project from anywhere.
+        </li>
         <li>
           If project contains <code>app.ini</code>, variables are replaced in JS/JSX/CSS/HTML
           using double-brace syntax.
