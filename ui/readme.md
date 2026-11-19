@@ -3,6 +3,8 @@
 Component kit for TonkaJSX: real DOM elements, no virtual DOM, no CSS in app.
 Layout is tags with attributes, components return elements with a few mutators, and one dictionary of colours and sizes serves everything.
 Demo is the manual: every panel in its rail is one `.jsx` file.
+A panel shows the options of one component in short sections, at most one live reaction each: no logic across panels, no persistence, no workflow.
+One thing is shown in one place: adding rows in Lists, selection in Cards, a whole view only in Documents.
 
 ```jsx
 const rows = <stack gap="sm"></stack>;
@@ -51,6 +53,7 @@ A page needs `jsx.js` of the library.
 
 A text tag (`span strong code b i small p`) with `flex` or `basis` cuts its text with an ellipsis.
 An `<Icon name>` takes `color=` and `size="sm"`, and sits mid-word in a row with `align="baseline"`; `.name` changes its glyph.
+An icon says what happens: `delete` deletes, `close` cancels or dismisses, `arrow_upward` and `arrow_downward` move, and a visibility toggle shows the state it is in, `visibility` or `visibility_off`.
 
 Narrow screens (≤ 720px): weighted children of a `row` take a line each unless the row is `nowrap`, a panel head and an inline panel's content wrap, an inline panel with actions puts them under its content unless it is `nowrap`, the topbar wraps and folds its `fold` children under More, a modal takes the width, `hide-narrow` hides and `only-narrow` shows only there.
 A footer under 700px wide gives its centre up to the side slots that hold something.
